@@ -14,7 +14,7 @@ update: install # update all Python dependencies
 ## ---- Unit test commands ---- ##
 
 test: # run tests and print a coverage report
-	pipenv run coverage run --source=my_app -m pytest -vv
+	pipenv run coverage run --source=harvester -m pytest -vv
 	pipenv run coverage report -m
 
 coveralls: test
