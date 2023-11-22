@@ -85,14 +85,14 @@ The primary entrypoint for CLI commands will be a `Harvester` instance, which de
 This `Harvester` instance will then have an entrypoint `harvest` method.  Though differences for MIT vs OGM and "full" vs "incremental" harvests, the rough flow of a harvest will be:
 
 1. Retrieve identifiers to work on
-   2. MIT: combination of SQS queue and `S3:cdn/restricted/mit` file listing
-   3. OGM: lean on a configuration YAML and Github API
-4. Retrieve source metadata records (e.g. FGDC, ISO19139, Geoblacklight)
-   5. MIT: from `S3:cdn/restricted/mit`
-   6. OGM: from Github API and/or repository cloning
-5. Normalize to Aardvark JSON records
-6. [MIT only] Send EventBridge event indicating if record restricted and/or deleted
-7. Package "to-index" and "to-delete" JSON records and write to S3 for Transmogrifier
+  - MIT: combination of SQS queue and `S3:cdn/restricted/mit` file listing
+  - OGM: lean on a configuration YAML and Github API
+2. Retrieve source metadata records (e.g. FGDC, ISO19139, Geoblacklight)
+  - MIT: from `S3:cdn/restricted/mit`
+  - OGM: from Github API and/or repository cloning
+3. Normalize to Aardvark JSON records
+4. [MIT only] Send EventBridge event indicating if record restricted and/or deleted
+5. Package "to-index" and "to-delete" JSON records and write to S3 for Transmogrifier
 
 These flows are detailed more in [MIT Harvests](mit_harvests.md) and [OpenGeoMetadata (OGM) Harvests](ogm_harvests.md).
 
