@@ -1,7 +1,0 @@
-#name: CI
-#on: push
-#jobs:
-#  test:
-#    uses: mitlibraries/.github/.github/workflows/python-shared-test.yml@main
-#  lint:
-#    uses: mitlibraries/.github/.github/workflows/python-shared-lint.yml@main
