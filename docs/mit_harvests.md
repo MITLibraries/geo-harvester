@@ -47,19 +47,15 @@ sequenceDiagram
         geo_harv->>geo_harv: Normalize source metadata to Aardvark
         
         alt Action: Created or Modified
-            rect rgb(0, 100, 0)
-                geo_harv->>s3_cdn_pub: WRITE source and aardvark <br> metadata (may overwrite)        
-                geo_harv->>eb: Send event noting restricted=true|false
-                eb->>geo_data_sf: Async invoke
-                geo_harv->>geo_harv: Add to "to-index" list in memory
-            end
+            geo_harv->>s3_cdn_pub: WRITE source and aardvark <br> metadata (may overwrite)        
+            geo_harv->>eb: Send event noting restricted=true|false
+            eb->>geo_data_sf: Async invoke
+            geo_harv->>geo_harv: Add to "to-index" list in memory
         else Action: Deleted
-            rect rgb(100, 0, 0)
-                geo_harv->>s3_cdn_pub: DELETE source and aardvark <br> metadata
-                geo_harv->>eb: Send event noting deleted=true
-                eb->>geo_data_sf: Async invoke
-                geo_harv->>geo_harv: Add to "to-delete" list in memory
-            end
+            geo_harv->>s3_cdn_pub: DELETE source and aardvark <br> metadata
+            geo_harv->>eb: Send event noting deleted=true
+            eb->>geo_data_sf: Async invoke
+            geo_harv->>geo_harv: Add to "to-delete" list in memory
         end
         geo_harv->>s3_timdex: Write "to-index" and "to-delete" aardvark JSON records
     end

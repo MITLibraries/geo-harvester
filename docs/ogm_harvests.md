@@ -58,15 +58,11 @@ sequenceDiagram
             Note right of gis_harv: Need to still normalize to aardvark <br> to get meaningful identifier
             gis_harv->>gis_harv: Normalize source metadata to Aardvark
             alt Action: Created or Modified
-                rect rgb(0, 100, 0)
-                    gis_harv->>s3_cdn_pub: WRITE source and aardvark metadata (may overwrite)
-                    gis_harv->>gis_harv: Add to "to-index" list in memory
-                end
+                gis_harv->>s3_cdn_pub: WRITE source and aardvark metadata (may overwrite)
+                gis_harv->>gis_harv: Add to "to-index" list in memory
             else Action: Deleted
-                rect rgb(100, 0, 0)
-                    gis_harv->>s3_cdn_pub: DELETE source and aardvark metadata
-                    gis_harv->>gis_harv: Add to "to-delete" list in memory
-                end
+                gis_harv->>s3_cdn_pub: DELETE source and aardvark metadata
+                gis_harv->>gis_harv: Add to "to-delete" list in memory
             end
         end
         
