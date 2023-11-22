@@ -13,13 +13,13 @@ sequenceDiagram
     
     Note over gis_team, s3_upload: Zip file is added, <br>modified, or deleted
     gis_team->>s3_upload: Modify File
-    Note over s3_upload, upload_lambda: EventBridge trigger
-    activate upload_lambda
-    s3_upload->>upload_lambda: Invoke StateMachine
-    upload_lambda->>s3_cdn_rest: Copies or deletes zip file
-    Note over upload_lambda,sqs_queue: Message contains minimum of S3 paths <br> and event type (e.g. added, deleted) 
-    upload_lambda->>sqs_queue: Publish SQS message
-    deactivate upload_lambda
+    Note over s3_upload, geo_data_sf: EventBridge trigger
+    activate geo_data_sf
+    s3_upload->>geo_data_sf: Invoke StateMachine
+    geo_data_sf->>s3_cdn_rest: Copies or deletes zip file
+    Note over geo_data_sf,sqs_queue: Message contains minimum of S3 paths <br> and event type (e.g. added, deleted) 
+    geo_data_sf->>sqs_queue: Publish SQS message
+    deactivate geo_data_sf
 ```
 
 ## Incremental Harvest 
