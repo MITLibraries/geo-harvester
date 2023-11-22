@@ -1,3 +1,4 @@
+ECR_NAME_DEV:=geo-harvester-dev
 SHELL=/bin/bash
 DATETIME:=$(shell date -u +%Y%m%dT%H%M%SZ)
 
@@ -47,3 +48,7 @@ black-apply:
 
 ruff-apply: 
 	pipenv run ruff check --fix .
+
+## ---- Docker commands ---- ##
+dist-local:
+	docker build -t $(ECR_NAME_DEV):latest .
