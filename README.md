@@ -25,8 +25,8 @@ WORKSPACE=### Set to `dev` for local development, this will be set to `stage` an
 
 ### Optional
 ```shell
-GEOHARV_INPUT_FILES=### optionally overrides CLI argument --input-files
-GEOHARV_SQS_ARN=### optionally overrides CLI argument --sqs-arn
+GEOHARVESTER_INPUT_FILES=### optionally overrides CLI argument --input-files
+GEOHARVESTER_SQS_TOPIC_ARN=### optionally overrides CLI argument --sqs-arn
 ```
 
 ## CLI Commands
@@ -100,7 +100,7 @@ Options:
   -h, --help                Show this message and exit.
 ```
 
-### `harvester harvest-ogm`
+### `harvester harvest ogm`
 
 ```text
 Usage: -c harvest ogm [OPTIONS]

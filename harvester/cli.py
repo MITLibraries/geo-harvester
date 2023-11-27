@@ -88,7 +88,7 @@ main.add_command(harvest)
     "-i",
     "--input-files",
     required=True,
-    envvar="GEO_INPUT_FILES",
+    envvar="GEOHARVESTER_INPUT_FILES",
     type=str,
     help="Directory location of source zip files (may be local or s3).",
 )
@@ -96,7 +96,7 @@ main.add_command(harvest)
     "-s",
     "--sqs-topic-arn",
     required=False,
-    envvar="GEO_SQS_TOPIC_ARN",
+    envvar="GEOHARVESTER_SQS_TOPIC_ARN",
     type=str,
     help="SQS Topic ARN with messages capturing zip file modifications.  Required when "
     "--harvest-type=incremental.",
