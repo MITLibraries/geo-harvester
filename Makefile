@@ -1,3 +1,4 @@
+ECR_NAME_DEV:=geo-harvester-dev
 SHELL=/bin/bash
 DATETIME:=$(shell date -u +%Y%m%dT%H%M%SZ)
 
@@ -14,7 +15,7 @@ update: install # update all Python dependencies
 ## ---- Unit test commands ---- ##
 
 test: # run tests and print a coverage report
-	pipenv run coverage run --source=my_app -m pytest -vv
+	pipenv run coverage run --source=harvester -m pytest -vv
 	pipenv run coverage report -m
 
 coveralls: test
@@ -47,3 +48,7 @@ black-apply:
 
 ruff-apply: 
 	pipenv run ruff check --fix .
+
+## ---- Docker commands ---- ##
+dist-local:
+	docker build -t $(ECR_NAME_DEV):latest .

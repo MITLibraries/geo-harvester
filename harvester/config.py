@@ -4,7 +4,7 @@ import os
 import sentry_sdk
 
 
-def configure_logger(logger: logging.Logger, *, verbose: bool) -> str:
+def configure_logger(logger: logging.Logger, verbose: bool) -> str:
     if verbose:
         logging.basicConfig(
             format="%(asctime)s %(levelname)s %(name)s.%(funcName)s() line %(lineno)d: "
@@ -12,7 +12,7 @@ def configure_logger(logger: logging.Logger, *, verbose: bool) -> str:
         )
         logger.setLevel(logging.DEBUG)
         for handler in logging.root.handlers:
-            handler.addFilter(logging.Filter("my_app"))
+            handler.addFilter(logging.Filter("harvester"))
     else:
         logging.basicConfig(
             format="%(asctime)s %(levelname)s %(name)s.%(funcName)s(): %(message)s"

@@ -19,4 +19,4 @@ ruff = "*"
 python_version = "3.11"
 
 [scripts]
-my_app = "python -c \"from my_app.cli import main; main()\""
+harvester = "python -c \"from harvester.cli import main; main()\""
