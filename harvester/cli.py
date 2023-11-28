@@ -1,3 +1,5 @@
+# ruff: noqa: FBT001
+
 import logging
 from datetime import timedelta
 from time import perf_counter
@@ -5,6 +7,7 @@ from time import perf_counter
 import click
 
 from harvester.config import configure_logger, configure_sentry
+from harvester.harvest.mit import MITHarvester
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +33,11 @@ def main(ctx: click.Context, verbose: bool) -> None:
 @main.command()
 @click.pass_context
 def ping(ctx: click.Context) -> None:
-    """Debug ping/pong command"""
+    """Debug ping/pong command.
+
+    This command is purely for debugging purposes to ensure docker container and/or
+    application is functional and responsive before any meaningful business logic.
+    """
     logger.debug("got ping, preparing to pong")
     click.echo("pong")
     logger.info(
@@ -74,7 +81,7 @@ def harvest(
     until_date: str,
 ) -> None:
     """Harvest command with sub-commands for different sources."""
-    ctx.obj["HARVEST_TYPE"] = from_date
+    ctx.obj["HARVEST_TYPE"] = harvest_type
     ctx.obj["FROM_DATE"] = from_date
     ctx.obj["UNTIL_DATE"] = until_date
 
@@ -94,37 +101,44 @@ main.add_command(harvest)
 )
 @click.option(
     "-s",
-    "--sqs-topic-arn",
+    "--sqs-topic-name",
     required=False,
-    envvar="GEOHARVESTER_SQS_TOPIC_ARN",
+    envvar="GEOHARVESTER_SQS_TOPIC_NAME",
     type=str,
-    help="SQS Topic ARN with messages capturing zip file modifications.  Required when "
+    help="SQS topic name with messages capturing zip file modifications.  Required when "
     "--harvest-type=incremental.",
 )
 @click.pass_context
 def harvest_mit(
     ctx: click.Context,
     input_files: str,
-    sqs_topic_arn: str,
+    sqs_topic_name: str,
 ) -> None:
-    """Harvest and normalize MIT geospatial metadata records.
-
-    NOTE: relies on 'harvest' command group arguments
-    """
+    """Harvest and normalize MIT geospatial metadata records."""
+    harvest_type = ctx.obj["HARVEST_TYPE"]
+    from_date = ctx.obj["FROM_DATE"]
+    until_date = ctx.obj["UNTIL_DATE"]
 
     # ensure SQS Topic ARN defined for incremental harvests
-    if ctx["HARVEST_TYPE"] == "incremental" and not sqs_topic_arn:
-        raise click.MissingParameter(
-            "--sqs-topic-arn must be set when --harvest-type=incremental"
-        )
+    if harvest_type == "incremental" and not sqs_topic_name:
+        message = "--sqs-topic-name must be set when --harvest-type=incremental"
+        raise click.MissingParameter(message)
 
-    logger.info(
+    harvester = MITHarvester(
+        harvest_type=harvest_type,
+        from_date=from_date,
+        until_date=until_date,
+        input_files=input_files,
+        sqs_topic_name=sqs_topic_name,
+    )
+    harvester.harvest()
+
+    logger.info(  # pragma: no cover
         "Total elapsed: %s",
         str(
             timedelta(seconds=perf_counter() - ctx.obj["START_TIME"]),
         ),
     )
-    raise NotImplementedError()
 
 
 @harvest.command(name="ogm")
@@ -137,16 +151,14 @@ def harvest_mit(
 @click.pass_context
 def harvest_ogm(
     ctx: click.Context,
+    # ruff: noqa: ARG001
     config_yaml_file: str,
-) -> None:
-    """Harvest and normalize OpenGeoMetadata (OGM) geospatial metadata records.
-
-    NOTE: relies on 'harvest' command group arguments
-    """
-    logger.info(
+) -> None:  # pragma: no cover
+    """Harvest and normalize OpenGeoMetadata (OGM) geospatial metadata records."""
+    logger.info(  # pragma: no cover
         "Total elapsed: %s",
         str(
             timedelta(seconds=perf_counter() - ctx.obj["START_TIME"]),
         ),
     )
-    raise NotImplementedError()
+    raise NotImplementedError
