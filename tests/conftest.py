@@ -1,3 +1,5 @@
+import json
+import pickle
 from unittest.mock import patch
 
 import boto3
@@ -5,7 +7,7 @@ import pytest
 from click.testing import CliRunner
 from moto import mock_s3
 
-from harvester.aws.sqs import SQSClient
+from harvester.aws.sqs import SQSClient, ZipFileEventMessage
 from harvester.harvest import Harvester
 
 
@@ -13,6 +15,18 @@ from harvester.harvest import Harvester
 def _test_env(monkeypatch):
     monkeypatch.setenv("SENTRY_DSN", "None")
     monkeypatch.setenv("WORKSPACE", "test")
+    monkeypatch.setenv("S3_RESTRICTED_CDN_ROOT", "s3://aws-account/cdn/geo/restricted/")
+    monkeypatch.setenv("S3_PUBLIC_CDN_ROOT", "s3://aws-account/cdn/geo/restricted/")
+
+
+@pytest.fixture
+def _unset_s3_cdn_env_vars():
+    """Patch constants imported to harvester"""
+    with (
+        patch("harvester.harvest.S3_RESTRICTED_CDN_ROOT", None),
+        patch("harvester.harvest.S3_PUBLIC_CDN_ROOT", None),
+    ):
+        yield
 
 
 @pytest.fixture
@@ -90,3 +104,29 @@ def mock_boto3_sqs_client():
 @pytest.fixture
 def mock_sqs_client(mocked_sqs_topic_name, mock_boto3_sqs_client):
     return SQSClient(mocked_sqs_topic_name)
+
+
+@pytest.fixture
+def _mocked_harvester_harvest():
+    with patch.object(Harvester, "harvest") as mocked_harvest:
+        mocked_harvest.return_value = None
+        yield
+
+
+@pytest.fixture
+def invalid_sqs_message_dict():
+    with open("tests/fixtures/sqs/invalid_message.json") as f:
+        return json.loads(f.read())
+
+
+@pytest.fixture
+def valid_sqs_message_dict():
+    with open("tests/fixtures/sqs/valid_message.json") as f:
+        return json.loads(f.read())
+
+
+@pytest.fixture
+def valid_sqs_message_instance() -> ZipFileEventMessage:
+    with open("tests/fixtures/sqs/valid_message.pickle", "rb") as f:
+        # ruff: noqa: S301
+        return pickle.load(f)

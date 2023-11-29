@@ -1,5 +1,7 @@
 from time import perf_counter
 
+import pytest
+
 from harvester.cli import main
 
 MISSING_CLICK_ARG_RESULT_CODE = 2
@@ -39,23 +41,12 @@ def test_cli_harvest_mit_no_options(runner):
     assert "Missing option '-i' / '--input-files'." in result.stdout
 
 
-def test_cli_harvest_mit_incremental_missing_sqs_topic_name(runner):
-    result = runner.invoke(
-        main,
-        [
-            "--verbose",
-            "harvest",
-            "mit",
-            "--input-files",
-            "tests/fixtures/s3_cdn_restricted_legacy_single/legacy/single_layer",
-        ],
-        obj={"START_TIME": perf_counter()},
-    )
-    assert result.exit_code == MISSING_CLICK_ARG_RESULT_CODE
-    assert "--sqs-topic-name must be set when --harvest-type=incremental" in result.stdout
-
-
-def test_cli_harvest_mit_full_legacy_single(runner):
+@pytest.mark.usefixtures("_mocked_harvester_harvest")
+def test_cli_harvest_mit_full_legacy_single(
+    runner,
+    mocked_sqs_topic_name,
+    sqs_client_message_count_zero,
+):
     result = runner.invoke(
         main,
         [
@@ -69,4 +60,4 @@ def test_cli_harvest_mit_full_legacy_single(runner):
         ],
         obj={"START_TIME": perf_counter()},
     )
-    assert result.exit_code == 1
+    assert result.exit_code == 0

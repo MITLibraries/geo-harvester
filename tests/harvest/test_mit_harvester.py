@@ -69,15 +69,18 @@ def test_mit_harvester_full_harvest_bad_input_files_path_s3():
 
 
 def test_mit_harvester_full_harvest_zero_zip_files_found(
-    mocked_restricted_bucket_empty, mocked_sqs_topic_name, sqs_client_message_count_zero
+    caplog,
+    mocked_restricted_bucket_empty,
+    mocked_sqs_topic_name,
+    sqs_client_message_count_zero,
 ):
     harvester = MITHarvester(
         harvest_type="full",
         input_files="tests/fixtures/s3_cdn_restricted_empty",
         sqs_topic_name=mocked_sqs_topic_name,
     )
-    with pytest.raises(ValueError, match="Zero zip files found at input path"):
-        harvester.harvest()
+    harvester.harvest()
+    assert "0 zip file(s) identified for full harvest" in caplog.text
 
 
 def test_mit_harvester_full_harvest_one_zip_files_found(
@@ -93,3 +96,25 @@ def test_mit_harvester_full_harvest_one_zip_files_found(
     )
     harvester.harvest()
     assert "1 zip file(s) identified for full harvest" in caplog.text
+
+
+def test_mit_harvester_incremental_harvest_one_zip_files_found(
+    caplog,
+    mocked_sqs_topic_name,
+    mock_boto3_sqs_client,
+    invalid_sqs_message_dict,
+    valid_sqs_message_dict,
+):
+    mock_boto3_sqs_client.receive_message.side_effect = [
+        {"Messages": [valid_sqs_message_dict]},
+        {"Messages": [invalid_sqs_message_dict]},
+        {"Messages": [valid_sqs_message_dict]},
+        {},
+    ]
+    harvester = MITHarvester(
+        harvest_type="incremental",
+        input_files="tests/fixtures/s3_cdn_restricted_legacy_single",
+        sqs_topic_name=mocked_sqs_topic_name,
+    )
+    harvester.harvest()
+    assert "2 message(s) identified for incremental harvest" in caplog.text

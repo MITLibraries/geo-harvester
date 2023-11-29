@@ -95,18 +95,19 @@ main.add_command(harvest)
     "-i",
     "--input-files",
     required=True,
-    envvar="GEOHARVESTER_INPUT_FILES",
+    envvar="S3_RESTRICTED_CDN_ROOT",
     type=str,
-    help="Directory location of source zip files (may be local or s3).",
+    help="Directory location of source zip files (may be local or s3). Defaults to "
+    "env var S3_RESTRICTED_CDN_ROOT if set.",
 )
 @click.option(
     "-s",
     "--sqs-topic-name",
-    required=False,
+    required=True,
     envvar="GEOHARVESTER_SQS_TOPIC_NAME",
     type=str,
-    help="SQS topic name with messages capturing zip file modifications.  Required when "
-    "--harvest-type=incremental.",
+    help="SQS topic name with messages capturing zip file modifications. Defaults to "
+    "env var GEOHARVESTER_SQS_TOPIC_NAME if set.",
 )
 @click.pass_context
 def harvest_mit(
@@ -118,11 +119,6 @@ def harvest_mit(
     harvest_type = ctx.obj["HARVEST_TYPE"]
     from_date = ctx.obj["FROM_DATE"]
     until_date = ctx.obj["UNTIL_DATE"]
-
-    # ensure SQS Topic ARN defined for incremental harvests
-    if harvest_type == "incremental" and not sqs_topic_name:
-        message = "--sqs-topic-name must be set when --harvest-type=incremental"
-        raise click.MissingParameter(message)
 
     harvester = MITHarvester(
         harvest_type=harvest_type,

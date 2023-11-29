@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from attrs import define, field
 from dateutil.parser import parse as date_parser
 
+from harvester.config import S3_PUBLIC_CDN_ROOT, S3_RESTRICTED_CDN_ROOT
 from harvester.utils import convert_to_utc
 
 logger = logging.getLogger(__name__)
@@ -18,14 +19,6 @@ class Harvester(ABC):
     harvest_type: str = field(default=None)
     from_date: str = field(default=None)
     until_date: str = field(default=None)
-
-    def harvest(self) -> None:
-        if self.harvest_type == "full":
-            return self.full_harvest()
-        if self.harvest_type == "incremental":
-            return self.incremental_harvest()
-        message = f"harvest type: '{self.harvest_type}' not recognized"
-        raise ValueError(message)
 
     @property
     def from_datetime_obj(self) -> datetime.datetime | None:
@@ -40,6 +33,23 @@ class Harvester(ABC):
         if self.until_date:
             return convert_to_utc(date_parser(self.until_date))
         return None
+
+    def harvest(self) -> None:
+        # ensure required env vars for MIT and OGM harvests are set
+        if not all([S3_RESTRICTED_CDN_ROOT, S3_PUBLIC_CDN_ROOT]):
+            message = "Env vars S3_RESTRICTED_CDN_ROOT, S3_PUBLIC_CDN_ROOT must be set."
+            raise RuntimeError(message)
+
+        if self.harvest_type == "full":
+            harvest_result = self.full_harvest()
+        elif self.harvest_type == "incremental":
+            harvest_result = self.incremental_harvest()
+        else:
+            message = f"harvest type: '{self.harvest_type}' not recognized"
+            raise ValueError(message)
+
+        # NOTE: placeholder until harvest result handling established
+        logger.info(harvest_result)
 
     @abstractmethod
     def full_harvest(self) -> None:

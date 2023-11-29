@@ -7,6 +7,16 @@ from dateutil.parser import parse as date_parser
 from harvester.utils import convert_to_utc
 
 
+@pytest.mark.usefixtures("_unset_s3_cdn_env_vars")
+def test_harvester_harvest_missing_env_vars(generic_harvester_class):
+    harvester = generic_harvester_class(harvest_type="full")
+    with pytest.raises(
+        RuntimeError,
+        match="Env vars S3_RESTRICTED_CDN_ROOT, S3_PUBLIC_CDN_ROOT must be set.",
+    ):
+        harvester.harvest()
+
+
 def test_harvester_bad_harvest_type(generic_harvester_class):
     harvester = generic_harvester_class(
         harvest_type="bad_type",

@@ -3,6 +3,9 @@ import os
 
 import sentry_sdk
 
+S3_RESTRICTED_CDN_ROOT = os.getenv("S3_RESTRICTED_CDN_ROOT", None)
+S3_PUBLIC_CDN_ROOT = os.getenv("S3_PUBLIC_CDN_ROOT", None)
+
 
 # ruff: noqa: FBT001
 def configure_logger(logger: logging.Logger, verbose: bool) -> str:
