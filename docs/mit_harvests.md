@@ -41,6 +41,10 @@ sequenceDiagram
     geo_harv->>sqs_queue: Fetch messages
     sqs_queue-->>geo_harv: Messages
     loop SQS Messages of Modified Files
+        geo_harv->>geo_harv: Validate SQS Message
+        alt Message Invalid
+            geo_harv->>sqs_queue: Log to Sentry and leave message
+        end
         geo_harv->>geo_harv: Determine identifier from SQS Message
         geo_harv->>s3_cdn_rest: Read metadata file from zip file
         s3_cdn_rest-->>geo_harv: Source metadata        

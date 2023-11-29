@@ -21,12 +21,13 @@ At a high level, this is accomplished by:
 ```shell
 SENTRY_DSN=### If set to a valid Sentry DSN, enables Sentry exception monitoring. This is not needed for local development.
 WORKSPACE=### Set to `dev` for local development, this will be set to `stage` and `prod` in those environments by Terraform.
+S3_RESTRICTED_CDN_ROOT=### S3 bucket + prefix for CDN restricted, e.g. 's3://<bucket>/path/to/restricted'
+S3_PUBLIC_CDN_ROOT=### S3 bucket + prefix for CDN public, e.g. 's3://<bucket>/path/to/public'
 ```
 
 ### Optional
 ```shell
-GEOHARVESTER_INPUT_FILES=### optionally overrides CLI argument --input-files
-GEOHARVESTER_SQS_TOPIC_ARN=### optionally overrides CLI argument --sqs-arn
+GEOHARVESTER_SQS_TOPIC_ARN=### default value for CLI argument --sqs-arn
 ```
 
 ## CLI Commands
@@ -54,7 +55,11 @@ Commands:
 ```text
 Usage: -c ping [OPTIONS]
 
-  Debug ping/pong command
+  Debug ping/pong command.
+
+  This command is purely for debugging purposes to ensure docker container
+  and/or application is functional and responsive before any meaningful
+  business logic.
 
 Options:
   -h, --help  Show this message and exit.
@@ -89,15 +94,14 @@ Usage: -c harvest mit [OPTIONS]
 
   Harvest and normalize MIT geospatial metadata records.
 
-  NOTE: relies on 'harvest' command group arguments
-
 Options:
-  -i, --input-files TEXT    Directory location of source zip files (may be
-                            local or s3).  [required]
-  -s, --sqs-topic-arn TEXT  SQS Topic ARN with messages capturing zip file
-                            modifications.  Required when --harvest-
-                            type=incremental.
-  -h, --help                Show this message and exit.
+  -i, --input-files TEXT     Directory location of source zip files (may be
+                             local or s3). Defaults to env var
+                             S3_RESTRICTED_CDN_ROOT if set.  [required]
+  -s, --sqs-topic-name TEXT  SQS topic name with messages capturing zip file
+                             modifications. Defaults to env var
+                             GEOHARVESTER_SQS_TOPIC_NAME if set.  [required]
+  -h, --help                 Show this message and exit.
 ```
 
 ### `harvester harvest ogm`
