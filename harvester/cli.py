@@ -109,11 +109,18 @@ main.add_command(harvest)
     help="SQS topic name with messages capturing zip file modifications. Defaults to "
     "env var GEOHARVESTER_SQS_TOPIC_NAME if set.",
 )
+@click.option(
+    "--skip-sqs-check",
+    required=False,
+    is_flag=True,
+    help="If set, will skip confirming that the SQS is empty for 'full' harvest.",
+)
 @click.pass_context
 def harvest_mit(
     ctx: click.Context,
     input_files: str,
     sqs_topic_name: str,
+    skip_sqs_check: bool,
 ) -> None:
     """Harvest and normalize MIT geospatial metadata records."""
     harvest_type = ctx.obj["HARVEST_TYPE"]
@@ -126,6 +133,7 @@ def harvest_mit(
         until_date=until_date,
         input_files=input_files,
         sqs_topic_name=sqs_topic_name,
+        skip_sqs_check=skip_sqs_check,
     )
     harvester.harvest()
 

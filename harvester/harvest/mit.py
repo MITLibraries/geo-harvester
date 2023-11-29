@@ -20,11 +20,12 @@ class MITHarvester(Harvester):
 
     input_files: str = field(default=None)
     sqs_topic_name: str = field(default=None)
+    skip_sqs_check: bool = field(default=False)
 
     def full_harvest(self) -> None:
         """Perform full harvest of MIT GIS zip files."""
         # abort immediately if SQS queue is not empty
-        if not self.sqs_queue_is_empty():
+        if not self.skip_sqs_check and not self.sqs_queue_is_empty():
             message = (
                 "Cannot perform full harvest when SQS queue has unprocessed messages"
             )

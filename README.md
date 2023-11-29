@@ -101,6 +101,8 @@ Options:
   -s, --sqs-topic-name TEXT  SQS topic name with messages capturing zip file
                              modifications. Defaults to env var
                              GEOHARVESTER_SQS_TOPIC_NAME if set.  [required]
+  --skip-sqs-check           If set, will skip confirming that the SQS is
+                             empty for 'full' harvest.
   -h, --help                 Show this message and exit.
 ```
 
