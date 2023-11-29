@@ -53,7 +53,7 @@ def ping(ctx: click.Context) -> None:
     "-t",
     "--harvest-type",
     required=False,
-    type=str,
+    type=click.Choice(["full", "incremental"], case_sensitive=False),
     default="incremental",
     help="Type of harvest, may be: 'incremental' or 'full'.",
 )

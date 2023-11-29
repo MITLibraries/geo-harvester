@@ -75,12 +75,14 @@ Usage: -c harvest [OPTIONS] COMMAND [ARGS]...
   Harvest command with sub-commands for different sources.
 
 Options:
-  -t, --harvest-type TEXT  Type of harvest, may be: 'incremental' or 'full'.
-  -f, --from-date TEXT     filter for files modified on or after this date;
-                           format YYYY-MM-DD.
-  -u, --until-date TEXT    filter for files modified before this date; format
-                           YYYY-MM-DD.
-  -h, --help               Show this message and exit.
+  -t, --harvest-type [full|incremental]
+                                  Type of harvest, may be: 'incremental' or
+                                  'full'.
+  -f, --from-date TEXT            filter for files modified on or after this
+                                  date; format YYYY-MM-DD.
+  -u, --until-date TEXT           filter for files modified before this date;
+                                  format YYYY-MM-DD.
+  -h, --help                      Show this message and exit.
 
 Commands:
   mit  Harvest and normalize MIT geospatial metadata records.
