@@ -38,7 +38,7 @@ class MITHarvester(Harvester):
 
         # process zip files
         for zip_file in zip_files:
-            identifier = zip_file.split(".zip")[0]
+            identifier = os.path.splitext(zip_file)[0].split("/")[-1]
             self.process_zip_file(identifier, "created", zip_file)
 
     def incremental_harvest(self) -> None:
