@@ -1,3 +1,4 @@
+import os
 from time import perf_counter
 
 import pytest
@@ -34,11 +35,13 @@ def test_cli_harvest_no_options(runner):
 
 
 def test_cli_harvest_mit_no_options(runner):
+    s3_restricted = os.environ.pop("S3_RESTRICTED_CDN_ROOT")
     result = runner.invoke(
         main, ["--verbose", "harvest", "mit"], obj={"START_TIME": perf_counter()}
     )
     assert result.exit_code == MISSING_CLICK_ARG_RESULT_CODE
     assert "Missing option '-i' / '--input-files'." in result.stdout
+    os.environ["S3_RESTRICTED_CDN_ROOT"] = s3_restricted
 
 
 @pytest.mark.usefixtures("_mocked_harvester_harvest")
