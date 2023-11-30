@@ -3,19 +3,21 @@ import pytest
 from harvester.harvest.mit import MITHarvester
 
 
-def test_mit_harvester_list_local_files():
+def test_mit_harvester_list_local_files_equals_one():
     harvester = MITHarvester(input_files="tests/fixtures/s3_cdn_restricted_legacy_single")
     zip_files = harvester.list_zip_files()
     assert len(zip_files) == 1
 
 
-def test_mit_harvester_list_s3_files(mocked_restricted_bucket_one_legacy_fgdc_zip):
+def test_mit_harvester_list_s3_files_equals_one(
+    mocked_restricted_bucket_one_legacy_fgdc_zip,
+):
     harvester = MITHarvester(input_files="s3://mocked_cdn_restricted/cdn/geo/restricted/")
     zip_files = harvester.list_zip_files()
     assert len(zip_files) == 1
 
 
-def test_mit_harvester_list_local_files_date_filter():
+def test_mit_harvester_list_local_files_date_filter_equals_zero():
     harvester = MITHarvester(
         input_files="tests/fixtures/s3_cdn_restricted_legacy_single",
         from_date="2000-01-01",
@@ -25,7 +27,7 @@ def test_mit_harvester_list_local_files_date_filter():
     assert len(zip_files) == 0
 
 
-def test_mit_harvester_list_s3_files_date_filter(
+def test_mit_harvester_list_s3_files_date_filter_equals_zero(
     mocked_restricted_bucket_one_legacy_fgdc_zip,
 ):
     harvester = MITHarvester(
@@ -37,7 +39,7 @@ def test_mit_harvester_list_s3_files_date_filter(
     assert len(zip_files) == 0
 
 
-def test_mit_harvester_full_harvest_non_empty_sqs_queue(
+def test_mit_harvester_full_harvest_non_empty_sqs_queue_raise_error(
     mocked_sqs_topic_name, sqs_client_message_count_ten
 ):
     harvester = MITHarvester(
@@ -52,7 +54,7 @@ def test_mit_harvester_full_harvest_non_empty_sqs_queue(
     )
 
 
-def test_mit_harvester_full_harvest_bad_input_files_path_local(
+def test_mit_harvester_full_harvest_bad_input_files_path_local_raise_error(
     mocked_restricted_bucket_empty, mocked_sqs_topic_name, sqs_client_message_count_zero
 ):
     harvester = MITHarvester(
@@ -61,11 +63,22 @@ def test_mit_harvester_full_harvest_bad_input_files_path_local(
         sqs_topic_name=mocked_sqs_topic_name,
     )
     with pytest.raises(ValueError, match="Invalid input files path"):
-        harvester.harvest()
+        harvester._list_local_zip_files()  # noqa: SLF001
 
 
-def test_mit_harvester_full_harvest_bad_input_files_path_s3():
-    pass
+def test_mit_harvester_full_harvest_bad_bucket_input_files_path_s3_raise_error(
+    mocked_restricted_bucket_empty, mocked_sqs_topic_name, sqs_client_message_count_zero
+):
+    harvester = MITHarvester(
+        harvest_type="full",
+        input_files="s3://bad-bucket/prefix/okay/though",
+        sqs_topic_name=mocked_sqs_topic_name,
+    )
+    with pytest.raises(
+        ValueError,
+        match="Could not list objects for: 's3://bad-bucket/prefix/okay/though'",
+    ):
+        harvester._list_s3_zip_files()  # noqa: SLF001
 
 
 def test_mit_harvester_full_harvest_zero_zip_files_found(

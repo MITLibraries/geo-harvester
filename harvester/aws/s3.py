@@ -18,9 +18,24 @@ class S3Client:
 
     @classmethod
     def list_objects(cls, bucket: str, prefix: str) -> list:
-        """List objects for bucket + prefix"""
+        """List objects for bucket + prefix
+
+        Args:
+            bucket: S3 bucket
+            prefix: path prefix, where any files beginning with that path will be returned
+        """
         client = cls.get_client()
-        response = client.list_objects_v2(Bucket=bucket, Prefix=prefix)
+        try:
+            response = client.list_objects_v2(Bucket=bucket, Prefix=prefix)
+        except (
+            client.exceptions.NoSuchBucket,
+            client.exceptions.ClientError,
+        ) as exc:
+            logger.error(exc)  # noqa: TRY400
+            message = (
+                f"Could not list objects for: 's3://{bucket}/{prefix}', reason: {exc}"
+            )
+            raise ValueError(message) from exc
         if "Contents" in response:
             return list(response["Contents"])
         return []

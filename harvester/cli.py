@@ -98,7 +98,7 @@ main.add_command(harvest)
     envvar="S3_RESTRICTED_CDN_ROOT",
     type=str,
     help="Directory location of source zip files (may be local or s3). Defaults to "
-    "env var S3_RESTRICTED_CDN_ROOT if set.",
+    "env var S3_RESTRICTED_CDN_ROOT if not set.",
 )
 @click.option(
     "-s",
@@ -107,7 +107,7 @@ main.add_command(harvest)
     envvar="GEOHARVESTER_SQS_TOPIC_NAME",
     type=str,
     help="SQS topic name with messages capturing zip file modifications. Defaults to "
-    "env var GEOHARVESTER_SQS_TOPIC_NAME if set.",
+    "env var GEOHARVESTER_SQS_TOPIC_NAME if not set.",
 )
 @click.option(
     "--skip-sqs-check",
@@ -155,8 +155,7 @@ def harvest_mit(
 @click.pass_context
 def harvest_ogm(
     ctx: click.Context,
-    # ruff: noqa: ARG001
-    config_yaml_file: str,
+    config_yaml_file: str,  # noqa: ARG001
 ) -> None:  # pragma: no cover
     """Harvest and normalize OpenGeoMetadata (OGM) geospatial metadata records."""
     logger.info(  # pragma: no cover

@@ -21,14 +21,14 @@ class Harvester(ABC):
     until_date: str = field(default=None)
 
     @property
-    def from_datetime_obj(self) -> datetime.datetime | None:
+    def from_datetime_object(self) -> datetime.datetime | None:
         """Parses from date with UTC timezone offset set."""
         if self.from_date:
             return convert_to_utc(date_parser(self.from_date))
         return None
 
     @property
-    def until_datetime_obj(self) -> datetime.datetime | None:
+    def until_datetime_object(self) -> datetime.datetime | None:
         """Parses until date with UTC timezone offset set."""
         if self.until_date:
             return convert_to_utc(date_parser(self.until_date))

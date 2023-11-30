@@ -13,7 +13,7 @@ def test_sqsclient_get_queue_url_success(mocked_sqs_topic_name, mock_boto3_sqs_c
     assert sqs_client.get_queue_url() == "http://example.com"
 
 
-def test_sqsclient_get_queue_url_fail(mock_boto3_sqs_client):
+def test_sqsclient_get_queue_url_raise_error(mock_boto3_sqs_client):
     error_response = {
         "Error": {
             "Code": "QueueDoesNotExist",
@@ -29,7 +29,9 @@ def test_sqsclient_get_queue_url_fail(mock_boto3_sqs_client):
     assert exc_info.value.response["Error"]["Code"] == "QueueDoesNotExist"
 
 
-def test_sqsclient_get_message_count(mocked_sqs_topic_name, mock_boto3_sqs_client):
+def test_sqsclient_get_message_count_success(
+    mocked_sqs_topic_name, mock_boto3_sqs_client
+):
     message_count = 42
     mock_boto3_sqs_client.get_queue_url.return_value = {"QueueUrl": "http://example.com"}
     mock_boto3_sqs_client.get_queue_attributes.return_value = {
@@ -39,7 +41,9 @@ def test_sqsclient_get_message_count(mocked_sqs_topic_name, mock_boto3_sqs_clien
     assert sqs_client.get_message_count() == message_count
 
 
-def test_valid_file_event_message(valid_sqs_message_dict, valid_sqs_message_instance):
+def test_valid_file_event_message_success(
+    valid_sqs_message_dict, valid_sqs_message_instance
+):
     message = ZipFileEventMessage(valid_sqs_message_dict)
     for prop in [
         "message_id",
@@ -55,7 +59,9 @@ def test_valid_file_event_message(valid_sqs_message_dict, valid_sqs_message_inst
         assert getattr(message, prop) == getattr(valid_sqs_message_instance, prop)
 
 
-def test_invalid_zip_file_event_message_bad_filetype(invalid_sqs_message_dict):
+def test_invalid_zip_file_event_message_bad_filetype_raise_error(
+    invalid_sqs_message_dict,
+):
     with pytest.raises(
         MessageValidationError,
         match="Invalid SQS Message, reason: 'File does not have a '.zip' extension: "
@@ -64,7 +70,7 @@ def test_invalid_zip_file_event_message_bad_filetype(invalid_sqs_message_dict):
         _ = ZipFileEventMessage(invalid_sqs_message_dict)
 
 
-def test_invalid_file_event_message_bad_event(valid_sqs_message_instance):
+def test_invalid_file_event_message_bad_event_raise_error(valid_sqs_message_instance):
     message = valid_sqs_message_instance
     body = json.loads(message.raw["Body"])
     body["detail-type"] = "Bad Object Action"
@@ -76,7 +82,9 @@ def test_invalid_file_event_message_bad_event(valid_sqs_message_instance):
         message.validate_message()
 
 
-def test_valid_file_event_message_missing_env_vars(valid_sqs_message_instance):
+def test_valid_file_event_message_missing_env_vars_raise_error(
+    valid_sqs_message_instance,
+):
     with patch("harvester.aws.sqs.S3_RESTRICTED_CDN_ROOT", None), pytest.raises(
         MessageValidationError,
         match="Cannot determine CDN:Restricted path without env var "
@@ -85,7 +93,7 @@ def test_valid_file_event_message_missing_env_vars(valid_sqs_message_instance):
         valid_sqs_message_instance.validate_message()
 
 
-def test_sqsclient_get_next_valid_message_return_message(
+def test_sqsclient_get_next_valid_message_return_message_success(
     mocked_sqs_topic_name, mock_boto3_sqs_client, valid_sqs_message_dict
 ):
     mock_boto3_sqs_client.receive_message.return_value = {
@@ -96,11 +104,22 @@ def test_sqsclient_get_next_valid_message_return_message(
     assert isinstance(message, ZipFileEventMessage)
 
 
-def test_sqsclient_get_next_valid_message_return_none():
-    pass
+def test_sqsclient_get_next_valid_message_return_none_success(
+    caplog,
+    mocked_sqs_topic_name,
+    mock_boto3_sqs_client,
+    invalid_sqs_message_dict,
+    valid_sqs_message_dict,
+):
+    mock_boto3_sqs_client.receive_message.side_effect = [
+        {},
+    ]
+    sqs_client = SQSClient(mocked_sqs_topic_name)
+    message = sqs_client.get_next_valid_message()
+    assert message is None
 
 
-def test_sqsclient_get_next_valid_message_validation_error(
+def test_sqsclient_get_next_valid_message_handle_validation_error_success(
     caplog,
     mocked_sqs_topic_name,
     mock_boto3_sqs_client,

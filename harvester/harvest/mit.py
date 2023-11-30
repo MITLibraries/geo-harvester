@@ -97,9 +97,13 @@ class MITHarvester(Harvester):
         return [
             zip_file
             for zip_file, modified_date in zip_file_tuples
-            if (self.from_datetime_obj is None or modified_date >= self.from_datetime_obj)
+            if (
+                self.from_datetime_object is None
+                or modified_date >= self.from_datetime_object
+            )
             and (
-                self.until_datetime_obj is None or modified_date < self.until_datetime_obj
+                self.until_datetime_object is None
+                or modified_date < self.until_datetime_object
             )
         ]
 
