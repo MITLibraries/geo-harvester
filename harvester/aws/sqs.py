@@ -113,8 +113,8 @@ class SQSClient:
         self.queue_name = queue_name
         self._queue_url: str | None = queue_url
 
-    @classmethod
-    def get_client(cls) -> SQSClientType:
+    @property
+    def client(self) -> SQSClientType:
         return boto3.client("sqs")
 
     @property
@@ -126,12 +126,10 @@ class SQSClient:
 
     def get_queue_url(self) -> str:
         """Get SQS queue URL from name."""
-        client = self.get_client()
-        return client.get_queue_url(QueueName=self.queue_name)["QueueUrl"]
+        return self.client.get_queue_url(QueueName=self.queue_name)["QueueUrl"]
 
     def get_message_count(self) -> int:
-        client = self.get_client()
-        response = client.get_queue_attributes(
+        response = self.client.get_queue_attributes(
             QueueUrl=self.queue_url, AttributeNames=["ApproximateNumberOfMessages"]
         )
         return int(response["Attributes"]["ApproximateNumberOfMessages"])
@@ -145,8 +143,7 @@ class SQSClient:
         validation, an error is logged, and this method continues to return the next
         valid message.
         """
-        client = self.get_client()
-        response = client.receive_message(
+        response = self.client.receive_message(
             QueueUrl=self.queue_url,
             MaxNumberOfMessages=1,
             WaitTimeSeconds=wait_time or 5,
@@ -171,6 +168,5 @@ class SQSClient:
 
     def delete_message(self, receipt_handle: str) -> bool:
         """Delete single message from queue via receipt handle."""
-        client = self.get_client()
-        client.delete_message(QueueUrl=self.queue_url, ReceiptHandle=receipt_handle)
+        self.client.delete_message(QueueUrl=self.queue_url, ReceiptHandle=receipt_handle)
         return True
