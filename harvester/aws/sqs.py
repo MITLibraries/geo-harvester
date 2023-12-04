@@ -5,6 +5,7 @@ import json
 import logging
 import os
 from collections.abc import Iterator
+from typing import Literal
 
 import boto3
 from dateutil.parser import ParserError
@@ -44,16 +45,14 @@ class ZipFileEventMessage:
         return json.loads(self.raw["Body"])
 
     @property
-    def event(self) -> str:
+    def event(self) -> Literal["created", "deleted"]:
         """Return a normalized form of the S3 event for the file."""
-        _event = {
-            "Object Created": "created",
-            "Object Deleted": "deleted",
-        }.get(self.body["detail-type"])
-        if not _event:
-            message = f"Message detail-type not recognized: {self.body['detail-type']}"
-            raise AttributeError(message)
-        return _event
+        if self.body["detail-type"] == "Object Created":
+            return "created"
+        if self.body["detail-type"] == "Object Deleted":
+            return "deleted"
+        message = f"Message detail-type not recognized: {self.body['detail-type']}"
+        raise AttributeError(message)
 
     @property
     def reason(self) -> str:

@@ -29,6 +29,7 @@ def main(ctx: click.Context, verbose: bool) -> None:
     root_logger = logging.getLogger()
     logger.info(configure_logger(root_logger, verbose))
     logger.info(configure_sentry())
+    CONFIG.check_required_env_vars()
     logger.info("Running process")
 
 
@@ -87,9 +88,6 @@ def harvest(
     ctx.obj["FROM_DATE"] = from_date
     ctx.obj["UNTIL_DATE"] = until_date
 
-    # ensure required env vars set for harvest
-    CONFIG.check_required_env_vars()
-
 
 # Attach harvest group to main command
 main.add_command(harvest)
@@ -102,8 +100,8 @@ main.add_command(harvest)
     required=True,
     envvar="S3_RESTRICTED_CDN_ROOT",
     type=str,
-    help="Directory location of source zip files (may be local or s3). Defaults to "
-    "env var S3_RESTRICTED_CDN_ROOT if not set.",
+    help="Directory location of source record zip files (may be local or s3). Defaults to"
+    " env var S3_RESTRICTED_CDN_ROOT if not set.",
 )
 @click.option(
     "-s",
@@ -111,8 +109,8 @@ main.add_command(harvest)
     required=True,
     envvar="GEOHARVESTER_SQS_TOPIC_NAME",
     type=str,
-    help="SQS topic name with messages capturing zip file modifications. Defaults to "
-    "env var GEOHARVESTER_SQS_TOPIC_NAME if not set.",
+    help="SQS topic name with messages capturing zip file modifications. Defaults to"
+    " env var GEOHARVESTER_SQS_TOPIC_NAME if not set.",
 )
 @click.option(
     "--skip-sqs-check",
@@ -140,7 +138,8 @@ def harvest_mit(
         sqs_topic_name=sqs_topic_name,
         skip_sqs_check=skip_sqs_check,
     )
-    harvester.harvest()
+    results = harvester.harvest()
+    logger.info(results)
 
     logger.info(  # pragma: no cover
         "Total elapsed: %s",

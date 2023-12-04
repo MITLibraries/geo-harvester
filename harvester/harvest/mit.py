@@ -4,14 +4,28 @@ import datetime
 import glob
 import logging
 import os
+import zipfile
+from collections.abc import Iterator
+from typing import Literal
 
+import smart_open  # type: ignore[import-untyped]
 from attrs import define, field
 
 from harvester.aws.s3 import S3Client
 from harvester.aws.sqs import SQSClient
+from harvester.config import Config
 from harvester.harvest import Harvester
+from harvester.records import (
+    FGDC,
+    ISO19139,
+    DeletedSourceRecord,
+    Record,
+    SourceRecord,
+)
 
 logger = logging.getLogger(__name__)
+
+CONFIG = Config()
 
 
 @define
@@ -22,71 +36,84 @@ class MITHarvester(Harvester):
     sqs_topic_name: str = field(default=None)
     skip_sqs_check: bool = field(default=False)
 
-    def full_harvest(self) -> None:
-        """Perform full harvest of MIT GIS zip files."""
-        # abort immediately if SQS queue is not empty
-        if not self.skip_sqs_check and not self.sqs_queue_is_empty():
+    def full_harvest_get_source_records(self) -> Iterator[Record]:
+        """Identify files for harvest by reading zip files from S3:CDN:Restricted.
+
+        For full harvests, prevent running by raising RuntimeError if SQS queue is not
+        empty.
+        """
+        CONFIG.check_required_env_vars()
+        if not self.skip_sqs_check and not self._sqs_queue_is_empty():
             message = (
                 "Cannot perform full harvest when SQS queue has unprocessed messages"
             )
             raise RuntimeError(message)
 
-        # retrieve ALL zip files from input location
-        zip_files = self.list_zip_files()
-        message = f"{len(zip_files)} zip file(s) identified for full harvest"
-        logger.info(message)
-
-        # process zip files
-        for zip_file in zip_files:
+        for zip_file in self._list_zip_files():
             identifier = os.path.splitext(zip_file)[0].split("/")[-1]
-            self.process_zip_file(identifier, "created", zip_file)
+            yield Record(
+                identifier=identifier,
+                source_record=self._create_source_record(
+                    identifier=identifier,
+                    zip_file=zip_file,
+                    event="created",
+                ),
+            )
 
-    def incremental_harvest(self) -> None:
-        """Perform incremental harvest of MIT GIS zip files.
+    def incremental_harvest_get_source_records(self) -> Iterator[Record]:
+        """Identify files for harvest by fetching messages from SQS queue.
 
         The method SQSClient.get_valid_messages_iter() will iteratively fetch all valid
-        messages from the queue.  Once all messages are fetched, it freezes them as a list
-        in memory to avoid an infinite loop of fetching messages and failing to process
-        a particular message.
+        messages from an SQS queue of messages that represent files modified in
+        S3:CDN:Restricted.
 
         If a message is NOT valid during fetching, it will log this to Sentry and skip,
         but the message will remain in the queue for manual handling and analysis.
         """
-        # get frozen list of SQS messages
+        CONFIG.check_required_env_vars()
         client = SQSClient(self.sqs_topic_name)
-        zip_file_events = list(client.get_valid_messages_iter())
-        message = f"{len(zip_file_events)} message(s) identified for incremental harvest"
-        logger.info(message)
-
-        # process zip files
-        for zip_file_event in zip_file_events:
-            self.process_zip_file(
-                zip_file_event.zip_file_identifier,
-                zip_file_event.event,
-                zip_file_event.zip_file,
+        for zip_file_event in client.get_valid_messages_iter():
+            identifier = zip_file_event.zip_file_identifier
+            yield Record(
+                identifier=identifier,
+                source_record=self._create_source_record(
+                    identifier=identifier,
+                    zip_file=zip_file_event.zip_file,
+                    event=zip_file_event.event,
+                ),
             )
 
-    def process_zip_file(self, identifier: str, event: str, zip_file: str) -> None:
-        """Process single GIS resource zip file.
+    def harvester_specific_steps(self, records: Iterator[Record]) -> Iterator[Record]:
+        """Harvest steps specific to MITHarvester
 
-        Flow:
-            1. identify and retrieve XML metadata in zip file
-            2. normalize to Aardvark
-            3. write source + Aardvark metadata files to CDN:Public
-            4. send EventBridge event noting zip file visibility
+        Additional steps included:
+            - sending EventBridge events
+            - managing SQS messages after processing
         """
-        message = (
-            f"Processing identifier: '{identifier}', "
-            f"event: '{event}', "
-            f"filepath: '{zip_file}'"
-        )
-        logger.debug(message)
+        records = self.filter_failed_records(self.send_eventbridge_event(records))
+        if self.harvest_type == "incremental":
+            records = self.filter_failed_records(self.delete_sqs_messages(records))
+        yield from records
 
-    def sqs_queue_is_empty(self) -> bool:
+    def send_eventbridge_event(self, records: Iterator[Record]) -> Iterator[Record]:
+        """Method to send EventBridge events indicating access restrictions."""
+        for record in records:
+            message = f"Record {record.identifier}: sending EventBridge event"
+            logger.debug(message)
+            yield record
+
+    def delete_sqs_messages(self, records: Iterator[Record]) -> Iterator[Record]:
+        """Method to delete SQS message after record has been successfully processed."""
+        for record in records:
+            message = f"Record {record.identifier}: deleting SQS message"
+            logger.debug(message)
+            yield record
+
+    def _sqs_queue_is_empty(self) -> bool:
         """Check if SQS with file modifications is empty."""
         return SQSClient(self.sqs_topic_name).get_message_count() == 0
 
-    def list_zip_files(self) -> list[str]:
+    def _list_zip_files(self) -> list[str]:
         """Get list of zip files from local or S3, filtering by modified date if set."""
         if self.input_files.startswith("s3://"):
             zip_file_tuples = self._list_s3_zip_files()
@@ -118,7 +145,7 @@ class MITHarvester(Harvester):
     def _list_local_zip_files(self) -> list[tuple[str, datetime.datetime]]:
         """Get list of zip files from local filesystem."""
         # Manually throw an exception if the base path does not exist as
-        #   glob will still return an empty list, somewhat hiding that fact
+        # glob will still return an empty list, somewhat hiding that fact
         if not os.path.exists(self.input_files):
             message = f"Invalid input files path: {self.input_files}"
             raise ValueError(message)
@@ -133,3 +160,94 @@ class MITHarvester(Harvester):
             )
             for zip_filepath in zip_filepaths
         ]
+
+    def _identify_and_read_metadata_file(
+        self, identifier: str, zip_file: str
+    ) -> tuple[str, bytes]:
+        """Identify the metadata file in a zip file and read XML bytes.
+
+        This method opens the zip file ONCE, and that object is passed to both
+        _find_metadata_file() and _read_metadata_file() to reduce network
+        round-trips.  In both cases, the zip file is never read in its entirety; only the
+        zip files are listed and the metadata read.  This is important as some MIT GIS zip
+        files can be hundreds of megabytes if not gigabytes.
+        """
+        with smart_open.open(zip_file, "rb") as file_object, zipfile.ZipFile(
+            file_object
+        ) as zip_file_object:
+            metadata_format, metadata_filename = self._find_metadata_file(
+                zip_file_object, identifier
+            )
+            metadata_bytes = self._read_metadata_file(zip_file_object, metadata_filename)
+            return metadata_format, metadata_bytes
+
+    @staticmethod
+    def _find_metadata_file(
+        zip_file_object: zipfile.ZipFile, identifier: str
+    ) -> tuple[str, str]:
+        """Identify ISO19139 or FGDC metadata file in the zip file.
+
+        The ordered dictionary is opinionated to return the ISO19139 metadata first if
+        found.
+        """
+        ordered_expected_metadata_filenames = {
+            "iso19139": [
+                f"{identifier}/{identifier}.iso19139.xml",
+                f"{identifier}.iso19139.xml",
+            ],
+            "fgdc": [
+                f"{identifier}/{identifier}.xml",
+                f"{identifier}.xml",
+            ],
+        }
+
+        files = zip_file_object.namelist()
+        for (
+            metadata_format,
+            metadata_filenames,
+        ) in ordered_expected_metadata_filenames.items():
+            for metadata_filename in metadata_filenames:
+                if metadata_filename in files:
+                    return metadata_format, metadata_filename
+
+        message = "Could not find ISO19139 or FGDC metadata file in zip file"
+        raise FileNotFoundError(message)
+
+    @staticmethod
+    def _read_metadata_file(
+        zip_file_object: zipfile.ZipFile, metadata_filename: str
+    ) -> bytes:
+        """Read the metadata file from the zip file object."""
+        with zip_file_object.open(metadata_filename, "r") as metadata_file_object:
+            return metadata_file_object.read()
+
+    def _create_source_record(
+        self,
+        identifier: str,
+        zip_file: str,
+        event: Literal["created", "deleted"],
+    ) -> SourceRecord | DeletedSourceRecord:
+        """Init a SourceRecord based on event and zip file.
+
+        If the event == deleted, a DeletedSourceRecord instance is returned.  As the zip
+        file is no longer accessible, we know only the zip file name and event.
+
+        If the event == created, a SourceRecord instance is returned, with the metadata
+        file identified and read as part of the SourceRecord.
+        """
+        if event == "deleted":
+            return DeletedSourceRecord(zip_file_location=zip_file)
+
+        metadata_format, data = self._identify_and_read_metadata_file(
+            identifier, zip_file
+        )
+        source_record_classes = {
+            "iso19139": ISO19139,
+            "fgdc": FGDC,
+        }
+        source_record_class = source_record_classes[metadata_format]
+        return source_record_class(
+            data=data,
+            event=event,
+            zip_file_location=zip_file,
+        )

@@ -62,6 +62,8 @@ class SourceRecord:
 class DeletedSourceRecord(SourceRecord):
     """Class to represent a SourceRecord that has been deleted."""
 
+    event: Literal["deleted"] = field(default="deleted")
+
     def normalize(self) -> None:
         message = "Normalization of a deleted record is not possible"
         raise RuntimeError(message)

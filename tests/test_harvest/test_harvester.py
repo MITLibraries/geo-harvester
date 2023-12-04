@@ -1,19 +1,11 @@
 import datetime
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 from dateutil.parser import ParserError
 from dateutil.tz import tzutc
 
-
-@pytest.mark.usefixtures("_unset_s3_cdn_env_vars")
-def test_harvester_harvest_missing_env_vars_raise_error(generic_harvester_class):
-    harvester = generic_harvester_class(harvest_type="full")
-    with pytest.raises(
-        RuntimeError,
-        match="Env vars S3_RESTRICTED_CDN_ROOT, S3_PUBLIC_CDN_ROOT must be set.",
-    ):
-        harvester.harvest()
+from harvester.records import FGDC, Record
 
 
 def test_harvester_bad_harvest_type_raise_error(generic_harvester_class):
@@ -58,20 +50,57 @@ def test_harvester_from_until_date_parsing_none_date_returns_none(
 
 def test_harvester_harvest_type_selector_full_success(generic_harvester_class):
     harvester = generic_harvester_class(harvest_type="full")
-    harvester.full_harvest = MagicMock()
+    harvester.full_harvest_get_source_records = MagicMock()
     harvester.harvest()
-    harvester.full_harvest.assert_called()
+    harvester.full_harvest_get_source_records.assert_called()
 
 
 def test_harvester_harvest_type_selector_incremental_success(generic_harvester_class):
     harvester = generic_harvester_class(harvest_type="incremental")
-    harvester.incremental_harvest = MagicMock()
+    harvester.incremental_harvest_get_source_records = MagicMock()
     harvester.harvest()
-    harvester.incremental_harvest.assert_called()
+    harvester.incremental_harvest_get_source_records.assert_called()
 
 
 def test_harvester_harvest_type_selector_bad_type_raise_error(generic_harvester_class):
     harvester = generic_harvester_class(harvest_type="invalid-type")
-    harvester.incremental_harvest = MagicMock()
+    harvester.incremental_harvest_get_source_records = MagicMock()
     with pytest.raises(ValueError, match="harvest type: 'invalid-type' not recognized"):
         harvester.harvest()
+
+
+def test_harvester_records_with_error_filtered_out(generic_harvester_class):
+    records = [
+        Record(
+            identifier="abc123",
+            source_record=FGDC(zip_file_location="/path/to/file1.zip", event="created"),
+        ),
+        Record(
+            identifier="abc123",
+            source_record=FGDC(zip_file_location="/path/to/file2.zip", event="created"),
+            error_message="I have an error",
+            error_stage="get_source_records",
+        ),
+    ]
+    harvester = generic_harvester_class(harvest_type="full")
+    assert len(list(harvester.filter_failed_records(records))) == 1
+    assert len(harvester.failed_records) == 1
+
+
+def test_harvester_get_records(caplog, generic_harvester_class):
+    harvester = generic_harvester_class(harvest_type="full")
+    with patch.object(
+        harvester, "full_harvest_get_source_records"
+    ) as mocked_full_harvest_get_source_records:
+        mocked_full_harvest_get_source_records.return_value = records = [
+            Record(
+                identifier="abc123",
+                source_record=FGDC(
+                    zip_file_location="/path/to/file1.zip", event="created"
+                ),
+            )
+        ]
+        records = harvester.get_source_records()
+        _record = next(records)
+        assert "Record abc123: retrieved source record" in caplog.text
+        assert harvester.processed_records_count == 1
