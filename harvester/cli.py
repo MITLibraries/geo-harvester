@@ -1,3 +1,5 @@
+# ruff: noqa: FBT001
+
 import logging
 from datetime import timedelta
 from time import perf_counter
@@ -5,6 +7,7 @@ from time import perf_counter
 import click
 
 from harvester.config import configure_logger, configure_sentry
+from harvester.harvest.mit import MITHarvester
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +33,11 @@ def main(ctx: click.Context, verbose: bool) -> None:
 @main.command()
 @click.pass_context
 def ping(ctx: click.Context) -> None:
-    """Debug ping/pong command"""
+    """Debug ping/pong command.
+
+    This command is purely for debugging purposes to ensure docker container and/or
+    application is functional and responsive before any meaningful business logic.
+    """
     logger.debug("got ping, preparing to pong")
     click.echo("pong")
     logger.info(
@@ -46,7 +53,7 @@ def ping(ctx: click.Context) -> None:
     "-t",
     "--harvest-type",
     required=False,
-    type=str,
+    type=click.Choice(["full", "incremental"], case_sensitive=False),
     default="incremental",
     help="Type of harvest, may be: 'incremental' or 'full'.",
 )
@@ -74,7 +81,7 @@ def harvest(
     until_date: str,
 ) -> None:
     """Harvest command with sub-commands for different sources."""
-    ctx.obj["HARVEST_TYPE"] = from_date
+    ctx.obj["HARVEST_TYPE"] = harvest_type
     ctx.obj["FROM_DATE"] = from_date
     ctx.obj["UNTIL_DATE"] = until_date
 
@@ -88,43 +95,54 @@ main.add_command(harvest)
     "-i",
     "--input-files",
     required=True,
-    envvar="GEOHARVESTER_INPUT_FILES",
+    envvar="S3_RESTRICTED_CDN_ROOT",
     type=str,
-    help="Directory location of source zip files (may be local or s3).",
+    help="Directory location of source zip files (may be local or s3). Defaults to "
+    "env var S3_RESTRICTED_CDN_ROOT if not set.",
 )
 @click.option(
     "-s",
-    "--sqs-topic-arn",
-    required=False,
-    envvar="GEOHARVESTER_SQS_TOPIC_ARN",
+    "--sqs-topic-name",
+    required=True,
+    envvar="GEOHARVESTER_SQS_TOPIC_NAME",
     type=str,
-    help="SQS Topic ARN with messages capturing zip file modifications.  Required when "
-    "--harvest-type=incremental.",
+    help="SQS topic name with messages capturing zip file modifications. Defaults to "
+    "env var GEOHARVESTER_SQS_TOPIC_NAME if not set.",
+)
+@click.option(
+    "--skip-sqs-check",
+    required=False,
+    is_flag=True,
+    help="If set, will skip confirming that the SQS is empty for 'full' harvest.",
 )
 @click.pass_context
 def harvest_mit(
     ctx: click.Context,
     input_files: str,
-    sqs_topic_arn: str,
+    sqs_topic_name: str,
+    skip_sqs_check: bool,
 ) -> None:
-    """Harvest and normalize MIT geospatial metadata records.
+    """Harvest and normalize MIT geospatial metadata records."""
+    harvest_type = ctx.obj["HARVEST_TYPE"]
+    from_date = ctx.obj["FROM_DATE"]
+    until_date = ctx.obj["UNTIL_DATE"]
 
-    NOTE: relies on 'harvest' command group arguments
-    """
+    harvester = MITHarvester(
+        harvest_type=harvest_type,
+        from_date=from_date,
+        until_date=until_date,
+        input_files=input_files,
+        sqs_topic_name=sqs_topic_name,
+        skip_sqs_check=skip_sqs_check,
+    )
+    harvester.harvest()
 
-    # ensure SQS Topic ARN defined for incremental harvests
-    if ctx["HARVEST_TYPE"] == "incremental" and not sqs_topic_arn:
-        raise click.MissingParameter(
-            "--sqs-topic-arn must be set when --harvest-type=incremental"
-        )
-
-    logger.info(
+    logger.info(  # pragma: no cover
         "Total elapsed: %s",
         str(
             timedelta(seconds=perf_counter() - ctx.obj["START_TIME"]),
         ),
     )
-    raise NotImplementedError()
 
 
 @harvest.command(name="ogm")
@@ -137,16 +155,13 @@ def harvest_mit(
 @click.pass_context
 def harvest_ogm(
     ctx: click.Context,
-    config_yaml_file: str,
-) -> None:
-    """Harvest and normalize OpenGeoMetadata (OGM) geospatial metadata records.
-
-    NOTE: relies on 'harvest' command group arguments
-    """
-    logger.info(
+    config_yaml_file: str,  # noqa: ARG001
+) -> None:  # pragma: no cover
+    """Harvest and normalize OpenGeoMetadata (OGM) geospatial metadata records."""
+    logger.info(  # pragma: no cover
         "Total elapsed: %s",
         str(
             timedelta(seconds=perf_counter() - ctx.obj["START_TIME"]),
         ),
     )
-    raise NotImplementedError()
+    raise NotImplementedError

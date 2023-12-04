@@ -6,6 +6,9 @@ name = "pypi"
 [packages]
 click = "*"
 sentry-sdk = "*"
+attrs = "*"
+boto3 = "*"
+smart-open = "*"
 
 [dev-packages]
 black = "*"
@@ -14,6 +17,10 @@ mypy = "*"
 pre-commit = "*"
 pytest = "*"
 ruff = "*"
+ipython = "*"
+moto = "*"
+types-python-dateutil = "*"
+boto3-stubs = {version = "*", extras = ["eventbridge", "s3", "sqs"]}
 
 [requires]
 python_version = "3.11"

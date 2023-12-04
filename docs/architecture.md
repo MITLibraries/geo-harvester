@@ -35,27 +35,32 @@ classDiagram
         read_file_from_commit(filename, commit) -> bytes
         clone_repository() -> files
     }
-    class AardvarkRecord {
+    class MITAardvarkRecord {
         raw: JSON
         all Aardvark fields...*
+        validate() -> bool
         to_dict() -> dict
         to_json() -> str
     }
     class SourceRecord{
         raw: bytes | str
-        transform(self)* -> AardvarkRecord
+        transform(self)* -> MITAardvarkRecord
     }
     class FGDC{
         xml_tree: lxml.ElementTree
-        transform(self) -> AardvarkRecord
+        transform(self) -> MITAardvarkRecord
     }
     class ISO19139{
         xml_tree: lxml.ElementTree
-        transform(self) -> AardvarkRecord
+        transform(self) -> MITAardvarkRecord
     }
     class GBL{
         data: JSON
-        transform(self) -> AardvarkRecord
+        transform(self) -> MITAardvarkRecord
+    }
+    class Aardvark{
+        data: JSON
+        transform(self) -> MITAardvarkRecord
     }
     
     CLI <-- Harvester
@@ -72,10 +77,11 @@ classDiagram
 
     OGMHarvester <-- GithubClient
     
-    SourceRecord <-- AardvarkRecord
+    SourceRecord <-- MITAardvarkRecord
     SourceRecord <|-- FGDC
     SourceRecord <|-- ISO19139
     SourceRecord <|-- GBL
+    SourceRecord <|-- Aardvark
 ```
 
 ## Entrypoints and Flow
