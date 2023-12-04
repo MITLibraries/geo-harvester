@@ -1,5 +1,4 @@
 import json
-from unittest.mock import patch
 
 import pytest
 from botocore.exceptions import ClientError
@@ -83,9 +82,11 @@ def test_invalid_file_event_message_bad_event_raise_error(valid_sqs_message_inst
 
 
 def test_valid_file_event_message_missing_env_vars_raise_error(
+    monkeypatch,
     valid_sqs_message_instance,
 ):
-    with patch("harvester.aws.sqs.S3_RESTRICTED_CDN_ROOT", None), pytest.raises(
+    monkeypatch.delenv("S3_RESTRICTED_CDN_ROOT")
+    with pytest.raises(
         MessageValidationError,
         match="Cannot determine CDN:Restricted path without env var "
         "S3_RESTRICTED_CDN_ROOT set",

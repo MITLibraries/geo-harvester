@@ -1,9 +1,10 @@
-import os
 from time import perf_counter
+from unittest.mock import patch
 
 import pytest
 
 from harvester.cli import main
+from harvester.config import Config
 
 MISSING_CLICK_ARG_RESULT_CODE = 2
 
@@ -34,14 +35,15 @@ def test_cli_harvest_no_options_success(runner):
     assert "Harvest command with sub-commands for different sources." in result.stdout
 
 
+@pytest.mark.usefixtures("_unset_s3_cdn_env_vars")
 def test_cli_harvest_mit_no_options_raise_error(runner):
-    s3_restricted = os.environ.pop("S3_RESTRICTED_CDN_ROOT")
-    result = runner.invoke(
-        main, ["--verbose", "harvest", "mit"], obj={"START_TIME": perf_counter()}
-    )
-    assert result.exit_code == MISSING_CLICK_ARG_RESULT_CODE
-    assert "Missing option '-i' / '--input-files'." in result.stdout
-    os.environ["S3_RESTRICTED_CDN_ROOT"] = s3_restricted
+    with patch.object(Config, "check_required_env_vars") as mocked_env_vars_check:
+        mocked_env_vars_check.return_value = True
+        result = runner.invoke(
+            main, ["--verbose", "harvest", "mit"], obj={"START_TIME": perf_counter()}
+        )
+        assert result.exit_code == MISSING_CLICK_ARG_RESULT_CODE
+        assert "Missing option '-i' / '--input-files'." in result.stdout
 
 
 @pytest.mark.usefixtures("_mocked_harvester_harvest")

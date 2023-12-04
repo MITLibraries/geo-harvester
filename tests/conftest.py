@@ -16,17 +16,14 @@ def _test_env(monkeypatch):
     monkeypatch.setenv("SENTRY_DSN", "None")
     monkeypatch.setenv("WORKSPACE", "test")
     monkeypatch.setenv("S3_RESTRICTED_CDN_ROOT", "s3://aws-account/cdn/geo/restricted/")
-    monkeypatch.setenv("S3_PUBLIC_CDN_ROOT", "s3://aws-account/cdn/geo/restricted/")
+    monkeypatch.setenv("S3_PUBLIC_CDN_ROOT", "s3://aws-account/cdn/geo/public/")
+    monkeypatch.setenv("GEOHARVESTER_SQS_TOPIC_NAME", "mocked-geo-harvester-input")
 
 
 @pytest.fixture
-def _unset_s3_cdn_env_vars():
-    """Patch constants imported to harvester"""
-    with (
-        patch("harvester.harvest.S3_RESTRICTED_CDN_ROOT", None),
-        patch("harvester.harvest.S3_PUBLIC_CDN_ROOT", None),
-    ):
-        yield
+def _unset_s3_cdn_env_vars(monkeypatch):
+    monkeypatch.delenv("S3_RESTRICTED_CDN_ROOT")
+    monkeypatch.delenv("S3_PUBLIC_CDN_ROOT")
 
 
 @pytest.fixture

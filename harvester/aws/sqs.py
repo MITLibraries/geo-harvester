@@ -12,10 +12,12 @@ from dateutil.parser import parse as date_parser
 from mypy_boto3_sqs.client import SQSClient as SQSClientType
 from mypy_boto3_sqs.type_defs import MessageTypeDef
 
-from harvester.config import S3_RESTRICTED_CDN_ROOT
+from harvester.config import Config
 from harvester.utils import convert_to_utc
 
 logger = logging.getLogger(__name__)
+
+CONFIG = Config()
 
 
 class MessageValidationError(Exception):
@@ -72,13 +74,13 @@ class ZipFileEventMessage:
     @property
     def zip_file(self) -> str:
         """Generate full path of zip file in CDN restricted bucket."""
-        if not S3_RESTRICTED_CDN_ROOT:
+        if not CONFIG.S3_RESTRICTED_CDN_ROOT:
             message = (
                 "Cannot determine CDN:Restricted path without env var "
                 "S3_RESTRICTED_CDN_ROOT set"
             )
             raise ValueError(message)
-        return f"{S3_RESTRICTED_CDN_ROOT.rstrip('/')}/{self.key}"
+        return f"{CONFIG.S3_RESTRICTED_CDN_ROOT.rstrip('/')}/{self.key}"
 
     @property
     def zip_file_identifier(self) -> str:

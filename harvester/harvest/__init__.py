@@ -6,10 +6,12 @@ from abc import ABC, abstractmethod
 from attrs import define, field
 from dateutil.parser import parse as date_parser
 
-from harvester.config import S3_PUBLIC_CDN_ROOT, S3_RESTRICTED_CDN_ROOT
+from harvester.config import Config
 from harvester.utils import convert_to_utc
 
 logger = logging.getLogger(__name__)
+
+CONFIG = Config()
 
 
 @define
@@ -36,7 +38,7 @@ class Harvester(ABC):
 
     def harvest(self) -> None:
         # ensure required env vars for MIT and OGM harvests are set
-        if not all([S3_RESTRICTED_CDN_ROOT, S3_PUBLIC_CDN_ROOT]):
+        if not all([CONFIG.S3_RESTRICTED_CDN_ROOT, CONFIG.S3_PUBLIC_CDN_ROOT]):
             message = "Env vars S3_RESTRICTED_CDN_ROOT, S3_PUBLIC_CDN_ROOT must be set."
             raise RuntimeError(message)
 

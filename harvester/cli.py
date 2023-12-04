@@ -6,10 +6,12 @@ from time import perf_counter
 
 import click
 
-from harvester.config import configure_logger, configure_sentry
+from harvester.config import Config, configure_logger, configure_sentry
 from harvester.harvest.mit import MITHarvester
 
 logger = logging.getLogger(__name__)
+
+CONFIG = Config()
 
 
 @click.group(context_settings={"help_option_names": ["-h", "--help"]})
@@ -84,6 +86,9 @@ def harvest(
     ctx.obj["HARVEST_TYPE"] = harvest_type
     ctx.obj["FROM_DATE"] = from_date
     ctx.obj["UNTIL_DATE"] = until_date
+
+    # ensure required env vars set for harvest
+    CONFIG.check_required_env_vars()
 
 
 # Attach harvest group to main command
