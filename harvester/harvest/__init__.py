@@ -66,7 +66,7 @@ class Harvester(ABC):
             raise ValueError(message)
         for record in records:
             message = f"Record {record.identifier}: retrieved source record"
-            logger.warning(message)
+            logger.debug(message)
             self.processed_records_count += 1
             yield record
 
