@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 from harvester.harvest.mit import MITHarvester
@@ -12,7 +14,7 @@ def test_mit_harvester_list_local_files_equals_one():
 def test_mit_harvester_list_s3_files_equals_one(
     mocked_restricted_bucket_one_legacy_fgdc_zip,
 ):
-    harvester = MITHarvester(input_files="s3://mocked_cdn_restricted/cdn/geo/restricted/")
+    harvester = MITHarvester(input_files=os.environ["S3_RESTRICTED_CDN_ROOT"])
     zip_files = harvester.list_zip_files()
     assert len(zip_files) == 1
 
@@ -31,7 +33,7 @@ def test_mit_harvester_list_s3_files_date_filter_equals_zero(
     mocked_restricted_bucket_one_legacy_fgdc_zip,
 ):
     harvester = MITHarvester(
-        input_files="s3://mocked_cdn_restricted/cdn/geo/restricted/",
+        input_files=os.environ["S3_RESTRICTED_CDN_ROOT"],
         from_date="2000-01-01",
         until_date="2000-12-31",
     )

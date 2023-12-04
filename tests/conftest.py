@@ -15,8 +15,8 @@ from harvester.harvest import Harvester
 def _test_env(monkeypatch):
     monkeypatch.setenv("SENTRY_DSN", "None")
     monkeypatch.setenv("WORKSPACE", "test")
-    monkeypatch.setenv("S3_RESTRICTED_CDN_ROOT", "s3://aws-account/cdn/geo/restricted/")
-    monkeypatch.setenv("S3_PUBLIC_CDN_ROOT", "s3://aws-account/cdn/geo/public/")
+    monkeypatch.setenv("S3_RESTRICTED_CDN_ROOT", "s3://cdn-bucket/cdn/geo/restricted/")
+    monkeypatch.setenv("S3_PUBLIC_CDN_ROOT", "s3://cdn-bucket/cdn/geo/public/")
     monkeypatch.setenv("GEOHARVESTER_SQS_TOPIC_NAME", "mocked-geo-harvester-input")
 
 
@@ -44,8 +44,8 @@ def generic_harvester_class():
 
 
 @pytest.fixture
-def mocked_restricted_bucket():
-    bucket_name = "mocked_cdn_restricted"
+def mocked_restricted_bucket(_test_env):
+    bucket_name = "cdn-bucket"
     with mock_s3():
         s3 = boto3.client("s3")
         s3.create_bucket(Bucket=bucket_name)
@@ -66,7 +66,7 @@ def mocked_restricted_bucket_one_legacy_fgdc_zip(mocked_restricted_bucket):
         s3 = boto3.client("s3")
         s3.put_object(
             Bucket=mocked_restricted_bucket,
-            Key="cdn/geo/restricted/abc123.zip",
+            Key="cdn/geo/restricted/SDE_DATA_AE_A8GNS_2003.zip",
             Body=f.read(),
         )
 
