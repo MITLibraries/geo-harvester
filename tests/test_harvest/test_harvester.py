@@ -88,6 +88,7 @@ def test_harvester_records_with_error_filtered_out(generic_harvester_class):
 
 
 def test_harvester_get_records(caplog, generic_harvester_class):
+    caplog.set_level("DEBUG")
     harvester = generic_harvester_class(harvest_type="full")
     with patch.object(
         harvester, "full_harvest_get_source_records"
