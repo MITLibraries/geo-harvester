@@ -40,7 +40,7 @@ def test_configure_sentry_env_variable_is_dsn(monkeypatch):
     assert result == "Sentry DSN found, exceptions will be sent to Sentry with env=test"
 
 
-def test_config_check_required_env_vars_success(monkeypatch, config_instance):
+def test_config_check_required_env_vars_success(config_instance):
     config_instance.check_required_env_vars()
 
 
