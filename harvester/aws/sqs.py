@@ -5,13 +5,15 @@ import json
 import logging
 import os
 from collections.abc import Iterator
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 import boto3
 from dateutil.parser import ParserError
 from dateutil.parser import parse as date_parser
-from mypy_boto3_sqs.client import SQSClient as SQSClientType
-from mypy_boto3_sqs.type_defs import MessageTypeDef
+
+if TYPE_CHECKING:
+    from mypy_boto3_sqs.client import SQSClient as SQSClientType
+    from mypy_boto3_sqs.type_defs import MessageTypeDef
 
 from harvester.config import Config
 from harvester.utils import convert_to_utc
@@ -28,7 +30,7 @@ class MessageValidationError(Exception):
 class ZipFileEventMessage:
     """Class to represent SQS Message."""
 
-    def __init__(self, raw: MessageTypeDef):
+    def __init__(self, raw: "MessageTypeDef"):
         self.raw = raw
         self.validate_message()
 
@@ -115,7 +117,7 @@ class SQSClient:
         self._queue_url: str | None = queue_url
 
     @property
-    def client(self) -> SQSClientType:
+    def client(self) -> "SQSClientType":
         return boto3.client("sqs")
 
     @property
