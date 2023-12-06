@@ -1,5 +1,7 @@
 # Metadata Normalization to MIT Aardvark
 
+A primary action performed by this harvester is normalizing metadata records from FGDC, ISO19139, GeoBlacklight 1.x (GBL1), or Aardvark formats into an MIT compliant Aardvark metadata record.  These normalized MIT Aardvark records are ultimately what will be indexed into TIMDEX.
+
 ## Record Classes
 
 ```mermaid
@@ -21,8 +23,14 @@ classDiagram
     class MITAardvark{
         dct_title_s
         locn_geometry
-        [...all Aardvark fields...]*
+        [...all Aardvark fields]*
         validate()
+    }
+    class XMLSourceRecord{
+        [...shared XML behavior]*
+    }
+    class JSONSourceRecord{
+        [...shared JSON behavior]*
     }
     class FGDC{
         xml_tree: lxml.ElementTree
@@ -51,10 +59,12 @@ classDiagram
     
     Record <-- SourceRecord
     Record <-- MITAardvark
-    SourceRecord <|-- FGDC
-    SourceRecord <|-- ISO19139
-    SourceRecord <|-- GBL
-    SourceRecord <|-- Aardvark
+    SourceRecord <|-- XMLSourceRecord
+    SourceRecord <|-- JSONSourceRecord
+    XMLSourceRecord <|-- FGDC
+    XMLSourceRecord <|-- ISO19139
+    JSONSourceRecord <|-- GBL
+    JSONSourceRecord <|-- Aardvark
 ```
 
 - `Record`
@@ -68,6 +78,9 @@ classDiagram
   - represents a normalized form of the source metadata as an MIT-compliant [Aardvark](https://opengeometadata.org/ogm-aardvark/) record
   - this class has ALL standard Aardvark fields as class fields
   - this class ALSO contains a few MIT extensions to the Aardvark format with an `mit_` prefix
+- `FGDC`, `ISO19139`, `GBL1`, `Aardvark`
+  - classes that extend `SourceRecord` for a given metadata format
+  - these classes define methods that return values from the original source data for a new `MITAardvark` record 
 
 ## Normalization
 
