@@ -11,7 +11,7 @@ import boto3
 from dateutil.parser import ParserError
 from dateutil.parser import parse as date_parser
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: nocover
     from mypy_boto3_sqs.client import SQSClient as SQSClientType
     from mypy_boto3_sqs.type_defs import MessageTypeDef
 
