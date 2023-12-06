@@ -1,5 +1,4 @@
 import json
-import pickle
 from unittest.mock import patch
 
 import boto3
@@ -8,6 +7,7 @@ from click.testing import CliRunner
 from moto import mock_s3
 
 from harvester.aws.sqs import SQSClient, ZipFileEventMessage
+from harvester.config import Config
 from harvester.harvest import Harvester
 
 
@@ -16,17 +16,14 @@ def _test_env(monkeypatch):
     monkeypatch.setenv("SENTRY_DSN", "None")
     monkeypatch.setenv("WORKSPACE", "test")
     monkeypatch.setenv("S3_RESTRICTED_CDN_ROOT", "s3://aws-account/cdn/geo/restricted/")
-    monkeypatch.setenv("S3_PUBLIC_CDN_ROOT", "s3://aws-account/cdn/geo/restricted/")
+    monkeypatch.setenv("S3_PUBLIC_CDN_ROOT", "s3://aws-account/cdn/geo/public/")
+    monkeypatch.setenv("GEOHARVESTER_SQS_TOPIC_NAME", "mocked-geo-harvester-input")
 
 
 @pytest.fixture
-def _unset_s3_cdn_env_vars():
-    """Patch constants imported to harvester"""
-    with (
-        patch("harvester.harvest.S3_RESTRICTED_CDN_ROOT", None),
-        patch("harvester.harvest.S3_PUBLIC_CDN_ROOT", None),
-    ):
-        yield
+def _unset_s3_cdn_env_vars(monkeypatch):
+    monkeypatch.delenv("S3_RESTRICTED_CDN_ROOT")
+    monkeypatch.delenv("S3_PUBLIC_CDN_ROOT")
 
 
 @pytest.fixture
@@ -37,10 +34,10 @@ def runner():
 @pytest.fixture
 def generic_harvester_class():
     class GenericHarvester(Harvester):
-        def full_harvest(self):
+        def full_harvest_get_source_records(self):
             raise NotImplementedError
 
-        def incremental_harvest(self):
+        def incremental_harvest_get_source_records(self):
             raise NotImplementedError
 
     return GenericHarvester
@@ -120,13 +117,31 @@ def invalid_sqs_message_dict():
 
 
 @pytest.fixture
-def valid_sqs_message_dict():
-    with open("tests/fixtures/sqs/valid_message.json") as f:
+def valid_sqs_message_deleted_dict():
+    with open("tests/fixtures/sqs/valid_deleted_message.json") as f:
         return json.loads(f.read())
 
 
 @pytest.fixture
-def valid_sqs_message_instance() -> ZipFileEventMessage:
-    with open("tests/fixtures/sqs/valid_message.pickle", "rb") as f:
+def valid_sqs_message_deleted_instance() -> ZipFileEventMessage:
+    with open("tests/fixtures/sqs/valid_deleted_message.json") as f:
         # ruff: noqa: S301
-        return pickle.load(f)
+        return ZipFileEventMessage(json.load(f))
+
+
+@pytest.fixture
+def valid_sqs_message_created_dict():
+    with open("tests/fixtures/sqs/valid_created_message.json") as f:
+        return json.loads(f.read())
+
+
+@pytest.fixture
+def valid_sqs_message_created_instance() -> ZipFileEventMessage:
+    with open("tests/fixtures/sqs/valid_created_message.json") as f:
+        # ruff: noqa: S301
+        return ZipFileEventMessage(json.load(f))
+
+
+@pytest.fixture
+def config_instance() -> Config:
+    return Config()

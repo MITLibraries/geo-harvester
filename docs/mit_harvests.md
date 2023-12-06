@@ -24,7 +24,7 @@ sequenceDiagram
 
 ## Incremental Harvest 
 
-The incremental harvest will process any messages currently in an SQS queue that indicate modifications were made to the `S3:CDN:Restricted/MIT` bucket.  As it processes files, it will send events to EventBridge that will trigger another process to move files in and out of the restricted and public CDN buckets.
+The incremental harvest will process any messages currently in an SQS queue that indicate modifications were made to the `S3:CDN:Restricted` bucket.  After normalization, if records are determined to be public, it will send EventBridge events to trigger a StepFunction to copy from `S3:CDN:Restricted` to `S3:CDN:Public`.
 
 ```mermaid
 sequenceDiagram
@@ -51,17 +51,15 @@ sequenceDiagram
         geo_harv->>geo_harv: Normalize source metadata to Aardvark
         
         alt Action: Created or Modified
-            geo_harv->>s3_cdn_pub: WRITE source and aardvark <br> metadata (may overwrite)        
+            geo_harv->>s3_cdn_pub: WRITE source and MIT aardvark <br> metadata (may overwrite)        
             geo_harv->>eb: Send event noting restricted=true|false
             eb->>geo_data_sf: Async invoke
-            geo_harv->>geo_harv: Add to "to-index" list in memory
         else Action: Deleted
-            geo_harv->>s3_cdn_pub: DELETE source and aardvark <br> metadata
+            geo_harv->>s3_cdn_pub: DELETE source and MIT aardvark <br> metadata
             geo_harv->>eb: Send event noting deleted=true
             eb->>geo_data_sf: Async invoke
-            geo_harv->>geo_harv: Add to "to-delete" list in memory
         end
-        geo_harv->>s3_timdex: Write "to-index" and "to-delete" aardvark JSON records
+        geo_harv->>s3_timdex: Write MIT aardvark
     end
     deactivate geo_harv
 ```

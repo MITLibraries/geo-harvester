@@ -1,5 +1,4 @@
 import json
-from unittest.mock import patch
 
 import pytest
 from botocore.exceptions import ClientError
@@ -41,10 +40,10 @@ def test_sqsclient_get_message_count_success(
     assert sqs_client.get_message_count() == message_count
 
 
-def test_valid_file_event_message_success(
-    valid_sqs_message_dict, valid_sqs_message_instance
+def test_valid_file_event_message_deleted_init_success(
+    valid_sqs_message_deleted_dict, valid_sqs_message_deleted_instance
 ):
-    message = ZipFileEventMessage(valid_sqs_message_dict)
+    message = ZipFileEventMessage(valid_sqs_message_deleted_dict)
     for prop in [
         "message_id",
         "receipt_handle",
@@ -56,7 +55,25 @@ def test_valid_file_event_message_success(
         "zip_file",
         "zip_file_identifier",
     ]:
-        assert getattr(message, prop) == getattr(valid_sqs_message_instance, prop)
+        assert getattr(message, prop) == getattr(valid_sqs_message_deleted_instance, prop)
+
+
+def test_valid_file_event_message_created_init_success(
+    valid_sqs_message_created_dict, valid_sqs_message_created_instance
+):
+    message = ZipFileEventMessage(valid_sqs_message_created_dict)
+    for prop in [
+        "message_id",
+        "receipt_handle",
+        "body",
+        "event",
+        "reason",
+        "bucket",
+        "modified",
+        "zip_file",
+        "zip_file_identifier",
+    ]:
+        assert getattr(message, prop) == getattr(valid_sqs_message_created_instance, prop)
 
 
 def test_invalid_zip_file_event_message_bad_filetype_raise_error(
@@ -70,8 +87,10 @@ def test_invalid_zip_file_event_message_bad_filetype_raise_error(
         _ = ZipFileEventMessage(invalid_sqs_message_dict)
 
 
-def test_invalid_file_event_message_bad_event_raise_error(valid_sqs_message_instance):
-    message = valid_sqs_message_instance
+def test_invalid_file_event_message_bad_event_raise_error(
+    valid_sqs_message_deleted_instance,
+):
+    message = valid_sqs_message_deleted_instance
     body = json.loads(message.raw["Body"])
     body["detail-type"] = "Bad Object Action"
     message.raw["Body"] = json.dumps(body)
@@ -83,21 +102,23 @@ def test_invalid_file_event_message_bad_event_raise_error(valid_sqs_message_inst
 
 
 def test_valid_file_event_message_missing_env_vars_raise_error(
-    valid_sqs_message_instance,
+    monkeypatch,
+    valid_sqs_message_deleted_instance,
 ):
-    with patch("harvester.aws.sqs.S3_RESTRICTED_CDN_ROOT", None), pytest.raises(
+    monkeypatch.delenv("S3_RESTRICTED_CDN_ROOT")
+    with pytest.raises(
         MessageValidationError,
         match="Cannot determine CDN:Restricted path without env var "
         "S3_RESTRICTED_CDN_ROOT set",
     ):
-        valid_sqs_message_instance.validate_message()
+        valid_sqs_message_deleted_instance.validate_message()
 
 
 def test_sqsclient_get_next_valid_message_return_message_success(
-    mocked_sqs_topic_name, mock_boto3_sqs_client, valid_sqs_message_dict
+    mocked_sqs_topic_name, mock_boto3_sqs_client, valid_sqs_message_deleted_dict
 ):
     mock_boto3_sqs_client.receive_message.return_value = {
-        "Messages": [valid_sqs_message_dict]
+        "Messages": [valid_sqs_message_deleted_dict]
     }
     sqs_client = SQSClient(mocked_sqs_topic_name)
     message = sqs_client.get_next_valid_message()
@@ -109,7 +130,7 @@ def test_sqsclient_get_next_valid_message_return_none_success(
     mocked_sqs_topic_name,
     mock_boto3_sqs_client,
     invalid_sqs_message_dict,
-    valid_sqs_message_dict,
+    valid_sqs_message_deleted_dict,
 ):
     mock_boto3_sqs_client.receive_message.side_effect = [
         {},
@@ -124,11 +145,11 @@ def test_sqsclient_get_next_valid_message_handle_validation_error_success(
     mocked_sqs_topic_name,
     mock_boto3_sqs_client,
     invalid_sqs_message_dict,
-    valid_sqs_message_dict,
+    valid_sqs_message_deleted_dict,
 ):
     mock_boto3_sqs_client.receive_message.side_effect = [
         {"Messages": [invalid_sqs_message_dict]},
-        {"Messages": [valid_sqs_message_dict]},
+        {"Messages": [valid_sqs_message_deleted_dict]},
         {},
     ]
     sqs_client = SQSClient(mocked_sqs_topic_name)
@@ -147,12 +168,12 @@ def test_sqsclient_get_valid_messages_iter_skip_and_yield_success(
     mocked_sqs_topic_name,
     mock_boto3_sqs_client,
     invalid_sqs_message_dict,
-    valid_sqs_message_dict,
+    valid_sqs_message_deleted_dict,
 ):
     mock_boto3_sqs_client.receive_message.side_effect = [
-        {"Messages": [valid_sqs_message_dict]},
+        {"Messages": [valid_sqs_message_deleted_dict]},
         {"Messages": [invalid_sqs_message_dict]},
-        {"Messages": [valid_sqs_message_dict]},
+        {"Messages": [valid_sqs_message_deleted_dict]},
         {},
     ]
     sqs_client = SQSClient(mocked_sqs_topic_name)
@@ -163,8 +184,8 @@ def test_sqsclient_get_valid_messages_iter_skip_and_yield_success(
 
 
 def test_sqsclient_delete_message_success(
-    mocked_sqs_topic_name, mock_boto3_sqs_client, valid_sqs_message_instance
+    mocked_sqs_topic_name, mock_boto3_sqs_client, valid_sqs_message_deleted_instance
 ):
     mock_boto3_sqs_client.receive_message.delete_message = None
     sqs_client = SQSClient(mocked_sqs_topic_name)
-    sqs_client.delete_message(valid_sqs_message_instance.receipt_handle)
+    sqs_client.delete_message(valid_sqs_message_deleted_instance.receipt_handle)
