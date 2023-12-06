@@ -45,53 +45,6 @@ classDiagram
     Harvester <-- S3Client
 ```
 
-### Metadata Normalization
-
-```mermaid
-classDiagram
-    class Record{
-        source: SourceRecord
-        normalized: MITAardvark
-    }
-    class SourceRecord{
-        transform(self)* -> MITAardvark
-    }
-    class MITAardvark{
-    }
-    class FGDC{
-        xml_tree: lxml.ElementTree
-        transform(self) -> MITAardvark
-    }
-    class ISO19139{
-        xml_tree: lxml.ElementTree
-        transform(self) -> MITAardvark
-    }
-    class GBL{
-        data: JSON
-        transform(self) -> MITAardvark
-    }
-    class Aardvark{
-        data: JSON
-        transform(self) -> MITAardvark
-    }
-    
-    Record <-- SourceRecord
-    Record <-- MITAardvark
-    SourceRecord <|-- FGDC
-    SourceRecord <|-- ISO19139
-    SourceRecord <|-- GBL
-    SourceRecord <|-- Aardvark
-```
-
-- `Record`
-  - class that represents a single geo resource
-  - has attributes `source` and `normalized` to represent its original (source) and normalized form
-- `SourceRecord`
-  - class that provides data and functionality for the source record
-  - extended by other classes that define how to normalize to MITAardvark
-- `MITAardvark`
-  - a normalized record can be serialized as an MIT Aardvark record
-
 ## Entrypoints and Flow
 
 The primary entrypoint for CLI commands will be a `Harvester` instance, which depending on the CLI command `harvester harvest mit` or `harvester harvest ogm`, will either be a `MITHarvester` or `OGMHarvester` respectively.
