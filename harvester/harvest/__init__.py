@@ -34,7 +34,7 @@ class Harvester(ABC):
         """Main entrypoint for harvests."""
         records = self.filter_failed_records(self.get_source_records())
         records = self.filter_failed_records(self.normalize_source_records(records))
-        records = self.filter_failed_records(self.write_to_public_cdn_bucket(records))
+        records = self.filter_failed_records(self.update_public_cdn_bucket(records))
         records = self.filter_failed_records(self.write_to_timdex_bucket(records))
         records = self.filter_failed_records(self.harvester_specific_steps(records))
 
@@ -89,7 +89,7 @@ class Harvester(ABC):
             else:
                 yield record
 
-    def write_to_public_cdn_bucket(self, records: Iterator[Record]) -> Iterator[Record]:
+    def update_public_cdn_bucket(self, records: Iterator[Record]) -> Iterator[Record]:
         """Write OR delete source and normalized metadata from S3:CDN:Public."""
         for record in records:
             message = (
@@ -112,7 +112,7 @@ class Harvester(ABC):
         for record in records:
             message = f"Record {record.identifier}: checking for errors"
             logger.debug(message)
-            if record.error_message is not None:
+            if record.error_message:
                 self.failed_records.append(record)
                 message = (
                     f"Record error: '{record.identifier}', "

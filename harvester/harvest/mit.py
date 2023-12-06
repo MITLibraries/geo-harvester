@@ -169,8 +169,8 @@ class MITHarvester(Harvester):
         This method opens the zip file ONCE, and that object is passed to both
         _find_metadata_file() and _read_metadata_file() to reduce network
         round-trips.  In both cases, the zip file is never read in its entirety; only the
-        zip files are listed and the metadata read.  This is important as some MIT GIS zip
-        files can be hundreds of megabytes if not gigabytes.
+        zipped files are listed and the metadata read.  This is important as some MIT GIS
+        zip files can be hundreds of megabytes if not gigabytes.
         """
         with smart_open.open(zip_file, "rb") as file_object, zipfile.ZipFile(
             file_object

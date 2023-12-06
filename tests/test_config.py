@@ -3,7 +3,7 @@ import logging
 
 import pytest
 
-from harvester.config import Config, configure_logger, configure_sentry
+from harvester.config import configure_logger, configure_sentry
 
 
 def test_configure_logger_not_verbose():
@@ -40,24 +40,20 @@ def test_configure_sentry_env_variable_is_dsn(monkeypatch):
     assert result == "Sentry DSN found, exceptions will be sent to Sentry with env=test"
 
 
-def test_config_check_required_env_vars_success(monkeypatch):
-    CONFIG = Config()
-    CONFIG.check_required_env_vars()
+def test_config_check_required_env_vars_success(monkeypatch, config_instance):
+    config_instance.check_required_env_vars()
 
 
-def test_config_check_required_env_vars_error(monkeypatch):
-    CONFIG = Config()
+def test_config_check_required_env_vars_error(monkeypatch, config_instance):
     monkeypatch.delenv("S3_RESTRICTED_CDN_ROOT")
     with pytest.raises(OSError, match="Missing required environment variables"):
-        CONFIG.check_required_env_vars()
+        config_instance.check_required_env_vars()
 
 
-def test_config_env_var_access_success():
-    CONFIG = Config()
-    assert CONFIG.WORKSPACE == "test"
+def test_config_env_var_access_success(config_instance):
+    assert config_instance.WORKSPACE == "test"
 
 
-def test_config_env_var_access_error():
-    CONFIG = Config()
+def test_config_env_var_access_error(config_instance):
     with pytest.raises(AttributeError):
-        _ = CONFIG.DOES_NOT_EXIST
+        _ = config_instance.DOES_NOT_EXIST
