@@ -203,10 +203,10 @@ def mocked_required_fields_source_record(valid_generic_xml_source_record):
             return titles[0]
 
         def _gbl_mdModified_dt(self):
-            return mocked_value
+            return "2023-12-13T10:01:01.897520-05:00"
 
         def _gbl_mdVersion_s(self):
-            return mocked_value
+            return "Aardvark"
 
         def _gbl_resourceClass_sm(self):
             return ["Datasets", "Maps"]
@@ -234,13 +234,13 @@ def mocked_required_fields_source_record(valid_generic_xml_source_record):
 
 
 @pytest.fixture
-def minimal_mitaardvark_data():
+def valid_minimal_mitaardvark_data():
     return {
         "dct_accessRights_s": "value here",
         "dct_title_s": "value here",
-        "gbl_mdModified_dt": "value here",
-        "gbl_mdVersion_s": "value here",
-        "gbl_resourceClass_sm": ["DataSets"],
+        "gbl_mdModified_dt": "2023-12-13T10:01:01.897520-05:00",
+        "gbl_mdVersion_s": "Aardvark",
+        "gbl_resourceClass_sm": ["Datasets"],
         "id": "value here",
         "dcat_bbox": "value here",
         "dct_references_s": "value here",
@@ -249,8 +249,43 @@ def minimal_mitaardvark_data():
 
 
 @pytest.fixture
-def minimal_mitaardvark_record(minimal_mitaardvark_data):
-    return MITAardvark(**minimal_mitaardvark_data)
+def valid_optional_mitaardvark_data(valid_minimal_mitaardvark_data):
+    valid_minimal_mitaardvark_data.update(
+        {
+            "dcat_centroid": "value here",
+        }
+    )
+    return valid_minimal_mitaardvark_data
+
+
+@pytest.fixture
+def invalid_minimal_mitaardvark_data():
+    return {
+        "dct_accessRights_s": None,
+        "dct_title_s": "value here",
+        "gbl_mdModified_dt": "2023-12-13",
+        "gbl_mdVersion_s": "Invalid",
+        "gbl_resourceClass_sm": ["Invalid"],
+        "id": 1,
+        "dcat_bbox": "value here",
+        "dct_references_s": "value here",
+        "locn_geometry": "value here",
+    }
+
+
+@pytest.fixture
+def invalid_optional_mitaardvark_data(invalid_minimal_mitaardvark_data):
+    invalid_minimal_mitaardvark_data.update(
+        {
+            "dcat_centroid": 1,
+        }
+    )
+    return invalid_minimal_mitaardvark_data
+
+
+@pytest.fixture
+def valid_minimal_mitaardvark_record(valid_minimal_mitaardvark_data):
+    return MITAardvark(**valid_minimal_mitaardvark_data)
 
 
 @pytest.fixture

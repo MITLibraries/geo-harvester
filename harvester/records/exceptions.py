@@ -1,5 +1,7 @@
 import traceback
 
+from jsonschema.exceptions import ValidationError
+
 
 class FieldMethodError(Exception):
     """Exception to raise from normalize() method"""
@@ -12,3 +14,7 @@ class FieldMethodError(Exception):
     def get_formatted_traceback(self) -> str:
         """Get string representation of the original exception traceback."""
         return "".join(traceback.format_tb(self.original_exception.__traceback__))
+
+
+class JSONSchemaValidationError(ValidationError):
+    """Exception to raise from MITAardvark.validate() method"""

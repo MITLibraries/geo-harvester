@@ -8,6 +8,8 @@ click = "*"
 sentry-sdk = "*"
 attrs = "*"
 boto3 = "*"
+jsonschema = "*"
+rfc3339-validator = "*"
 smart-open = "*"
 lxml = "*"
 jsonlines = "*"
@@ -26,6 +28,7 @@ types-python-dateutil = "*"
 boto3-stubs = {version = "*", extras = ["eventbridge", "s3", "sqs"]}
 lxml-stubs = "*"
 freezegun = "*"
+types-jsonschema = "*"
 
 [requires]
 python_version = "3.11"

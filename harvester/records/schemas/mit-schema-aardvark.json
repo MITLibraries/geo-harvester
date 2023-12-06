@@ -1,0 +1,144 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "MIT Schema - Aardvark",
+    "description": "Schema for MIT compliant Aardvark",
+    "properties": {
+        "dct_title_s": {
+            "$ref": "geoblacklight-schema-aardvark#dc_title_s"
+        },
+        "dct_alternative_sm": {
+            "$ref": "geoblacklight-schema-aardvark#dct_alternative_sm"
+        },
+        "dct_description_sm": {
+            "$ref": "geoblacklight-schema-aardvark#dct_description_sm"
+        },
+        "dct_language_sm": {
+            "$ref": "geoblacklight-schema-aardvark#dct_language_sm"
+        },
+        "gbl_displayNote_sm": {
+            "$ref": "geoblacklight-schema-aardvark#gbl_displayNote_sm"
+        },
+        "dct_creator_sm": {
+            "$ref": "geoblacklight-schema-aardvark#dct_creator_sm"
+        },
+        "dct_publisher_sm": {
+            "$ref": "geoblacklight-schema-aardvark#dct_publisher_sm"
+        },
+        "schema_provider_s": {
+            "$ref": "geoblacklight-schema-aardvark#schema_provider_s"
+        },
+        "gbl_resourceClass_sm": {
+            "$ref": "geoblacklight-schema-aardvark#gbl_resourceClass_sm"
+        },
+        "gbl_resourceType_sm": {
+            "$ref": "geoblacklight-schema-aardvark#gbl_resourceType_sm"
+        },
+        "dct_subject_sm": {
+            "$ref": "geoblacklight-schema-aardvark#dct_subject_sm"
+        },
+        "dcat_theme_sm": {
+            "$ref": "geoblacklight-schema-aardvark#dcat_theme_sm"
+        },
+        "dcat_keyword_sm": {
+            "$ref": "geoblacklight-schema-aardvark#dcat_keyword_sm"
+        },
+        "dct_temporal_sm": {
+            "$ref": "geoblacklight-schema-aardvark#dct_temporal_sm"
+        },
+        "dct_issued_s": {
+            "$ref": "geoblacklight-schema-aardvark#dct_issued_s"
+        },
+        "gbl_indexYear_im": {
+            "$ref": "geoblacklight-schema-aardvark#gbl_indexYear_im"
+        },
+        "gbl_dateRange_drsim": {
+            "$ref": "geoblacklight-schema-aardvark#gbl_dateRange_drsim"
+        },
+        "dct_spatial_sm": {
+            "$ref": "geoblacklight-schema-aardvark#dct_spatial_sm"
+        },
+        "locn_geometry": {
+            "$ref": "geoblacklight-schema-aardvark#locn_geometry"
+        },
+        "dcat_bbox": {
+            "$ref": "geoblacklight-schema-aardvark#dcat_bbox"
+        },
+        "dcat_centroid": {
+            "$ref": "geoblacklight-schema-aardvark#dcat_centroid"
+        },
+        "dct_relation_sm": {
+            "$ref": "geoblacklight-schema-aardvark#dct_relation_sm"
+        },
+        "pcdm_memberOf_sm": {
+            "$ref": "geoblacklight-schema-aardvark#pcdm_memberOf_sm"
+        },
+        "dct_isPartOf_sm": {
+            "$ref": "geoblacklight-schema-aardvark#dct_isPartOf_sm"
+        },
+        "dct_source_sm": {
+            "$ref": "geoblacklight-schema-aardvark#dct_source_sm"
+        },
+        "dct_isVersionOf_sm": {
+            "$ref": "geoblacklight-schema-aardvark#dct_isVersionOf_sm"
+        },
+        "dct_replaces_sm": {
+            "$ref": "geoblacklight-schema-aardvark#dct_replaces_sm"
+        },
+        "dct_isReplacedBy_sm": {
+            "$ref": "geoblacklight-schema-aardvark#dct_isReplacedBy_sm"
+        },
+        "dct_rights_sm": {
+            "$ref": "geoblacklight-schema-aardvark#dct_rights_sm"
+        },
+        "dct_rightsHolder_sm": {
+            "$ref": "geoblacklight-schema-aardvark#dct_rightsHolder_sm"
+        },
+        "dct_license_sm": {
+            "$ref": "geoblacklight-schema-aardvark#dct_license_sm"
+        },
+        "dct_accessRights_s": {
+            "$ref": "geoblacklight-schema-aardvark#dct_accessRights_s"
+        },
+        "dct_format_s": {
+            "$ref": "geoblacklight-schema-aardvark#dct_format_s"
+        },
+        "gbl_fileSize_s": {
+            "$ref": "geoblacklight-schema-aardvark#gbl_fileSize_s"
+        },
+        "gbl_wxsIdentifier_s": {
+            "$ref": "geoblacklight-schema-aardvark#gbl_wxsIdentifier_s"
+        },
+        "dct_references_s": {
+            "$ref": "geoblacklight-schema-aardvark#dct_references_s"
+        },
+        "id": {
+            "$ref": "geoblacklight-schema-aardvark#id"
+        },
+        "dct_identifier_sm": {
+            "$ref": "geoblacklight-schema-aardvark#dct_identifier_sm"
+        },
+        "gbl_mdModified_dt": {
+            "$ref": "geoblacklight-schema-aardvark#gbl_mdModified_dt"
+        },
+        "gbl_mdVersion_s": {
+            "$ref": "geoblacklight-schema-aardvark#gbl_mdVersion_s"
+        },
+        "gbl_suppressed_b": {
+            "$ref": "geoblacklight-schema-aardvark#gbl_suppressed_b"
+        },
+        "gbl_georeferenced_b": {
+            "$ref": "geoblacklight-schema-aardvark#gbl_georeferenced_b"
+        }
+    },
+    "required": [
+        "dcat_bbox",
+        "dct_accessRights_s",
+        "dct_references_s",
+        "dct_title_s",
+        "gbl_mdModified_dt",
+        "gbl_mdVersion_s",
+        "gbl_resourceClass_sm",
+        "id",
+        "locn_geometry"
+    ]
+}
