@@ -1,0 +1,6 @@
+{
+  "MessageId": "ada829aa-a848-476b-8d11-d04bc15127b2",
+  "ReceiptHandle": "AQEBmWwqxS2l22tCZBJdFAay57JjqCfyPl65QeDoqCXu53Tkz6KLabgG3gKhu97TWKhBiWVxOlXG2aVcLrv5FEnSAZ76n6QjWxNl/Co3ilkgdUIkX/MRZhinWarN4/Yvm5+SYq7VyxrHy2j8Iw+1gG52yARATQyFEOmZywG/kuEzhs+QC6wtcVzeq5rYWL6SKqrzwoUKr+TQnx7SgyW3OvHLNE/yL9zs4XCEVC7BSrd1Cv2EDWBTltHpQNfnkSuq14zIatwxJt79p3E8fUff5fL+txazwsOmrPisbQtHc8pMsTWqch4oALNahfFqcbmfPDHRDJ8VtguhFepnxeEAX39wUeFNlxFUHIKwflHQ/cCXA+Ma0KY3IpXBUvGEjQ25Uesw5eOUSHbeQp8sYt9BSJKA3w==",
+  "MD5OfBody": "fdb8062823fc4c08f7da7044a5169b01",
+  "Body": "{\"version\":\"0\",\"id\":\"9bc4960c-5349-0135-3b1f-c6d480822f1d\",\"detail-type\":\"Object Deleted\",\"source\":\"aws.s3\",\"account\":\"222053980223\",\"time\":\"2023-11-27T18:41:33Z\",\"region\":\"us-east-1\",\"resources\":[\"arn:aws:s3:::geo-upload-dev-222053980223\"],\"detail\":{\"version\":\"0\",\"bucket\":{\"name\":\"geo-upload-dev-222053980223\"},\"object\":{\"key\":\"ABC123.zip\",\"etag\":\"d41d8cd98f00b204e9800998ecf8427e\",\"version-id\":\"9Kg8RrPaCSwU4f150q0DY6Lbf_wj1UkV\",\"sequencer\":\"006564E2DDC22DB36C\"},\"request-id\":\"8533A8CBE2NCGQJV\",\"requester\":\"222053980223\",\"source-ip-address\":\"209.6.116.24\",\"reason\":\"DeleteObject\",\"deletion-type\":\"Delete Marker Created\"},\"result\":{\"DeleteMarker\":true,\"VersionId\":\"5DYFhmukZMUIS6_HtuYKpAJIh_VPSYgy\"}}"
+}

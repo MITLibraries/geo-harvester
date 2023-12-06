@@ -1,4 +1,7 @@
+# ruff: noqa: N806
 import logging
+
+import pytest
 
 from harvester.config import configure_logger, configure_sentry
 
@@ -35,3 +38,22 @@ def test_configure_sentry_env_variable_is_dsn(monkeypatch):
     monkeypatch.setenv("SENTRY_DSN", "https://1234567890@00000.ingest.sentry.io/123456")
     result = configure_sentry()
     assert result == "Sentry DSN found, exceptions will be sent to Sentry with env=test"
+
+
+def test_config_check_required_env_vars_success(config_instance):
+    config_instance.check_required_env_vars()
+
+
+def test_config_check_required_env_vars_error(monkeypatch, config_instance):
+    monkeypatch.delenv("S3_RESTRICTED_CDN_ROOT")
+    with pytest.raises(OSError, match="Missing required environment variables"):
+        config_instance.check_required_env_vars()
+
+
+def test_config_env_var_access_success(config_instance):
+    assert config_instance.WORKSPACE == "test"
+
+
+def test_config_env_var_access_error(config_instance):
+    with pytest.raises(AttributeError):
+        _ = config_instance.DOES_NOT_EXIST

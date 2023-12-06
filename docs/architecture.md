@@ -2,32 +2,31 @@
 
 ## Classes
 
+### Harvesters
+
 ```mermaid
 classDiagram
     class CLI{
-        harvest.mit() -> logging
-        harvest.ogm() -> logging
-    }
-    class MITHarvester{
-        harvest()
-    }
-    class OGMHarvester{
-        harvest()
+        harvest.mit()
+        harvest.ogm()
     }
     class Harvester{
-        harvest()* -> dict
+        harvest()*
+    }
+    class MITHarvester{
+    }
+    class OGMHarvester{
     }
     class SQSClient {
-        get_messages()
+        get_valid_messages_iter()
     }
     class EventBridgeClient {
         send_event()
     }
     class S3Client {
-        list_objects(bucket, key_glob) -> list
-        read_file_from_zip(filename, bucket, key) -> bytes
-        read_file(bucket, key) -> bytes
-        write_file(file_object, bucket, key)
+        list_objects()
+        read_file_from_zip()
+        write_file()
     }
     class GithubClient {
         list_repositories() -> list
@@ -35,64 +34,87 @@ classDiagram
         read_file_from_commit(filename, commit) -> bytes
         clone_repository() -> files
     }
-    class AardvarkRecord {
-        raw: JSON
-        all Aardvark fields...*
-        to_dict() -> dict
-        to_json() -> str
+    
+    CLI <-- Harvester
+    Harvester <|-- MITHarvester
+    Harvester <|-- OGMHarvester
+    Harvester <-- EventBridgeClient
+    MITHarvester <-- SQSClient
+    MITHarvester <-- S3Client
+    OGMHarvester <-- GithubClient
+    Harvester <-- S3Client
+```
+
+### Metadata Normalization
+
+```mermaid
+classDiagram
+    class Record{
+        source: SourceRecord
+        normalized: MITAardvark
     }
     class SourceRecord{
-        raw: bytes | str
-        transform(self)* -> AardvarkRecord
+        transform(self)* -> MITAardvark
+    }
+    class MITAardvark{
     }
     class FGDC{
         xml_tree: lxml.ElementTree
-        transform(self) -> AardvarkRecord
+        transform(self) -> MITAardvark
     }
     class ISO19139{
         xml_tree: lxml.ElementTree
-        transform(self) -> AardvarkRecord
+        transform(self) -> MITAardvark
     }
     class GBL{
         data: JSON
-        transform(self) -> AardvarkRecord
+        transform(self) -> MITAardvark
+    }
+    class Aardvark{
+        data: JSON
+        transform(self) -> MITAardvark
     }
     
-    CLI <-- Harvester
-    
-    Harvester <|-- MITHarvester
-    Harvester <|-- OGMHarvester
-    
-    Harvester <-- SourceRecord
-    Harvester <-- S3Client
-    Harvester <-- EventBridgeClient
-    
-    MITHarvester <-- SQSClient
-    MITHarvester <-- S3Client
-
-    OGMHarvester <-- GithubClient
-    
-    SourceRecord <-- AardvarkRecord
+    Record <-- SourceRecord
+    Record <-- MITAardvark
     SourceRecord <|-- FGDC
     SourceRecord <|-- ISO19139
     SourceRecord <|-- GBL
+    SourceRecord <|-- Aardvark
 ```
+
+- `Record`
+  - class that represents a single geo resource
+  - has attributes `source` and `normalized` to represent its original (source) and normalized form
+- `SourceRecord`
+  - class that provides data and functionality for the source record
+  - extended by other classes that define how to normalize to MITAardvark
+- `MITAardvark`
+  - a normalized record can be serialized as an MIT Aardvark record
 
 ## Entrypoints and Flow
 
 The primary entrypoint for CLI commands will be a `Harvester` instance, which depending on the CLI command `harvester harvest mit` or `harvester harvest ogm`, will either be a `MITHarvester` or `OGMHarvester` respectively.
 
-This `Harvester` instance will then have an entrypoint `harvest` method.  Though differences for MIT vs OGM and "full" vs "incremental" harvests, the rough flow of a harvest will be:
+The `Harvester` class has a primary entrypoint `harvest` method that kicks off a series of steps:
 
-1. Retrieve identifiers to work on
-  - MIT: combination of SQS queue and `S3:cdn/restricted/mit` file listing
-  - OGM: lean on a configuration YAML and Github API
-2. Retrieve source metadata records (e.g. FGDC, ISO19139, Geoblacklight)
-  - MIT: from `S3:cdn/restricted/mit`
-  - OGM: from Github API and/or repository cloning
-3. Normalize to Aardvark JSON records
-4. [MIT only] Send EventBridge event indicating if record restricted and/or deleted
-5. Package "to-index" and "to-delete" JSON records and write to S3 for Transmogrifier
+```mermaid
+flowchart TD
+    get[Get source records]
+    normalize[Normalize source records]
+    write_public[Write ALL metadata to S3:CDN:Public]
+    write_timdex[Write SOME metadata to S3:TIMDEX]
+    harv_spec[MIT or OGM Harvester specific work]
+    report[Report]
+    
+    get --> normalize
+    normalize --> write_public
+    write_public --> write_timdex
+    write_timdex --> harv_spec
+    harv_spec --> report    
+```
+
+The data passed between each step is an `Iterator` of `Record` instances, where each `Record` instance contains both a `SourceRecord` and `MITAardvark` instance attached, thereby connecting the two throughout the work.
 
 These flows are detailed more in [MIT Harvests](mit_harvests.md) and [OpenGeoMetadata (OGM) Harvests](ogm_harvests.md).
 
