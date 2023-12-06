@@ -1,4 +1,4 @@
-# ruff: noqa: SLF001, PLR2004, N802
+# ruff: noqa: SLF001, PLR2004, N802, FLY002
 
 import json
 from unittest.mock import patch
@@ -7,7 +7,8 @@ import pytest
 from freezegun import freeze_time
 from lxml import etree
 
-from harvester.records.exceptions import FieldMethodError
+from harvester.records import MITAardvark
+from harvester.records.exceptions import FieldMethodError, JSONSchemaValidationError
 
 
 def test_source_record_data_bytes(valid_generic_xml_source_record):
@@ -102,19 +103,19 @@ def test_source_record_normalize_field_method_fails_raise_error(
 
 
 def test_mitaardvark_to_dict_success(
-    minimal_mitaardvark_record, minimal_mitaardvark_data
+    valid_minimal_mitaardvark_record, valid_minimal_mitaardvark_data
 ):
-    assert minimal_mitaardvark_record.to_dict() == minimal_mitaardvark_data
+    assert valid_minimal_mitaardvark_record.to_dict() == valid_minimal_mitaardvark_data
 
 
 def test_mitaardvark_to_json_success(
-    minimal_mitaardvark_record, minimal_mitaardvark_data
+    valid_minimal_mitaardvark_record, valid_minimal_mitaardvark_data
 ):
-    assert minimal_mitaardvark_record.to_json() == json.dumps(
-        minimal_mitaardvark_data, indent=2
+    assert valid_minimal_mitaardvark_record.to_json() == json.dumps(
+        valid_minimal_mitaardvark_data, indent=2
     )
-    assert minimal_mitaardvark_record.to_json(pretty=False) == json.dumps(
-        minimal_mitaardvark_data
+    assert valid_minimal_mitaardvark_record.to_json(pretty=False) == json.dumps(
+        valid_minimal_mitaardvark_data
     )
 
 
@@ -141,7 +142,7 @@ def test_record_shared_field_method_id_success(fgdc_source_record_from_zip):
 def test_record_shared_field_method_gbl_mdModified_dt_success(
     fgdc_source_record_from_zip,
 ):
-    assert fgdc_source_record_from_zip._gbl_mdModified_dt() == "2024-01-01"
+    assert fgdc_source_record_from_zip._gbl_mdModified_dt() == "2024-01-01T00:00:00+00:00"
 
 
 def test_record_shared_field_method_gbl_mdVersion_s_success(
@@ -222,3 +223,52 @@ def test_xml_source_record_single_string_from_xpath_multiple_raise_error(
 ):
     with pytest.raises(ValueError, match="Expected one or none matches for XPath query"):
         valid_generic_xml_source_record.single_string_from_xpath("//plants:description")
+
+
+def test_minimal_mitaardvark_record_jsonschema_validation_success(
+    caplog, valid_minimal_mitaardvark_data
+):
+    caplog.set_level("DEBUG")
+    MITAardvark(**valid_minimal_mitaardvark_data)
+    assert "The normalized MITAardvark record is valid" in caplog.text
+
+
+def test_minimal_mitaardvark_record_jsonschema_validation_raise_compiled_error(
+    caplog, invalid_minimal_mitaardvark_data
+):
+    """This test shows the compiled validatkon errors from JSON schema validation.
+
+    'invalid_minimal_mitaardvark_data' fixture contains the following schema violations:
+    1. gbl_mdModified_dt: Date not meeting expected 'date-time' format
+    2. gbl_mdVersion_s: Unexpected value provided to field restricted to a single value
+    3. gbl_resourceClass_sm: Unexpected value provided to field restricted to a fix set
+       of values
+    4. dct_accessRights_s: 'None' provided to a required field
+    5. id: Integer provided to a field restricted to 'string' values
+    """
+    caplog.set_level("DEBUG")
+    assert invalid_minimal_mitaardvark_data["dct_accessRights_s"] is None
+    with pytest.raises(JSONSchemaValidationError):
+        MITAardvark(**invalid_minimal_mitaardvark_data)
+    validation_error_messages = "\n".join(
+        [
+            "The normalized MITAardvark record is invalid:",
+            "field: gbl_mdModified_dt, '2023-12-13' is not a 'date-time'",
+            "field: gbl_mdVersion_s, 'Aardvark' was expected",
+            (
+                "field: gbl_resourceClass_sm[0], 'Invalid' is not one of ['Datasets', "
+                "'Maps', 'Imagery', 'Collections', 'Websites', 'Web services', 'Other']"
+            ),
+            "field: dct_accessRights_s, 'dct_accessRights_s' is a required property",
+            "field: id, 1 is not of type 'string'",
+        ]
+    )
+    assert validation_error_messages in caplog.text
+
+
+def test_optional_mitaardvark_record_jsonschema_validation_success(
+    caplog, valid_optional_mitaardvark_data
+):
+    caplog.set_level("DEBUG")
+    MITAardvark(**valid_optional_mitaardvark_data)
+    assert "The normalized MITAardvark record is valid" in caplog.text
