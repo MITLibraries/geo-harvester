@@ -2,9 +2,12 @@
 
 import datetime
 import logging
+from typing import TYPE_CHECKING
 
 import boto3
-from mypy_boto3_s3.client import S3Client as S3ClientType
+
+if TYPE_CHECKING:
+    from mypy_boto3_s3.client import S3Client as S3ClientType
 
 from harvester.utils import convert_to_utc
 
@@ -13,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 class S3Client:
     @classmethod
-    def get_client(cls) -> S3ClientType:
+    def get_client(cls) -> "S3ClientType":
         return boto3.client("s3")
 
     @classmethod

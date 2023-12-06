@@ -7,6 +7,7 @@ from click.testing import CliRunner
 from moto import mock_s3
 
 from harvester.aws.sqs import SQSClient, ZipFileEventMessage
+from harvester.config import Config
 from harvester.harvest import Harvester
 
 
@@ -139,3 +140,8 @@ def valid_sqs_message_created_instance() -> ZipFileEventMessage:
     with open("tests/fixtures/sqs/valid_created_message.json") as f:
         # ruff: noqa: S301
         return ZipFileEventMessage(json.load(f))
+
+
+@pytest.fixture
+def config_instance() -> Config:
+    return Config()
