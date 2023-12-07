@@ -185,8 +185,7 @@ def test_sqsclient_get_valid_messages_iter_skip_and_yield_success(
 def test_sqsclient_get_valid_messages_skip_refetching_success(
     caplog,
     mocked_sqs_topic_name,
-    mock_boto3_sqs_client,
-    invalid_sqs_message_dict,
+    mock_boto3_sqs_client,    
     valid_sqs_message_created_dict,
 ):
     caplog.set_level("DEBUG")
