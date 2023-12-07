@@ -1,0 +1,662 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MD_Metadata xmlns="http://www.isotc211.org/2005/gmd"
+             xmlns:gco="http://www.isotc211.org/2005/gco"
+             xmlns:gts="http://www.isotc211.org/2005/gts"
+             xmlns:srv="http://www.isotc211.org/2005/srv"
+             xmlns:gml="http://www.opengis.net/gml/3.2"
+             xmlns:gmx="http://www.isotc211.org/2005/gmx"
+             xmlns:xlink="http://www.w3.org/1999/xlink"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <language>
+        <LanguageCode codeList="http://www.loc.gov/standards/iso639-2/php/code_list.php"
+                      codeListValue="eng" codeSpace="ISO639-2">eng
+        </LanguageCode>
+    </language>
+    <characterSet>
+        <MD_CharacterSetCode
+                codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode"
+                codeListValue="utf8" codeSpace="ISOTC211/19115">utf8
+        </MD_CharacterSetCode>
+    </characterSet>
+    <hierarchyLevel>
+        <MD_ScopeCode
+                codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ScopeCode"
+                codeListValue="dataset" codeSpace="ISOTC211/19115">dataset
+        </MD_ScopeCode>
+    </hierarchyLevel>
+    <hierarchyLevelName>
+        <gco:CharacterString>dataset</gco:CharacterString>
+    </hierarchyLevelName>
+    <contact>
+        <CI_ResponsibleParty>
+            <individualName>
+                <gco:CharacterString>GIS Specialist</gco:CharacterString>
+            </individualName>
+            <organisationName>
+                <gco:CharacterString>GIS Lab, MIT Libraries</gco:CharacterString>
+            </organisationName>
+            <positionName>
+                <gco:CharacterString>GIS Specialist</gco:CharacterString>
+            </positionName>
+            <contactInfo>
+                <CI_Contact>
+                    <address>
+                        <CI_Address>
+                            <deliveryPoint>
+                                <gco:CharacterString>77 Massachusetts Ave., Rotch Library,
+                                    7-238
+                                </gco:CharacterString>
+                            </deliveryPoint>
+                            <city>
+                                <gco:CharacterString>Cambridge</gco:CharacterString>
+                            </city>
+                            <administrativeArea>
+                                <gco:CharacterString>MA</gco:CharacterString>
+                            </administrativeArea>
+                            <postalCode>
+                                <gco:CharacterString>02139-4307</gco:CharacterString>
+                            </postalCode>
+                            <country>
+                                <Country
+                                        codeList="http://www.iso.org/iso/country_codes/iso_3166_code_lists.htm"
+                                        codeListValue="US" codeSpace="ISO3166-1">US
+                                </Country>
+                            </country>
+                            <electronicMailAddress>
+                                <gco:CharacterString>gishelp at mit.edu
+                                </gco:CharacterString>
+                            </electronicMailAddress>
+                        </CI_Address>
+                    </address>
+                </CI_Contact>
+            </contactInfo>
+            <role>
+                <CI_RoleCode
+                        codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
+                        codeListValue="pointOfContact" codeSpace="ISOTC211/19115">
+                    pointOfContact
+                </CI_RoleCode>
+            </role>
+        </CI_ResponsibleParty>
+    </contact>
+    <dateStamp>
+        <gco:Date>2017-08-07</gco:Date>
+    </dateStamp>
+    <metadataStandardName>
+        <gco:CharacterString>ISO 19139 Geographic Information - Metadata - Implementation
+            Specification
+        </gco:CharacterString>
+    </metadataStandardName>
+    <metadataStandardVersion>
+        <gco:CharacterString>2007</gco:CharacterString>
+    </metadataStandardVersion>
+    <spatialRepresentationInfo>
+        <MD_VectorSpatialRepresentation>
+            <topologyLevel>
+                <MD_TopologyLevelCode
+                        codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_TopologyLevelCode"
+                        codeListValue="geometryOnly" codeSpace="ISOTC211/19115">
+                    geometryOnly
+                </MD_TopologyLevelCode>
+            </topologyLevel>
+            <geometricObjects>
+                <MD_GeometricObjects>
+                    <geometricObjectType>
+                        <MD_GeometricObjectTypeCode
+                                codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_GeometricObjectTypeCode"
+                                codeListValue="composite" codeSpace="ISOTC211/19115">
+                            composite
+                        </MD_GeometricObjectTypeCode>
+                    </geometricObjectType>
+                    <geometricObjectCount>
+                        <gco:Integer>70</gco:Integer>
+                    </geometricObjectCount>
+                </MD_GeometricObjects>
+            </geometricObjects>
+        </MD_VectorSpatialRepresentation>
+    </spatialRepresentationInfo>
+    <referenceSystemInfo>
+        <MD_ReferenceSystem>
+            <referenceSystemIdentifier>
+                <RS_Identifier>
+                    <code>
+                        <gco:CharacterString>4326</gco:CharacterString>
+                    </code>
+                    <codeSpace>
+                        <gco:CharacterString>EPSG</gco:CharacterString>
+                    </codeSpace>
+                    <version>
+                        <gco:CharacterString>6.2(3.0.1)</gco:CharacterString>
+                    </version>
+                </RS_Identifier>
+            </referenceSystemIdentifier>
+        </MD_ReferenceSystem>
+    </referenceSystemInfo>
+    <identificationInfo>
+        <MD_DataIdentification>
+            <citation>
+                <CI_Citation>
+                    <title>
+                        <gco:CharacterString>Bhopal, India (Ward Census Data, 2011)
+                        </gco:CharacterString>
+                    </title>
+                    <date>
+                        <CI_Date>
+                            <date>
+                                <gco:Date>2016-04-25</gco:Date>
+                            </date>
+                            <dateType>
+                                <CI_DateTypeCode
+                                        codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode"
+                                        codeListValue="publication"
+                                        codeSpace="ISOTC211/19115">publication
+                                </CI_DateTypeCode>
+                            </dateType>
+                        </CI_Date>
+                    </date>
+                    <citedResponsibleParty>
+                        <CI_ResponsibleParty>
+                            <organisationName>
+                                <gco:CharacterString>ML INFOMAP</gco:CharacterString>
+                            </organisationName>
+                            <role>
+                                <CI_RoleCode
+                                        codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
+                                        codeListValue="originator"
+                                        codeSpace="ISOTC211/19115">originator
+                                </CI_RoleCode>
+                            </role>
+                        </CI_ResponsibleParty>
+                    </citedResponsibleParty>
+                    <citedResponsibleParty>
+                        <CI_ResponsibleParty>
+                            <organisationName>
+                                <gco:CharacterString>ML Infomap</gco:CharacterString>
+                            </organisationName>
+                            <contactInfo>
+                                <CI_Contact>
+                                    <address>
+                                        <CI_Address>
+                                            <deliveryPoint>
+                                                <gco:CharacterString>New Dehli, India
+                                                </gco:CharacterString>
+                                            </deliveryPoint>
+                                        </CI_Address>
+                                    </address>
+                                </CI_Contact>
+                            </contactInfo>
+                            <role>
+                                <CI_RoleCode
+                                        codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
+                                        codeListValue="publisher"
+                                        codeSpace="ISOTC211/19115">publisher
+                                </CI_RoleCode>
+                            </role>
+                        </CI_ResponsibleParty>
+                    </citedResponsibleParty>
+                    <presentationForm>
+                        <CI_PresentationFormCode
+                                codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_PresentationFormCode"
+                                codeListValue="mapDigital" codeSpace="ISOTC211/19115">
+                            mapDigital
+                        </CI_PresentationFormCode>
+                    </presentationForm>
+                </CI_Citation>
+            </citation>
+            <abstract>
+                <gco:CharacterString>This layer shows the ward boundaries in Bhopal
+                    (Capital of Madhya Pradesh, India) in 2011. It includes demographic
+                    and socio-economic data linked to the 2011 Primary Census Abstract.
+                </gco:CharacterString>
+            </abstract>
+            <purpose>
+                <gco:CharacterString>Mapping &amp; analysis of ward level demographic
+                    &amp; socio-economic data.
+                </gco:CharacterString>
+            </purpose>
+            <status>
+                <MD_ProgressCode
+                        codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ProgressCode"
+                        codeListValue="completed" codeSpace="ISOTC211/19115">completed
+                </MD_ProgressCode>
+            </status>
+            <pointOfContact>
+                <CI_ResponsibleParty>
+                    <individualName>
+                        <gco:CharacterString>Dr. Manosi Lahiri</gco:CharacterString>
+                    </individualName>
+                    <organisationName>
+                        <gco:CharacterString>ML INFOMAP PRIVATE LIMITED
+                        </gco:CharacterString>
+                    </organisationName>
+                    <contactInfo>
+                        <CI_Contact>
+                            <phone>
+                                <CI_Telephone>
+                                    <voice>
+                                        <gco:CharacterString>91 11 41688592
+                                        </gco:CharacterString>
+                                    </voice>
+                                    <facsimile>
+                                        <gco:CharacterString>91 11 41688593
+                                        </gco:CharacterString>
+                                    </facsimile>
+                                </CI_Telephone>
+                            </phone>
+                            <address>
+                                <CI_Address>
+                                    <deliveryPoint>
+                                        <gco:CharacterString>124-A, Katwaria Sarai
+                                        </gco:CharacterString>
+                                    </deliveryPoint>
+                                    <city>
+                                        <gco:CharacterString>New Delhi
+                                        </gco:CharacterString>
+                                    </city>
+                                    <postalCode>
+                                        <gco:CharacterString>110016</gco:CharacterString>
+                                    </postalCode>
+                                    <country>
+                                        <Country
+                                                codeList="http://www.iso.org/iso/country_codes/iso_3166_code_lists.htm"
+                                                codeListValue="IN" codeSpace="ISO3166-1">
+                                            IN
+                                        </Country>
+                                    </country>
+                                    <electronicMailAddress>
+                                        <gco:CharacterString>manosi@mlinfomap.com
+                                        </gco:CharacterString>
+                                    </electronicMailAddress>
+                                </CI_Address>
+                            </address>
+                        </CI_Contact>
+                    </contactInfo>
+                    <role>
+                        <CI_RoleCode
+                                codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
+                                codeListValue="pointOfContact" codeSpace="ISOTC211/19115">
+                            pointOfContact
+                        </CI_RoleCode>
+                    </role>
+                </CI_ResponsibleParty>
+            </pointOfContact>
+            <resourceMaintenance>
+                <MD_MaintenanceInformation>
+                </MD_MaintenanceInformation>
+            </resourceMaintenance>
+            <descriptiveKeywords>
+                <MD_Keywords>
+                    <keyword>
+                        <gco:CharacterString>India--Bhopal</gco:CharacterString>
+                    </keyword>
+                    <type>
+                        <MD_KeywordTypeCode
+                                codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode"
+                                codeListValue="place" codeSpace="ISOTC211/19115">place
+                        </MD_KeywordTypeCode>
+                    </type>
+                </MD_Keywords>
+            </descriptiveKeywords>
+            <descriptiveKeywords>
+                <MD_Keywords>
+                    <keyword>
+                        <gco:CharacterString>20110101</gco:CharacterString>
+                    </keyword>
+                    <type>
+                        <MD_KeywordTypeCode
+                                codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode"
+                                codeListValue="temporal" codeSpace="ISOTC211/19115">
+                            temporal
+                        </MD_KeywordTypeCode>
+                    </type>
+                </MD_Keywords>
+            </descriptiveKeywords>
+            <descriptiveKeywords>
+                <MD_Keywords>
+                    <keyword>
+                        <gco:CharacterString>Administrative and political divisions
+                        </gco:CharacterString>
+                    </keyword>
+                    <keyword>
+                        <gco:CharacterString>Election districts</gco:CharacterString>
+                    </keyword>
+                    <keyword>
+                        <gco:CharacterString>Demographic surveys</gco:CharacterString>
+                    </keyword>
+                    <type>
+                        <MD_KeywordTypeCode
+                                codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode"
+                                codeListValue="theme" codeSpace="ISOTC211/19115">theme
+                        </MD_KeywordTypeCode>
+                    </type>
+                </MD_Keywords>
+            </descriptiveKeywords>
+            <descriptiveKeywords>
+                <MD_Keywords>
+                    <keyword>
+                        <gco:CharacterString>society</gco:CharacterString>
+                    </keyword>
+                    <keyword>
+                        <gco:CharacterString>boundaries</gco:CharacterString>
+                    </keyword>
+                    <type>
+                        <MD_KeywordTypeCode
+                                codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode"
+                                codeListValue="theme" codeSpace="ISOTC211/19115">theme
+                        </MD_KeywordTypeCode>
+                    </type>
+                </MD_Keywords>
+            </descriptiveKeywords>
+            <resourceConstraints>
+                <MD_LegalConstraints>
+                    <useLimitation>
+                        <gco:CharacterString>Although this data is being distributed by
+                            MIT, no warranty expressed or implied is made by the Institute
+                            as to the accuracy of the data and related materials. The act
+                            of distribution shall not constitute any such warranty, and no
+                            responsibility is assumed by the Institute in the use of this
+                            data, or related materials.
+                        </gco:CharacterString>
+                    </useLimitation>
+                    <accessConstraints>
+                        <MD_RestrictionCode
+                                codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode"
+                                codeListValue="otherRestrictions"
+                                codeSpace="ISOTC211/19115">otherRestrictions
+                        </MD_RestrictionCode>
+                    </accessConstraints>
+                    <otherConstraints>
+                        <gco:CharacterString>Restricted Access Online: Access granted to
+                            Licensee only. Available only to MIT affiliates.
+                        </gco:CharacterString>
+                    </otherConstraints>
+                </MD_LegalConstraints>
+            </resourceConstraints>
+            <spatialRepresentationType>
+                <MD_SpatialRepresentationTypeCode
+                        codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_SpatialRepresentationTypeCode"
+                        codeListValue="vector" codeSpace="ISOTC211/19115">vector
+                </MD_SpatialRepresentationTypeCode>
+            </spatialRepresentationType>
+            <language>
+                <LanguageCode
+                        codeList="http://www.loc.gov/standards/iso639-2/php/code_list.php"
+                        codeListValue="eng" codeSpace="ISO639-2">eng
+                </LanguageCode>
+            </language>
+            <characterSet>
+                <MD_CharacterSetCode
+                        codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode"
+                        codeListValue="utf8" codeSpace="ISOTC211/19115">utf8
+                </MD_CharacterSetCode>
+            </characterSet>
+            <topicCategory>
+                <MD_TopicCategoryCode>boundaries</MD_TopicCategoryCode>
+            </topicCategory>
+            <topicCategory>
+                <MD_TopicCategoryCode>society</MD_TopicCategoryCode>
+            </topicCategory>
+            <environmentDescription>
+                <gco:CharacterString>Microsoft Windows Vista Version 6.1 (Build 7601)
+                    Service Pack 1; ESRI ArcCatalog 9.3.1.4000
+                </gco:CharacterString>
+            </environmentDescription>
+            <extent>
+                <EX_Extent>
+                    <geographicElement>
+                        <EX_GeographicBoundingBox>
+                            <extentTypeCode>
+                                <gco:Boolean>true</gco:Boolean>
+                            </extentTypeCode>
+                            <westBoundLongitude>
+                                <gco:Decimal>77.25867</gco:Decimal>
+                            </westBoundLongitude>
+                            <eastBoundLongitude>
+                                <gco:Decimal>77.50326</gco:Decimal>
+                            </eastBoundLongitude>
+                            <southBoundLatitude>
+                                <gco:Decimal>23.14385</gco:Decimal>
+                            </southBoundLatitude>
+                            <northBoundLatitude>
+                                <gco:Decimal>23.34268</gco:Decimal>
+                            </northBoundLatitude>
+                        </EX_GeographicBoundingBox>
+                    </geographicElement>
+                </EX_Extent>
+            </extent>
+            <extent>
+                <EX_Extent>
+                    <description>
+                        <gco:CharacterString>ground condition</gco:CharacterString>
+                    </description>
+                    <temporalElement>
+                        <EX_TemporalExtent>
+                            <extent>
+                                <gml:TimeInstant
+                                        gml:id="ID4RVO2W3DOVELLBAJQUKDNL2LQC4YQR2D3VQLWAOLMZWL1HFRD14M">
+                                    <gml:timePosition>2011-01-01</gml:timePosition>
+                                </gml:TimeInstant>
+                            </extent>
+                        </EX_TemporalExtent>
+                    </temporalElement>
+                </EX_Extent>
+            </extent>
+            <extent>
+                <EX_Extent>
+                    <geographicElement>
+                        <EX_GeographicBoundingBox>
+                            <extentTypeCode>
+                                <gco:Boolean>true</gco:Boolean>
+                            </extentTypeCode>
+                            <westBoundLongitude>
+                                <gco:Decimal>77.25867</gco:Decimal>
+                            </westBoundLongitude>
+                            <eastBoundLongitude>
+                                <gco:Decimal>77.50326</gco:Decimal>
+                            </eastBoundLongitude>
+                            <southBoundLatitude>
+                                <gco:Decimal>23.14385</gco:Decimal>
+                            </southBoundLatitude>
+                            <northBoundLatitude>
+                                <gco:Decimal>23.34268</gco:Decimal>
+                            </northBoundLatitude>
+                        </EX_GeographicBoundingBox>
+                    </geographicElement>
+                </EX_Extent>
+            </extent>
+        </MD_DataIdentification>
+    </identificationInfo>
+    <distributionInfo>
+        <MD_Distribution>
+            <distributionFormat>
+                <MD_Format>
+                    <name>
+                        <gco:CharacterString>Shapefile</gco:CharacterString>
+                    </name>
+                    <version gco:nilReason="missing">
+                    </version>
+                </MD_Format>
+            </distributionFormat>
+            <distributor>
+                <MD_Distributor>
+                    <distributorContact>
+                        <CI_ResponsibleParty>
+                            <individualName>
+                                <gco:CharacterString>GIS Specialist</gco:CharacterString>
+                            </individualName>
+                            <organisationName>
+                                <gco:CharacterString>GIS Lab, MIT Libraries
+                                </gco:CharacterString>
+                            </organisationName>
+                            <positionName>
+                                <gco:CharacterString>GIS Specialist</gco:CharacterString>
+                            </positionName>
+                            <contactInfo>
+                                <CI_Contact>
+                                    <address>
+                                        <CI_Address>
+                                            <deliveryPoint>
+                                                <gco:CharacterString>77 Massachusetts
+                                                    Avenue, Rotch Library, 7-238
+                                                </gco:CharacterString>
+                                            </deliveryPoint>
+                                            <city>
+                                                <gco:CharacterString>Cambridge
+                                                </gco:CharacterString>
+                                            </city>
+                                            <administrativeArea>
+                                                <gco:CharacterString>MA
+                                                </gco:CharacterString>
+                                            </administrativeArea>
+                                            <postalCode>
+                                                <gco:CharacterString>02139-4307
+                                                </gco:CharacterString>
+                                            </postalCode>
+                                            <country>
+                                                <Country
+                                                        codeList="http://www.iso.org/iso/country_codes/iso_3166_code_lists.htm"
+                                                        codeListValue="US"
+                                                        codeSpace="ISO3166-1">US
+                                                </Country>
+                                            </country>
+                                            <electronicMailAddress>
+                                                <gco:CharacterString>gishelp at mit.edu
+                                                </gco:CharacterString>
+                                            </electronicMailAddress>
+                                        </CI_Address>
+                                    </address>
+                                </CI_Contact>
+                            </contactInfo>
+                            <role>
+                                <CI_RoleCode
+                                        codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
+                                        codeListValue="distributor"
+                                        codeSpace="ISOTC211/19115">distributor
+                                </CI_RoleCode>
+                            </role>
+                        </CI_ResponsibleParty>
+                    </distributorContact>
+                    <distributorFormat>
+                        <MD_Format>
+                            <name>
+                                <gco:CharacterString>SHP</gco:CharacterString>
+                            </name>
+                            <version gco:nilReason="missing">
+                            </version>
+                        </MD_Format>
+                    </distributorFormat>
+                </MD_Distributor>
+            </distributor>
+            <transferOptions>
+                <MD_DigitalTransferOptions>
+                    <transferSize>
+                        <gco:Real>0.171</gco:Real>
+                    </transferSize>
+                </MD_DigitalTransferOptions>
+            </transferOptions>
+        </MD_Distribution>
+    </distributionInfo>
+    <dataQualityInfo>
+        <DQ_DataQuality>
+            <scope>
+                <DQ_Scope>
+                    <level>
+                        <MD_ScopeCode
+                                codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ScopeCode"
+                                codeListValue="dataset" codeSpace="ISOTC211/19115">dataset
+                        </MD_ScopeCode>
+                    </level>
+                </DQ_Scope>
+            </scope>
+            <report>
+                <DQ_ConceptualConsistency>
+                    <measureDescription>
+                        <gco:CharacterString>Coastal boundary aligned with imagery, no
+                            gaps in polygon, no topological errors, aggregate and %
+                            figures verified
+                        </gco:CharacterString>
+                    </measureDescription>
+                    <result gco:nilReason="missing">
+                    </result>
+                </DQ_ConceptualConsistency>
+            </report>
+            <report>
+                <DQ_CompletenessOmission>
+                    <measureDescription>
+                        <gco:CharacterString>Census 2011 data release for all attribute
+                        </gco:CharacterString>
+                    </measureDescription>
+                    <result gco:nilReason="missing">
+                    </result>
+                </DQ_CompletenessOmission>
+            </report>
+            <report>
+                <DQ_AbsoluteExternalPositionalAccuracy>
+                    <measureDescription>
+                        <gco:CharacterString>20-125 meters</gco:CharacterString>
+                    </measureDescription>
+                    <result gco:nilReason="missing">
+                    </result>
+                </DQ_AbsoluteExternalPositionalAccuracy>
+            </report>
+            <lineage>
+                <LI_Lineage>
+                    <source>
+                        <LI_Source>
+                            <sourceCitation>
+                                <CI_Citation>
+                                    <title>
+                                        <gco:CharacterString>District demographic profile
+                                            of India 2011
+                                        </gco:CharacterString>
+                                    </title>
+                                    <date>
+                                        <CI_Date>
+                                            <date>
+                                                <gco:Date>2011-01-01</gco:Date>
+                                            </date>
+                                            <dateType>
+                                                <CI_DateTypeCode
+                                                        codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode"
+                                                        codeListValue="publication"
+                                                        codeSpace="ISOTC211/19115">
+                                                    publication
+                                                </CI_DateTypeCode>
+                                            </dateType>
+                                        </CI_Date>
+                                    </date>
+                                    <citedResponsibleParty>
+                                        <CI_ResponsibleParty>
+                                            <organisationName>
+                                                <gco:CharacterString>Registrar General and
+                                                    Census Commissioner of India
+                                                </gco:CharacterString>
+                                            </organisationName>
+                                            <role>
+                                                <CI_RoleCode
+                                                        codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
+                                                        codeListValue="originator"
+                                                        codeSpace="ISOTC211/19115">
+                                                    originator
+                                                </CI_RoleCode>
+                                            </role>
+                                        </CI_ResponsibleParty>
+                                    </citedResponsibleParty>
+                                </CI_Citation>
+                            </sourceCitation>
+                            <sourceExtent>
+                                <EX_Extent>
+                                    <description>
+                                        <gco:CharacterString>Primary Census Abstract
+                                            2011
+                                        </gco:CharacterString>
+                                    </description>
+                                </EX_Extent>
+                            </sourceExtent>
+                        </LI_Source>
+                    </source>
+                </LI_Lineage>
+            </lineage>
+        </DQ_DataQuality>
+    </dataQualityInfo>
+</MD_Metadata>

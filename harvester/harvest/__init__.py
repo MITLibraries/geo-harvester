@@ -84,9 +84,9 @@ class Harvester(ABC):
             message = f"Record {record.identifier}: normalizing source record"
             logger.debug(message)
             if record.source_record.event == "deleted":
-                logger.debug("Skipping normalization, record deleted")
                 yield record
             else:
+                # WIP: not yet calling SourceRecord.normalize() here yet
                 yield record
 
     def update_public_cdn_bucket(self, records: Iterator[Record]) -> Iterator[Record]:

@@ -1,3 +1,4 @@
+# ruff: noqa: N802
 import json
 from unittest.mock import patch
 
@@ -9,6 +10,7 @@ from moto import mock_s3
 from harvester.aws.sqs import SQSClient, ZipFileEventMessage
 from harvester.config import Config
 from harvester.harvest import Harvester
+from harvester.records import FGDC, ISO19139, MITAardvark, XMLSourceRecord
 
 
 @pytest.fixture(autouse=True)
@@ -145,3 +147,96 @@ def valid_sqs_message_created_instance() -> ZipFileEventMessage:
 @pytest.fixture
 def config_instance() -> Config:
     return Config()
+
+
+@pytest.fixture
+def valid_generic_xml_source_record():
+    with open("tests/fixtures/records/generic/generic.xml", "rb") as f:
+        return XMLSourceRecord(
+            data=f.read(), event="created", nsmap={"plants": "http://example.com/plants"}
+        )
+
+
+@pytest.fixture
+def valid_mit_iso19139_source_record():
+    with open(
+        "tests/fixtures/records/iso19139/in_bhopal_f7ward_2011.iso19139.xml", "rb"
+    ) as f:
+        return ISO19139(
+            data=f.read(),
+            event="created",
+        )
+
+
+@pytest.fixture
+def valid_mit_fgdc_source_record():
+    with open("tests/fixtures/records/fgdc/SDE_DATA_AE_A8GNS_2003.xml", "rb") as f:
+        return FGDC(
+            data=f.read(),
+            event="created",
+        )
+
+
+@pytest.fixture
+def mocked_required_fields_source_record(valid_generic_xml_source_record):
+    mocked_value = "Hello World!"
+
+    class TestXMLSourceRecord(XMLSourceRecord):
+        """Generic XMLSourceRecord
+
+        Hardcoded methods for required fields for MITAardvark record
+        """
+
+        def _dct_accessRights_s(self):
+            return mocked_value
+
+        def _dct_title_s(self):
+            titles = self.string_list_from_xpath("//plants:name[text() = 'Pink Lady']")
+            return titles[0]
+
+        def _gbl_mdModified_dt(self):
+            return mocked_value
+
+        def _gbl_mdVersion_s(self):
+            return mocked_value
+
+        def _gbl_resourceClass_sm(self):
+            return ["Datasets", "Maps"]
+
+        def _id(self):
+            return mocked_value
+
+        def _dcat_bbox(self):
+            return mocked_value
+
+        def _dct_references_s(self):
+            return mocked_value
+
+        def _locn_geometry(self):
+            return mocked_value
+
+    return TestXMLSourceRecord(
+        data=valid_generic_xml_source_record.data,
+        event=valid_generic_xml_source_record.event,
+        nsmap=valid_generic_xml_source_record.nsmap,
+    )
+
+
+@pytest.fixture
+def minimal_mitaardvark_data():
+    return {
+        "dct_accessRights_s": "value here",
+        "dct_title_s": "value here",
+        "gbl_mdModified_dt": "value here",
+        "gbl_mdVersion_s": "value here",
+        "gbl_resourceClass_sm": ["DataSets"],
+        "id": "value here",
+        "dcat_bbox": "value here",
+        "dct_references_s": "value here",
+        "locn_geometry": "value here",
+    }
+
+
+@pytest.fixture
+def minimal_mitaardvark_record(minimal_mitaardvark_data):
+    return MITAardvark(**minimal_mitaardvark_data)
