@@ -1,4 +1,4 @@
-# ruff: noqa: N802
+# ruff: noqa: N802, S301
 import json
 from unittest.mock import patch
 
@@ -127,7 +127,6 @@ def valid_sqs_message_deleted_dict():
 @pytest.fixture
 def valid_sqs_message_deleted_instance() -> ZipFileEventMessage:
     with open("tests/fixtures/sqs/valid_deleted_message.json") as f:
-        # ruff: noqa: S301
         return ZipFileEventMessage(json.load(f))
 
 
@@ -140,7 +139,6 @@ def valid_sqs_message_created_dict():
 @pytest.fixture
 def valid_sqs_message_created_instance() -> ZipFileEventMessage:
     with open("tests/fixtures/sqs/valid_created_message.json") as f:
-        # ruff: noqa: S301
         return ZipFileEventMessage(json.load(f))
 
 

@@ -104,8 +104,7 @@ class ZipFileEventMessage:
             _ = self.zip_file_identifier
         except (ValueError, AttributeError, ParserError) as exc:
             message = f"Invalid SQS Message, reason: '{exc}', message: {self.raw}"
-            # ruff: noqa: TRY400
-            logger.error(message)
+            logger.error(message)  # noqa: TRY400
             raise MessageValidationError(message) from exc
 
 

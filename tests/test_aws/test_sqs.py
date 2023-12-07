@@ -157,8 +157,7 @@ def test_sqsclient_get_next_valid_message_handle_validation_error_success(
     # assert a valid one is retrieved after an invalid on skipped
     assert message is not None
     # assert method was called twice in total
-    # ruff: noqa: PLR2004
-    assert mock_boto3_sqs_client.receive_message.call_count == 2
+    assert mock_boto3_sqs_client.receive_message.call_count == 2  # noqa: PLR2004
     # assert error was logged
     assert "Invalid SQS Message" in caplog.text
 
@@ -178,8 +177,7 @@ def test_sqsclient_get_valid_messages_iter_skip_and_yield_success(
     ]
     sqs_client = SQSClient(mocked_sqs_topic_name)
     messages = list(sqs_client.get_valid_messages_iter())
-    # ruff: noqa: PLR2004
-    assert len(messages) == 2
+    assert len(messages) == 2  # noqa: PLR2004
     assert "Invalid SQS Message" in caplog.text
 
 
