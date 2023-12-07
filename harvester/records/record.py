@@ -161,12 +161,7 @@ class MITAardvark:
 
     def to_dict(self) -> dict:
         """Dump MITAardvark record to dictionary."""
-
-        # ruff: noqa: ANN401
-        def non_none_or_empty(_attribute: Any, value: Any) -> bool:
-            return value is not None and value != []
-
-        return asdict(self, filter=non_none_or_empty)
+        return asdict(self, filter=lambda _, value: value is not None and value != [])
 
     def to_json(
         self,
@@ -249,7 +244,7 @@ class XMLSourceRecord(SourceRecord):
             self._root = etree.fromstring(self.data)
         return self._root
 
-    def xpath(self, xpath_expr: str) -> Any:
+    def xpath(self, xpath_expr: str) -> Any:  # noqa: ANN401
         """Perform XPath query.
 
         This method automatically includes the namespaces defined for the class.
