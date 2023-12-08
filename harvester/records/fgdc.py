@@ -12,5 +12,4 @@ class FGDC(XMLSourceRecord):
     """FGDC metadata format SourceRecord class."""
 
     metadata_format: Literal["fgdc"] = field(default="fgdc")
-    # ruff: noqa: TD002,TD003,FIX002
-    # TODO: define namespace map for FGDC files
+    # TODO: define namespace map for FGDC files # noqa: TD002,TD003,FIX002

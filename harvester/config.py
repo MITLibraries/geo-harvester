@@ -29,8 +29,10 @@ class Config:
         raise AttributeError(message)
 
 
-# ruff: noqa: FBT001
-def configure_logger(logger: logging.Logger, verbose: bool) -> str:
+def configure_logger(
+    logger: logging.Logger,
+    verbose: bool,  # noqa: FBT001
+) -> str:
     if verbose:
         logging.basicConfig(
             format="%(asctime)s %(levelname)s %(name)s.%(funcName)s() line %(lineno)d: "
