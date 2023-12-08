@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 import boto3
 
 if TYPE_CHECKING:
-    from mypy_boto3_s3.client import S3Client as S3ClientType
+    from mypy_boto3_s3.client import S3Client as S3ClientType  # pragma: nocover
 
 from harvester.utils import convert_to_utc
 

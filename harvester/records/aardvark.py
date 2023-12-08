@@ -4,12 +4,11 @@ from typing import Literal
 
 from attrs import define, field
 
-from harvester.records.record import MITAardvark, SourceRecord
+from harvester.records.record import JSONSourceRecord
 
 
 @define
-class Aardvark(SourceRecord):
-    metadata_format: Literal["aardvark"] = field(default="aardvark")
+class Aardvark(JSONSourceRecord):
+    """WIP: until OGM records are harvested and then normalized."""
 
-    def normalize(self) -> "MITAardvark":
-        return MITAardvark()
+    metadata_format: Literal["aardvark"] = field(default="aardvark")

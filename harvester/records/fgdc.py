@@ -4,12 +4,12 @@ from typing import Literal
 
 from attrs import define, field
 
-from harvester.records.record import MITAardvark, SourceRecord
+from harvester.records.record import XMLSourceRecord
 
 
 @define
-class FGDC(SourceRecord):
-    metadata_format: Literal["fgdc"] = field(default="fgdc")
+class FGDC(XMLSourceRecord):
+    """FGDC metadata format SourceRecord class."""
 
-    def normalize(self) -> "MITAardvark":
-        return MITAardvark()
+    metadata_format: Literal["fgdc"] = field(default="fgdc")
+    # TODO: define namespace map for FGDC files # noqa: TD002,TD003,FIX002

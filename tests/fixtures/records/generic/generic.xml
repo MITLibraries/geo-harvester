@@ -1,0 +1,31 @@
+<fruits
+    xmlns="http://example.com/plants"
+>
+    <apples>
+        <apple>
+            <name>Pink Lady</name>
+            <color>red</color>
+            <introduced>1973</introduced>
+            <description>Pink Lady apples are a modern variety known for their crisp texture, sweet-tart flavor, and vibrant pink and green skin.
+
+                They are a good source of vitamin C and fiber, making them a healthy and delicious snack.</description>
+        </apple>
+        <apple>
+            <name>Delicious, Red</name>
+            <color>red</color>
+            <introduced></introduced>
+            <description>Red Delicious apples are a classic variety with a bright red skin and a sweet, mild flavor.
+
+
+                They are a good source of vitamin C and fiber, but can be prone to bruising. While not as popular as they once were, they are still a popular choice for baking.</description>
+        </apple>
+        <apple>
+            <name>Delicious, Yellow</name>
+            <color>yellow</color>
+            <introduced>    </introduced>
+            <description>Yellow        Delicious           apples are a popular choice for snacking. They have a sweet, mild flavor and a golden yellow skin.
+
+                They are a good source of vitamin C and fiber, but can be soft and mealy. They are also a popular choice for making applesauce.</description>
+        </apple>
+    </apples>
+</fruits>

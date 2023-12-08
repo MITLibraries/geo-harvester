@@ -11,7 +11,7 @@ import boto3
 from dateutil.parser import ParserError
 from dateutil.parser import parse as date_parser
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: nocover
     from mypy_boto3_sqs.client import SQSClient as SQSClientType
     from mypy_boto3_sqs.type_defs import MessageTypeDef
 
@@ -104,8 +104,7 @@ class ZipFileEventMessage:
             _ = self.zip_file_identifier
         except (ValueError, AttributeError, ParserError) as exc:
             message = f"Invalid SQS Message, reason: '{exc}', message: {self.raw}"
-            # ruff: noqa: TRY400
-            logger.error(message)
+            logger.error(message)  # noqa: TRY400
             raise MessageValidationError(message) from exc
 
 

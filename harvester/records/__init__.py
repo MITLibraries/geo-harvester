@@ -6,6 +6,8 @@ from harvester.records.record import (
     MITAardvark,
     Record,
     SourceRecord,
+    XMLSourceRecord,
+    JSONSourceRecord,
 )
 from harvester.records.fgdc import FGDC
 from harvester.records.iso19139 import ISO19139
