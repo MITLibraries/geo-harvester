@@ -203,9 +203,9 @@ class SourceRecord:
         # loop through fields and attempt field-level child class methods if defined
         field_values = {}
         for aardvark_field in aardvark_fields:
-            if field_func := getattr(self, f"_{aardvark_field.name}", None):
+            if field_method := getattr(self, f"_{aardvark_field.name}", None):
                 try:
-                    field_values[aardvark_field.name] = field_func()
+                    field_values[aardvark_field.name] = field_method()
                 except Exception as exc:
                     message = (
                         f"Error getting value for field '{aardvark_field.name}': {exc}"
