@@ -161,12 +161,28 @@ class SQSClient:
     def get_valid_messages_iter(
         self, wait_time: int | None = None
     ) -> Iterator[ZipFileEventMessage]:
-        """Iterator that yields all valid ZipFileEventMessages in queue"""
+        """Iterator that yields all valid ZipFileEventMessages in queue.
+
+        To avoid this iterator re-fetching the same message in a single run, a list of
+        processed message IDs is maintained as they are yielded.  This situation could
+        easily arise if a record fails to fully process for any reason, and the overall
+        harvest exceeds the SQS message read timeout, in which case this greedy iterator
+        would fetch that message again.
+        """
+        processed_message_ids = []
         while True:
-            message = self.get_next_valid_message(wait_time=wait_time)
-            if not message:
+            sqs_message = self.get_next_valid_message(wait_time=wait_time)
+            if not sqs_message:
                 break
-            yield message
+            if sqs_message.message_id in processed_message_ids:
+                message = (
+                    f"Skipping Message '{sqs_message.message_id}', already processed "
+                    f"this harvest."
+                )
+                logger.debug(message)
+                continue
+            processed_message_ids.append(sqs_message.message_id)
+            yield sqs_message
 
     def delete_message(self, receipt_handle: str) -> bool:
         """Delete single message from queue via receipt handle."""

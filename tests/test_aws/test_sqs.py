@@ -170,7 +170,6 @@ def test_sqsclient_get_valid_messages_iter_skip_and_yield_success(
     valid_sqs_message_deleted_dict,
 ):
     mock_boto3_sqs_client.receive_message.side_effect = [
-        {"Messages": [valid_sqs_message_deleted_dict]},
         {"Messages": [invalid_sqs_message_dict]},
         {"Messages": [valid_sqs_message_deleted_dict]},
         {},
@@ -179,6 +178,29 @@ def test_sqsclient_get_valid_messages_iter_skip_and_yield_success(
     messages = list(sqs_client.get_valid_messages_iter())
     assert len(messages) == 2  # noqa: PLR2004
     assert "Invalid SQS Message" in caplog.text
+
+
+def test_sqsclient_get_valid_messages_skip_refetching_success(
+    caplog,
+    mocked_sqs_topic_name,
+    mock_boto3_sqs_client,    
+    valid_sqs_message_created_dict,
+):
+    caplog.set_level("DEBUG")
+    # two messages with the same Message.MessageId
+    mock_boto3_sqs_client.receive_message.side_effect = [
+        {"Messages": [valid_sqs_message_created_dict]},
+        {"Messages": [valid_sqs_message_created_dict]},
+        {},
+    ]
+    sqs_client = SQSClient(mocked_sqs_topic_name)
+    messages = list(sqs_client.get_valid_messages_iter())
+    # ruff: noqa: PLR2004
+    assert len(messages) == 1
+    assert (
+        "Skipping Message '81f4ce84-b18e-4c1f-8809-3b6fb69a25b5', already seen this "
+        "harvest." in caplog.text
+    )
 
 
 def test_sqsclient_delete_message_success(
