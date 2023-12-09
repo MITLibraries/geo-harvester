@@ -18,7 +18,6 @@ from harvester.harvest import Harvester
 from harvester.records import (
     FGDC,
     ISO19139,
-    DeletedSourceRecord,
     Record,
     SourceRecord,
 )

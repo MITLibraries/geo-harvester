@@ -198,7 +198,7 @@ class SourceRecord:
     event: Literal["created", "deleted"] = field(default=None)
     sqs_message: ZipFileEventMessage = field(default=None)
 
-    def normalize(self) -> MITAardvark | None:
+    def normalize(self) -> MITAardvark:
         """Method to normalize a SourceRecord to an MIT Aardvark MITAardvark instance.
 
         This is the entrypoint for normalization.  This method will look to MITAardvark
@@ -229,16 +229,6 @@ class SourceRecord:
 
         # initialize a new MITAardvark instance and return
         return MITAardvark(**field_values)
-
-
-class DeletedSourceRecord(SourceRecord):
-    """Class to represent a SourceRecord that has been deleted."""
-
-    event: Literal["deleted"] = field(default="deleted")
-
-    def normalize(self) -> None:
-        message = "Cannot normalize a DeletedSourceRecord, no data to normalize."
-        raise RuntimeError(message)
 
 
 @define
