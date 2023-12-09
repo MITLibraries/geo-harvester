@@ -12,7 +12,7 @@ import smart_open  # type: ignore[import-untyped]
 from attrs import define, field
 
 from harvester.aws.s3 import S3Client
-from harvester.aws.sqs import SQSClient
+from harvester.aws.sqs import SQSClient, ZipFileEventMessage
 from harvester.config import Config
 from harvester.harvest import Harvester
 from harvester.records import (
@@ -35,6 +35,8 @@ class MITHarvester(Harvester):
     input_files: str = field(default=None)
     sqs_topic_name: str = field(default=None)
     skip_sqs_check: bool = field(default=False)
+    preserve_sqs_messages: bool = field(default=False)
+    _sqs_client: SQSClient = field(default=None)
 
     def full_harvest_get_source_records(self) -> Iterator[Record]:
         """Identify files for harvest by reading zip files from S3:CDN:Restricted.
@@ -71,15 +73,15 @@ class MITHarvester(Harvester):
         but the message will remain in the queue for manual handling and analysis.
         """
         CONFIG.check_required_env_vars()
-        client = SQSClient(self.sqs_topic_name)
-        for zip_file_event in client.get_valid_messages_iter():
-            identifier = zip_file_event.zip_file_identifier
+        for zip_file_event_message in self.sqs_client.get_valid_messages_iter():
+            identifier = zip_file_event_message.zip_file_identifier
             yield Record(
                 identifier=identifier,
                 source_record=self._create_source_record(
                     identifier=identifier,
-                    zip_file=zip_file_event.zip_file,
-                    event=zip_file_event.event,
+                    zip_file=zip_file_event_message.zip_file,
+                    event=zip_file_event_message.event,
+                    sqs_message=zip_file_event_message,
                 ),
             )
 
@@ -95,6 +97,13 @@ class MITHarvester(Harvester):
             records = self.filter_failed_records(self.delete_sqs_messages(records))
         yield from records
 
+    @property
+    def sqs_client(self) -> SQSClient:
+        """Return an SQSClient, reusing if already cached on self."""
+        if not self._sqs_client:
+            self._sqs_client = SQSClient(self.sqs_topic_name)
+        return self._sqs_client
+
     def send_eventbridge_event(self, records: Iterator[Record]) -> Iterator[Record]:
         """Method to send EventBridge events indicating access restrictions."""
         for record in records:
@@ -104,14 +113,21 @@ class MITHarvester(Harvester):
 
     def delete_sqs_messages(self, records: Iterator[Record]) -> Iterator[Record]:
         """Method to delete SQS message after record has been successfully processed."""
+        if self.preserve_sqs_messages:
+            message = "Flag preserve_sqs_messages set, skipping delete of SQS message"
+            logger.warning(message)
         for record in records:
-            message = f"Record {record.identifier}: deleting SQS message"
-            logger.debug(message)
+            if not self.preserve_sqs_messages:
+                message = f"Record {record.identifier}: deleting SQS message"
+                logger.debug(message)
+                self.sqs_client.delete_message(
+                    record.source_record.sqs_message.receipt_handle
+                )
             yield record
 
     def _sqs_queue_is_empty(self) -> bool:
         """Check if SQS with file modifications is empty."""
-        return SQSClient(self.sqs_topic_name).get_message_count() == 0
+        return self.sqs_client.get_message_count() == 0
 
     def _list_zip_files(self) -> list[str]:
         """Get list of zip files from local or S3, filtering by modified date if set."""
@@ -226,18 +242,9 @@ class MITHarvester(Harvester):
         identifier: str,
         zip_file: str,
         event: Literal["created", "deleted"],
-    ) -> SourceRecord | DeletedSourceRecord:
-        """Init a SourceRecord based on event and zip file.
-
-        If the event == deleted, a DeletedSourceRecord instance is returned.  As the zip
-        file is no longer accessible, we know only the zip file name and event.
-
-        If the event == created, a SourceRecord instance is returned, with the metadata
-        file identified and read as part of the SourceRecord.
-        """
-        if event == "deleted":
-            return DeletedSourceRecord(zip_file_location=zip_file)
-
+        sqs_message: ZipFileEventMessage | None = None,
+    ) -> SourceRecord:
+        """Init a SourceRecord based on event and zip file."""
         metadata_format, data = self._identify_and_read_metadata_file(
             identifier, zip_file
         )
@@ -250,4 +257,5 @@ class MITHarvester(Harvester):
             data=data,
             event=event,
             zip_file_location=zip_file,
+            sqs_message=sqs_message,
         )

@@ -9,6 +9,7 @@ from attrs import asdict, define, field, fields
 from attrs.validators import instance_of, optional
 from lxml import etree  # type: ignore[import-untyped]
 
+from harvester.aws.sqs import ZipFileEventMessage
 from harvester.records.exceptions import FieldMethodError
 
 logger = logging.getLogger(__name__)
@@ -177,12 +178,25 @@ class SourceRecord:
 
     A source_record record may be FGDC, ISO19139, GeoBlacklight (GBL1), or Aardvark
     metadata formats.
+
+    Args:
+        metadata_format: literal string of the metadata format
+            - "fgdc", "iso19139", "gbl1", "aardvark"
+        data: string or bytes of the source file (XML or JSON)
+        zip_file_location: path string to the zip file
+            - this may be local or S3 URI
+        event: literal string of "created" or "deleted"
+        sqs_message: ZipFileEventMessage instance
+            - present only for MIT harvests
+            - by affixing to SourceRecord during record retrieval, it allows for use
+            after the record has been processed to manage the message in the queue
     """
 
     metadata_format: Literal["fgdc", "iso19139", "gbl1", "aardvark"] = field(default=None)
     data: str | bytes | None = field(default=None, repr=False)
     zip_file_location: str = field(default=None)
     event: Literal["created", "deleted"] = field(default=None)
+    sqs_message: ZipFileEventMessage = field(default=None)
 
     def normalize(self) -> MITAardvark | None:
         """Method to normalize a SourceRecord to an MIT Aardvark MITAardvark instance.
