@@ -86,7 +86,11 @@ class Harvester(ABC):
             if record.source_record.event == "deleted":
                 yield record
             else:
-                # WIP: not yet calling SourceRecord.normalize() here yet
+                try:
+                    record.normalized_record = record.source_record.normalize()
+                except Exception as exc:  # noqa: BLE001
+                    record.exception_stage = "normalize_source_records"
+                    record.exception = exc
                 yield record
 
     def update_public_cdn_bucket(self, records: Iterator[Record]) -> Iterator[Record]:
