@@ -252,6 +252,8 @@ class MITHarvester(Harvester):
             "fgdc": FGDC,
         }
         source_record_class = source_record_classes[metadata_format]
+        message = f"Metadata file located and identified: {source_record_class.__name__}"
+        logger.debug(message)
         return source_record_class(
             data=data,
             event=event,

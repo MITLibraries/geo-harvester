@@ -97,14 +97,17 @@ Usage: -c harvest mit [OPTIONS]
   Harvest and normalize MIT geospatial metadata records.
 
 Options:
-  -i, --input-files TEXT     Directory location of source zip files (may be
-                             local or s3). Defaults to env var
+  -i, --input-files TEXT     Directory location of source record zip files
+                             (may be local or s3). Defaults to env var
                              S3_RESTRICTED_CDN_ROOT if not set.  [required]
   -s, --sqs-topic-name TEXT  SQS topic name with messages capturing zip file
                              modifications. Defaults to env var
-                             GEOHARVESTER_SQS_TOPIC_NAME if not set.  [required]
+                             GEOHARVESTER_SQS_TOPIC_NAME if not set.
+                             [required]
   --skip-sqs-check           If set, will skip confirming that the SQS is
                              empty for 'full' harvest.
+  --preserve-sqs-messages    If set, SQS messages will remain in the queue
+                             after incremental harvest.
   -h, --help                 Show this message and exit.
 ```
 
