@@ -108,15 +108,13 @@ class Harvester(ABC):
             yield record
 
     def filter_failed_records(self, records: Iterator[Record]) -> Iterator[Record]:
-        """Filter Records that encountered an error during harvest step."""
+        """Filter and log Records that encountered an exception."""
         for record in records:
-            message = f"Record {record.identifier}: checking for errors"
-            logger.debug(message)
-            if record.error_message:
+            if record.exception:
                 self.failed_records.append(record)
                 message = (
                     f"Record error: '{record.identifier}', "
-                    f"'{record.error_stage}', '{record.error_message}'"
+                    f"step: '{record.exception_stage}', exception: '{record.exception}'"
                 )
                 logger.error(message)
             else:

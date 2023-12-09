@@ -25,15 +25,15 @@ class Record:
             - for OGM records, this likely will come from the metadata itself
         source_record: instance of SourceRecord
         normalized_record: instance of MITAardvark
-        error_message: string of error encountered during harvest
-        error_stage: what part of the harvest pipeline was the error encountered
+        exception_stage: harvest step in which error/exception occurred
+        exception: Exception object
     """
 
     identifier: str = field()
     source_record: "SourceRecord" = field()
     normalized_record: "MITAardvark" = field(default=None)
-    error_message: str = field(default=None)
-    error_stage: str = field(default=None)
+    exception_stage: str = field(default=None)
+    exception: Exception = field(default=None)
 
 
 @define
@@ -208,8 +208,8 @@ class SourceRecord:
         for the outputted MITAardvark instance.
 
         Exceptions encountered during normalization will bubble up to the Harvester
-        calling context, where it will be handled and recorded as a Record.error, thereby
-        allowing the harvest to continue with other records.
+        calling context, where it will be handled and recorded as a Record.exception,
+        thereby allowing the harvest to continue with other records.
         """
         # get MITAardvark fields
         aardvark_fields = fields(MITAardvark)

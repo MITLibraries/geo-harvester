@@ -10,8 +10,8 @@ classDiagram
         identifier: str
         source_record: SourceRecord
         normalized_record: MITAardvark
-        error_message: str
-        error_stage: str
+        exception_stage: str
+        exception: Exception
     }
     class SourceRecord{
         event: str

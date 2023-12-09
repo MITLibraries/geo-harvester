@@ -159,7 +159,7 @@ def test_mit_harvester_source_record_has_expected_values(caplog):
         == "tests/fixtures/s3_cdn_restricted_legacy_single/SDE_DATA_AE_A8GNS_2003.zip"
     )
     assert record.source_record.event == "created"
-    assert record.error_message is None
+    assert record.exception is None
 
 
 def test_mit_harvester_find_metadata_file_missing_file_error():
