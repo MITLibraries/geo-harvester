@@ -86,7 +86,11 @@ class Harvester(ABC):
             if record.source_record.event == "deleted":
                 yield record
             else:
-                # WIP: not yet calling SourceRecord.normalize() here yet
+                try:
+                    record.normalized_record = record.source_record.normalize()
+                except Exception as exc:  # noqa: BLE001
+                    record.exception_stage = "normalize_source_records"
+                    record.exception = exc
                 yield record
 
     def update_public_cdn_bucket(self, records: Iterator[Record]) -> Iterator[Record]:
@@ -108,15 +112,13 @@ class Harvester(ABC):
             yield record
 
     def filter_failed_records(self, records: Iterator[Record]) -> Iterator[Record]:
-        """Filter Records that encountered an error during harvest step."""
+        """Filter and log Records that encountered an exception."""
         for record in records:
-            message = f"Record {record.identifier}: checking for errors"
-            logger.debug(message)
-            if record.error_message:
+            if record.exception:
                 self.failed_records.append(record)
                 message = (
                     f"Record error: '{record.identifier}', "
-                    f"'{record.error_stage}', '{record.error_message}'"
+                    f"step: '{record.exception_stage}', exception: '{record.exception}'"
                 )
                 logger.error(message)
             else:

@@ -2,7 +2,6 @@
 # ruff: noqa: I001,F401
 
 from harvester.records.record import (
-    DeletedSourceRecord,
     MITAardvark,
     Record,
     SourceRecord,

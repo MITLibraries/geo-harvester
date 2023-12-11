@@ -118,12 +118,19 @@ main.add_command(harvest)
     is_flag=True,
     help="If set, will skip confirming that the SQS is empty for 'full' harvest.",
 )
+@click.option(
+    "--preserve-sqs-messages",
+    required=False,
+    is_flag=True,
+    help="If set, SQS messages will remain in the queue after incremental harvest.",
+)
 @click.pass_context
 def harvest_mit(
     ctx: click.Context,
     input_files: str,
     sqs_topic_name: str,
     skip_sqs_check: bool,
+    preserve_sqs_messages: bool,
 ) -> None:
     """Harvest and normalize MIT geospatial metadata records."""
     harvest_type = ctx.obj["HARVEST_TYPE"]
@@ -137,6 +144,7 @@ def harvest_mit(
         input_files=input_files,
         sqs_topic_name=sqs_topic_name,
         skip_sqs_check=skip_sqs_check,
+        preserve_sqs_messages=preserve_sqs_messages,
     )
     results = harvester.harvest()
     logger.info(results)

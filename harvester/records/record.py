@@ -9,6 +9,7 @@ from attrs import asdict, define, field, fields
 from attrs.validators import instance_of, optional
 from lxml import etree  # type: ignore[import-untyped]
 
+from harvester.aws.sqs import ZipFileEventMessage
 from harvester.records.exceptions import FieldMethodError
 
 logger = logging.getLogger(__name__)
@@ -24,15 +25,15 @@ class Record:
             - for OGM records, this likely will come from the metadata itself
         source_record: instance of SourceRecord
         normalized_record: instance of MITAardvark
-        error_message: string of error encountered during harvest
-        error_stage: what part of the harvest pipeline was the error encountered
+        exception_stage: harvest step in which error/exception occurred
+        exception: Exception object
     """
 
     identifier: str = field()
     source_record: "SourceRecord" = field()
     normalized_record: "MITAardvark" = field(default=None)
-    error_message: str = field(default=None)
-    error_stage: str = field(default=None)
+    exception_stage: str = field(default=None)
+    exception: Exception = field(default=None)
 
 
 @define
@@ -177,14 +178,27 @@ class SourceRecord:
 
     A source_record record may be FGDC, ISO19139, GeoBlacklight (GBL1), or Aardvark
     metadata formats.
+
+    Args:
+        metadata_format: literal string of the metadata format
+            - "fgdc", "iso19139", "gbl1", "aardvark"
+        data: string or bytes of the source file (XML or JSON)
+        zip_file_location: path string to the zip file
+            - this may be local or S3 URI
+        event: literal string of "created" or "deleted"
+        sqs_message: ZipFileEventMessage instance
+            - present only for MIT harvests
+            - by affixing to SourceRecord during record retrieval, it allows for use
+            after the record has been processed to manage the message in the queue
     """
 
     metadata_format: Literal["fgdc", "iso19139", "gbl1", "aardvark"] = field(default=None)
     data: str | bytes | None = field(default=None, repr=False)
     zip_file_location: str = field(default=None)
     event: Literal["created", "deleted"] = field(default=None)
+    sqs_message: ZipFileEventMessage = field(default=None)
 
-    def normalize(self) -> MITAardvark | None:
+    def normalize(self) -> MITAardvark:
         """Method to normalize a SourceRecord to an MIT Aardvark MITAardvark instance.
 
         This is the entrypoint for normalization.  This method will look to MITAardvark
@@ -194,8 +208,8 @@ class SourceRecord:
         for the outputted MITAardvark instance.
 
         Exceptions encountered during normalization will bubble up to the Harvester
-        calling context, where it will be handled and recorded as a Record.error, thereby
-        allowing the harvest to continue with other records.
+        calling context, where it will be handled and recorded as a Record.exception,
+        thereby allowing the harvest to continue with other records.
         """
         # get MITAardvark fields
         aardvark_fields = fields(MITAardvark)
@@ -215,16 +229,6 @@ class SourceRecord:
 
         # initialize a new MITAardvark instance and return
         return MITAardvark(**field_values)
-
-
-class DeletedSourceRecord(SourceRecord):
-    """Class to represent a SourceRecord that has been deleted."""
-
-    event: Literal["deleted"] = field(default="deleted")
-
-    def normalize(self) -> None:
-        message = "Cannot normalize a DeletedSourceRecord, no data to normalize."
-        raise RuntimeError(message)
 
 
 @define

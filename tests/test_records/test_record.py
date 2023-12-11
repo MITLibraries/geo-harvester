@@ -6,14 +6,7 @@ from unittest.mock import patch
 import pytest
 from lxml import etree
 
-from harvester.records import DeletedSourceRecord
 from harvester.records.exceptions import FieldMethodError
-
-
-def test_deleted_record_normalize_raise_error():
-    record = DeletedSourceRecord()
-    with pytest.raises(RuntimeError):
-        record.normalize()
 
 
 def test_source_record_data_bytes(valid_generic_xml_source_record):
