@@ -1,6 +1,7 @@
 """harvester.harvest.mit"""
 
 import datetime
+import fnmatch
 import glob
 import logging
 import os
@@ -204,28 +205,41 @@ class MITHarvester(Harvester):
         """Identify ISO19139 or FGDC metadata file in the zip file.
 
         The ordered dictionary is opinionated to return the ISO19139 metadata first if
-        found.
+        found.  Additionally, the casing of zip filename vs zip content filenames cannot
+        be guaranteed, so we use fnmatch to look for 'iso19139' anywhere in the filename.
         """
         ordered_expected_metadata_filenames = {
             "iso19139": [
-                f"{identifier}/{identifier}.iso19139.xml",
-                f"{identifier}.iso19139.xml",
+                f"{identifier}/*iso19139.xml",
+                f"{identifier}*iso19139.xml",
             ],
             "fgdc": [
-                f"{identifier}/{identifier}.xml",
-                f"{identifier}.xml",
+                f"{identifier}/*.xml",
+                f"{identifier}*.xml",
             ],
         }
 
-        files = zip_file_object.namelist()
+        skip_conditions = [
+            ".aux.xml",  # *.aux.xml maybe present but no FGDC metadata
+        ]
+
+        files_original = {
+            filename: filename.lower() for filename in zip_file_object.namelist()
+        }
+
         for (
             metadata_format,
             metadata_filenames,
         ) in ordered_expected_metadata_filenames.items():
             for metadata_filename in metadata_filenames:
-                if metadata_filename in files:
-                    return metadata_format, metadata_filename
-
+                for file_original, file_lower in files_original.items():
+                    if any(
+                        fnmatch.fnmatch(file_lower, f"*{skip}")
+                        for skip in skip_conditions
+                    ):
+                        continue
+                    if fnmatch.fnmatch(file_lower, metadata_filename.lower()):
+                        return metadata_format, file_original
         message = "Could not find ISO19139 or FGDC metadata file in zip file"
         raise FileNotFoundError(message)
 
