@@ -1,6 +1,7 @@
 """harvester.harvest.records.record"""
 # ruff: noqa: N815; allows camelCase for aardvark fields
 
+import datetime
 import json
 import logging
 from typing import Any, Literal
@@ -229,6 +230,13 @@ class SourceRecord:
 
         # initialize a new MITAardvark instance and return
         return MITAardvark(**field_values)
+
+    # Shared Field Methods
+    def _gbl_mdModified_dt(self):
+        return datetime.datetime.utcnow().strftime("%Y-%m-%d")
+
+    def _gbl_mdVersion_s(self):
+        return "Aardvark"
 
 
 @define
