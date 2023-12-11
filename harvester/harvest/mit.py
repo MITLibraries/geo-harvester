@@ -54,7 +54,7 @@ class MITHarvester(Harvester):
             identifier = os.path.splitext(zip_file)[0].split("/")[-1]
             yield Record(
                 identifier=identifier,
-                source_record=self._create_source_record(
+                source_record=self.create_source_record_from_zip_file(
                     identifier=identifier,
                     zip_file=zip_file,
                     event="created",
@@ -76,7 +76,7 @@ class MITHarvester(Harvester):
             identifier = zip_file_event_message.zip_file_identifier
             yield Record(
                 identifier=identifier,
-                source_record=self._create_source_record(
+                source_record=self.create_source_record_from_zip_file(
                     identifier=identifier,
                     zip_file=zip_file_event_message.zip_file,
                     event=zip_file_event_message.event,
@@ -176,8 +176,9 @@ class MITHarvester(Harvester):
             for zip_filepath in zip_filepaths
         ]
 
+    @classmethod
     def _identify_and_read_metadata_file(
-        self, identifier: str, zip_file: str
+        cls, identifier: str, zip_file: str
     ) -> tuple[str, bytes]:
         """Identify the metadata file in a zip file and read XML bytes.
 
@@ -190,10 +191,10 @@ class MITHarvester(Harvester):
         with smart_open.open(zip_file, "rb") as file_object, zipfile.ZipFile(
             file_object
         ) as zip_file_object:
-            metadata_format, metadata_filename = self._find_metadata_file(
+            metadata_format, metadata_filename = cls._find_metadata_file(
                 zip_file_object, identifier
             )
-            metadata_bytes = self._read_metadata_file(zip_file_object, metadata_filename)
+            metadata_bytes = cls._read_metadata_file(zip_file_object, metadata_filename)
             return metadata_format, metadata_bytes
 
     @staticmethod
@@ -236,17 +237,16 @@ class MITHarvester(Harvester):
         with zip_file_object.open(metadata_filename, "r") as metadata_file_object:
             return metadata_file_object.read()
 
-    def _create_source_record(
-        self,
+    @classmethod
+    def create_source_record_from_zip_file(
+        cls,
         identifier: str,
         zip_file: str,
         event: Literal["created", "deleted"],
         sqs_message: ZipFileEventMessage | None = None,
     ) -> SourceRecord:
         """Init a SourceRecord based on event and zip file."""
-        metadata_format, data = self._identify_and_read_metadata_file(
-            identifier, zip_file
-        )
+        metadata_format, data = cls._identify_and_read_metadata_file(identifier, zip_file)
         source_record_classes = {
             "iso19139": ISO19139,
             "fgdc": FGDC,
