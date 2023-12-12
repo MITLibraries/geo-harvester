@@ -35,8 +35,8 @@ class Config:
             None: "https://cdn.dev.mitlibrary.net/geo",
             "test": "https://cdn.dev.mitlibrary.net/geo",
             "dev": "https://cdn.dev.mitlibrary.net/geo",
-            "stage": "https://cdn.dev.mitlibrary.net/geo",
-            "prod": "https://cdn.dev.mitlibrary.net/geo",
+            "stage": "https://cdn.stage.mitlibrary.net/geo",
+            "prod": "https://cdn.libraries.mit.edu/geo",
         }[self.WORKSPACE]
 
 
