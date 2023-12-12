@@ -295,23 +295,23 @@ class SourceRecord:
 
     @abstractmethod
     def _dct_accessRights_s(self) -> str:
-        pass
+        pass  # pragma: nocover
 
     @abstractmethod
     def _dct_title_s(self) -> str | None:
-        pass
+        pass  # pragma: nocover
 
     @abstractmethod
     def _gbl_resourceClass_sm(self) -> list[str] | None:
-        pass
+        pass  # pragma: nocover
 
     @abstractmethod
     def _dcat_bbox(self) -> str:
-        pass
+        pass  # pragma: nocover
 
     @abstractmethod
     def _locn_geometry(self) -> str:
-        pass
+        pass  # pragma: nocover
 
     ####################################
     # Shared Field Methods

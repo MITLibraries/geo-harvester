@@ -24,6 +24,7 @@ moto = "*"
 types-python-dateutil = "*"
 boto3-stubs = {version = "*", extras = ["eventbridge", "s3", "sqs"]}
 lxml-stubs = "*"
+freezegun = "*"
 
 [requires]
 python_version = "3.11"

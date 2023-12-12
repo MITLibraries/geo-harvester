@@ -1,9 +1,10 @@
-# ruff: noqa: SLF001, PLR2004
+# ruff: noqa: SLF001, PLR2004, N802
 
 import json
 from unittest.mock import patch
 
 import pytest
+from freezegun import freeze_time
 from lxml import etree
 
 from harvester.records.exceptions import FieldMethodError
@@ -102,3 +103,63 @@ def test_mitaardvark_to_json_success(
     assert minimal_mitaardvark_record.to_json(pretty=False) == json.dumps(
         minimal_mitaardvark_data
     )
+
+
+def test_record_output_filename_extension(valid_fgdc_source_record_from_zip):
+    assert valid_fgdc_source_record_from_zip.output_filename_extension == "xml"
+
+
+def test_record_source_output_filenames(valid_fgdc_source_record_from_zip):
+    assert (
+        valid_fgdc_source_record_from_zip.source_metadata_filename
+        == "SDE_DATA_AE_A8GNS_2003.source.fgdc.xml"
+    )
+    assert (
+        valid_fgdc_source_record_from_zip.normalized_metadata_filename
+        == "SDE_DATA_AE_A8GNS_2003.normalized.aardvark.json"
+    )
+
+
+def test_record_shared_field_method_id_success(valid_fgdc_source_record_from_zip):
+    assert valid_fgdc_source_record_from_zip._id() == "mit:SDE_DATA_AE_A8GNS_2003"
+
+
+@freeze_time("2024-01-01")
+def test_record_shared_field_method_gbl_mdModified_dt_success(
+    valid_fgdc_source_record_from_zip,
+):
+    assert valid_fgdc_source_record_from_zip._gbl_mdModified_dt() == "2024-01-01"
+
+
+def test_record_shared_field_method_gbl_mdVersion_s_success(
+    valid_fgdc_source_record_from_zip,
+):
+    assert valid_fgdc_source_record_from_zip._gbl_mdVersion_s() == "Aardvark"
+
+
+def test_record_shared_field_method_dct_references_s_success(
+    valid_fgdc_source_record_from_zip,
+):
+    references = {
+        "https://schema.org/downloadUrl": [
+            {
+                "label": "Source Metadata",
+                "protocol": "Download",
+                "url": "https://cdn.dev.mitlibrary.net/geo/public"
+                "/SDE_DATA_AE_A8GNS_2003.source.fgdc.xml",
+            },
+            {
+                "label": "Normalized Metadata",
+                "protocol": "Download",
+                "url": "https://cdn.dev.mitlibrary.net/geo/public"
+                "/SDE_DATA_AE_A8GNS_2003.normalized.aardvark.json",
+            },
+            {
+                "label": "Data Zipfile",
+                "protocol": "Download",
+                "url": "https://cdn.dev.mitlibrary.net/geo/public"
+                "/SDE_DATA_AE_A8GNS_2003.zip",
+            },
+        ]
+    }
+    assert valid_fgdc_source_record_from_zip._dct_references_s() == json.dumps(references)

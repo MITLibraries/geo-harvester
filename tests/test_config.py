@@ -57,3 +57,7 @@ def test_config_env_var_access_success(config_instance):
 def test_config_env_var_access_error(config_instance):
     with pytest.raises(AttributeError):
         _ = config_instance.DOES_NOT_EXIST
+
+
+def test_config_cdn_root(config_instance):
+    assert config_instance.http_cdn_root == "https://cdn.dev.mitlibrary.net/geo"
