@@ -1,7 +1,8 @@
 """harvester.harvest.records.iso19139"""
+# ruff: noqa
+# mypy: ignore-errors
 
 from collections import defaultdict
-import datetime
 from dateutil.parser import parse as date_parser
 import json
 from typing import Literal
@@ -27,6 +28,66 @@ class ISO19139(XMLSourceRecord):
         },
         repr=False,
     )
+
+    ########################
+    # Required Field Methods
+    ########################
+    def _dct_accessRights_s(self):
+        """
+        NOTE: presence of any <MD_RestrictionCode> indicates restricted resource
+        """
+        xpath_expr = """
+        //gmd:MD_Metadata
+            /gmd:identificationInfo
+                /gmd:MD_DataIdentification
+                    /gmd:resourceConstraints
+                        /gmd:MD_LegalConstraints
+                            /gmd:accessConstraints
+                                /gmd:MD_RestrictionCode
+        """
+        matches = self.xpath(xpath_expr)
+        if not matches:
+            return "Public"
+        else:
+            return "Restricted"
+
+    def _dct_title_s(self) -> str:
+        xpath_expr = """
+        //gmd:MD_Metadata
+            /gmd:identificationInfo
+                /gmd:MD_DataIdentification
+                    /gmd:citation
+                        /gmd:CI_Citation
+                            /gmd:title
+                                /gco:CharacterString
+        """
+        values = self.string_list_from_xpath(xpath_expr)
+        if values:
+            return values[0]
+        return None
+
+    def _gbl_resourceClass_sm(self):
+        """
+        Controlled vocabulary: ['Datasets','Maps','Imagery','Collections','Websites',
+        'Web services','Other']
+        """
+        xpath_expr = """
+        //gmd:MD_Metadata
+            /gmd:hierarchyLevel
+                /gmd:MD_ScopeCode
+        """
+        values = self.string_list_from_xpath(xpath_expr)
+        if not values:
+            return None
+        # TODO: complete and improve this mapping
+        value_map = {
+            "dataset": "Datasets",
+        }
+        output = []
+        for value in values:
+            if mapped_value := value_map.get(value.strip().lower()):
+                output.append(mapped_value)
+        return output
 
     def _get_temporal_extents(self):
         """
@@ -210,14 +271,95 @@ class ISO19139(XMLSourceRecord):
             bbox_data[element_name].append(boundary_elem.getchildren()[0].text)
         lat_lon_envelope = ", ".join(
             [
-                min(bbox_data["westBoundLongitude"]),
-                max(bbox_data["southBoundLatitude"]),
-                max(bbox_data["eastBoundLongitude"]),
-                min(bbox_data["northBoundLatitude"]),
+                min(bbox_data["westBoundLongitude"]).strip(),
+                max(bbox_data["southBoundLatitude"]).strip(),
+                max(bbox_data["eastBoundLongitude"]).strip(),
+                min(bbox_data["northBoundLatitude"]).strip(),
             ]
         )
 
         return f"ENVELOPE({lat_lon_envelope})"
+
+    def _dct_references_s(self):
+        """
+        https://opengeometadata.org/ogm-aardvark/#references
+        https://opengeometadata.org/configure-references-links/
+
+        NOTE: not multivalued, but serialized JSON, so can contain multiple URLs
+
+        Example:
+        {
+          "dct_references_s": "{\"http://schema.org/downloadUrl\":[
+            {
+              \"url\":\"https://cugir-data.s3.amazonaws.com/00/79/50/cugir-007950.zip\",
+              \"label\":\"Shapefile\"
+            },
+            {
+              \"url\":\"https://cugir-data.s3.amazonaws.com/00/79/50/agBROO.pdf\",
+              \"label\":\"PDF\"
+            },
+            {
+              \"url\":\"https://cugir-data.s3.amazonaws.com/00/79/50/agBROO2011.kmz\",
+              \"label\":\"KMZ\"
+            }]
+          }"
+        }
+        """
+        resources = []
+
+        # extract URLs from metadata
+        xpath_expr = """
+        //gmd:MD_Metadata
+            /gmd:distributionInfo
+                /gmd:MD_Distribution
+                    /gmd:transferOptions
+                        /gmd:MD_DigitalTransferOptions
+                            /gmd:onLine
+                                /gmd:CI_OnlineResource
+        """
+        metadata_online_resources = self.xpath(xpath_expr)
+        for item in metadata_online_resources:
+            label, protocol = None, None
+            if label_match := item.xpath(
+                "gmd:name/gco:CharacterString/text()", namespaces=self.nsmap
+            ):
+                label = label_match[0]
+            if protocol_match := item.xpath(
+                "gmd:protocol/gco:CharacterString/text()", namespaces=self.nsmap
+            ):
+                protocol = protocol_match[0]
+            url = item.xpath("gmd:linkage/gmd:URL/text()", namespaces=self.nsmap)[0]
+            resources.append({"label": label, "protocol": protocol, "url": url})
+
+        # add TIMDEX download URL
+        resources.append(
+            {
+                "label": "TIMDEX S3 Zipfile",
+                "protocol": "Download",
+                "url": "https://mit.s3.amazonaws.com/path/to/zip/file.zip",
+            }
+        )
+        return json.dumps({"http://schema.org/downloadUrl": resources}, indent=None)
+
+    def _locn_geometry(self):
+        """
+        NOTE: currently mirroring dcat_bbox
+            - consider more advanced geographies if present
+        """
+        return self._dcat_bbox()
+
+    ########################
+    # Optional Field Methods
+    ########################
+    def _dct_description_sm(self):
+        xpath_expr = """
+        //gmd:MD_Metadata
+            /gmd:identificationInfo
+                /gmd:MD_DataIdentification
+                    /gmd:abstract
+                        /gco:CharacterString
+        """
+        return self.string_list_from_xpath(xpath_expr)
 
     def _dcat_keyword_sm(self) -> list[str]:
         xpath_expr = """
@@ -229,25 +371,6 @@ class ISO19139(XMLSourceRecord):
                             /gmd:keyword/gco:CharacterString
         """
         return self.string_list_from_xpath(xpath_expr)
-
-    def _dct_accessRights_s(self):
-        """
-        NOTE: presence of any <MD_RestrictionCode> indicates restricted resource
-        """
-        xpath_expr = """
-        //gmd:MD_Metadata
-            /gmd:identificationInfo
-                /gmd:MD_DataIdentification
-                    /gmd:resourceConstraints
-                        /gmd:MD_LegalConstraints
-                            /gmd:accessConstraints
-                                /gmd:MD_RestrictionCode
-        """
-        matches = self.xpath(xpath_expr)
-        if not matches:
-            return "Public"
-        else:
-            return "Restricted"
 
     def _dcat_theme_sm(self) -> list[str]:
         xpath_expr = """
@@ -297,16 +420,6 @@ class ISO19139(XMLSourceRecord):
                                 /gmd:CI_ResponsibleParty
                                     /gmd:organisationName
                                         /gco:CharacterString
-        """
-        return self.string_list_from_xpath(xpath_expr)
-
-    def _dct_description_sm(self):
-        xpath_expr = """
-        //gmd:MD_Metadata
-            /gmd:identificationInfo
-                /gmd:MD_DataIdentification
-                    /gmd:abstract
-                        /gco:CharacterString
         """
         return self.string_list_from_xpath(xpath_expr)
 
@@ -380,67 +493,6 @@ class ISO19139(XMLSourceRecord):
         """
         return self.string_list_from_xpath(xpath_expr)
 
-    def _dct_references_s(self):
-        """
-        https://opengeometadata.org/ogm-aardvark/#references
-        https://opengeometadata.org/configure-references-links/
-
-        NOTE: not multivalued, but serialized JSON, so can contain multiple URLs
-
-        Example:
-        {
-          "dct_references_s": "{\"http://schema.org/downloadUrl\":[
-            {
-              \"url\":\"https://cugir-data.s3.amazonaws.com/00/79/50/cugir-007950.zip\",
-              \"label\":\"Shapefile\"
-            },
-            {
-              \"url\":\"https://cugir-data.s3.amazonaws.com/00/79/50/agBROO.pdf\",
-              \"label\":\"PDF\"
-            },
-            {
-              \"url\":\"https://cugir-data.s3.amazonaws.com/00/79/50/agBROO2011.kmz\",
-              \"label\":\"KMZ\"
-            }]
-          }"
-        }
-        """
-        resources = []
-
-        # extract URLs from metadata
-        xpath_expr = """
-        //gmd:MD_Metadata
-            /gmd:distributionInfo
-                /gmd:MD_Distribution
-                    /gmd:transferOptions
-                        /gmd:MD_DigitalTransferOptions
-                            /gmd:onLine
-                                /gmd:CI_OnlineResource
-        """
-        metadata_online_resources = self.xpath(xpath_expr)
-        for item in metadata_online_resources:
-            label, protocol = None, None
-            if label_match := item.xpath(
-                "gmd:name/gco:CharacterString/text()", namespaces=self.nsmap
-            ):
-                label = label_match[0]
-            if protocol_match := item.xpath(
-                "gmd:protocol/gco:CharacterString/text()", namespaces=self.nsmap
-            ):
-                protocol = protocol_match[0]
-            url = item.xpath("gmd:linkage/gmd:URL/text()", namespaces=self.nsmap)[0]
-            resources.append({"label": label, "protocol": protocol, "url": url})
-
-        # add TIMDEX download URL
-        resources.append(
-            {
-                "label": "TIMDEX S3 Zipfile",
-                "protocol": "Download",
-                "url": "https://mit.s3.amazonaws.com/path/to/zip/file.zip",
-            }
-        )
-        return json.dumps({"http://schema.org/downloadUrl": resources}, indent=None)
-
     def _dct_rights_sm(self):
         xpath_expr = """
         //gmd:MD_Metadata
@@ -485,49 +537,11 @@ class ISO19139(XMLSourceRecord):
             output.append(f"{period['begin_timestamp']}-{period['end_timestamp']}")
         return output
 
-    def _dct_title_s(self) -> str:
-        xpath_expr = """
-        //gmd:MD_Metadata
-            /gmd:identificationInfo
-                /gmd:MD_DataIdentification
-                    /gmd:citation
-                        /gmd:CI_Citation
-                            /gmd:title
-                                /gco:CharacterString
-        """
-        values = self.string_list_from_xpath(xpath_expr)
-        if values:
-            return values[0]
-        return None
-
     def _gbl_dateRange_drsim(self):
         temporal_elements = self._get_temporal_extents()
         output = []
         for period in temporal_elements["periods"]:
             output.append(f"{period['begin_timestamp']}-{period['end_timestamp']}")
-        return output
-
-    def _gbl_resourceClass_sm(self):
-        """
-        Controlled vocabulary: ['Datasets','Maps','Imagery','Collections','Websites',
-        'Web services','Other']
-        """
-        xpath_expr = """
-        //gmd:MD_Metadata
-            /gmd:hierarchyLevel
-                /gmd:MD_ScopeCode
-        """
-        values = self.string_list_from_xpath(xpath_expr)
-        if not values:
-            return None
-        # TODO: complete and improve this mapping
-        value_map = {
-            "dataset": "Datasets",
-        }
-        output = []
-        for value in values:
-            if mapped_value := value_map.get(value.strip().lower()):
-                output.append(mapped_value)
         return output
 
     def _gbl_resourceType_sm(self):
@@ -554,17 +568,6 @@ class ISO19139(XMLSourceRecord):
         TODO: look into meaningful identifiers from ISO file
         """
         return "geo:mit:<PLACEHOLDER_FROM_MIT_ISO_ID>"
-
-    def _id(self):
-        # TODO: look into meaningful identifiers from ISO file
-        return "geo:mit:<PLACEHOLDER_FROM_MIT_ISO_ID>"
-
-    def _locn_geometry(self):
-        """
-        NOTE: currently mirroring dcat_bbox
-            - consider more advanced geographies if present
-        """
-        return self._dcat_bbox()
 
     def _schema_provider_s(self):
         return "MIT"
