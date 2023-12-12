@@ -10,6 +10,7 @@ attrs = "*"
 boto3 = "*"
 smart-open = "*"
 lxml = "*"
+jsonlines = "*"
 
 [dev-packages]
 black = "*"

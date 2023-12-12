@@ -8,7 +8,7 @@ line-length = 90
 [tool.mypy]
 disallow_untyped_calls = true
 disallow_untyped_defs = true
-exclude = ["tests/"]
+exclude = ["tests/", "output/"]
 
 [tool.pytest.ini_options]
 log_level = "INFO"
@@ -61,6 +61,9 @@ fixture-parentheses = false
     "ANN",
     "ARG001",
     "S101",
+]
+"output/*" = [
+    "ALL"
 ]
 
 [tool.ruff.pycodestyle]
