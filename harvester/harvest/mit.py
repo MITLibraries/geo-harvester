@@ -269,6 +269,8 @@ class MITHarvester(Harvester):
         message = f"Metadata file located and identified: {source_record_class.__name__}"
         logger.debug(message)
         return source_record_class(
+            origin="mit",
+            identifier=identifier,
             data=data,
             event=event,
             zip_file_location=zip_file,

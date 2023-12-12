@@ -1,9 +1,10 @@
 """harvester.harvest.records.record"""
-# ruff: noqa: N815; allows camelCase for aardvark fields
+# ruff: noqa: N802, N815; allows camelCase for aardvark fields
 
 import datetime
 import json
 import logging
+from abc import abstractmethod
 from typing import Any, Literal
 
 from attrs import asdict, define, field, fields
@@ -11,9 +12,12 @@ from attrs.validators import instance_of, optional
 from lxml import etree  # type: ignore[import-untyped]
 
 from harvester.aws.sqs import ZipFileEventMessage
+from harvester.config import Config
 from harvester.records.exceptions import FieldMethodError
 
 logger = logging.getLogger(__name__)
+
+CONFIG = Config()
 
 
 @define
@@ -30,8 +34,8 @@ class Record:
         exception: Exception object
     """
 
-    identifier: str = field()
-    source_record: "SourceRecord" = field()
+    identifier: str = field(default=None)
+    source_record: "SourceRecord" = field(default=None)
     normalized_record: "MITAardvark" = field(default=None)
     exception_stage: str = field(default=None)
     exception: Exception = field(default=None)
@@ -181,6 +185,8 @@ class SourceRecord:
     metadata formats.
 
     Args:
+        origin: origin of SourceRecord, with optional colon ":" delimited namespace
+            - e.g. "mit", "ogm:stanford"
         metadata_format: literal string of the metadata format
             - "fgdc", "iso19139", "gbl1", "aardvark"
         data: string or bytes of the source file (XML or JSON)
@@ -193,11 +199,63 @@ class SourceRecord:
             after the record has been processed to manage the message in the queue
     """
 
+    origin: str = field(default=None)
+    identifier: str = field(default=None)
     metadata_format: Literal["fgdc", "iso19139", "gbl1", "aardvark"] = field(default=None)
     data: str | bytes | None = field(default=None, repr=False)
     zip_file_location: str = field(default=None)
     event: Literal["created", "deleted"] = field(default=None)
     sqs_message: ZipFileEventMessage = field(default=None)
+
+    @property
+    def output_filename_extension(self) -> str:
+        """Provide source output filename extension based on metadata format."""
+        return {
+            "fgdc": "xml",
+            "iso19139": "xml",
+            "gbl1": "json",
+            "aardvark": "json",
+        }[self.metadata_format]
+
+    @property
+    def source_metadata_filename(self) -> str:
+        """Construct output source metadata filename.
+
+        Examples:
+            - ABC123.source.fgdc.xml
+            - ABC123.source.iso19139.xml
+            - ABC123.source.gbl1.json
+            - ABC123.source.aardvark.json
+        """
+        return ".".join(  # noqa: FLY002
+            [
+                self.identifier,
+                "source",
+                self.metadata_format,
+                self.output_filename_extension,
+            ]
+        )
+
+    @property
+    def normalized_metadata_filename(self) -> str:
+        """Construct output normalized metadata filename.
+
+        Example: ABC123.normalized.aardvark.json
+        """
+        return f"{self.identifier}.normalized.aardvark.json"
+
+    @property
+    def is_restricted(self) -> bool:
+        """Property to return boolean if the Record is restricted.
+
+        This determination is based on the Aardvark field 'dct_accessRights_s' which is a
+        controlled value of "Restricted" or "Public", and is required.
+        """
+        return {
+            "Public": False,
+            "Restricted": True,
+            None: True,
+        }[self._dct_accessRights_s()]
 
     def normalize(self) -> MITAardvark:
         """Method to normalize a SourceRecord to an MIT Aardvark MITAardvark instance.
@@ -231,17 +289,88 @@ class SourceRecord:
         # initialize a new MITAardvark instance and return
         return MITAardvark(**field_values)
 
-    # Shared Field Methods
-    def _gbl_mdModified_dt(self):
-        return datetime.datetime.utcnow().strftime("%Y-%m-%d")
+    ####################################
+    # Abstract Required Field Methods
+    ####################################
 
-    def _gbl_mdVersion_s(self):
+    @abstractmethod
+    def _dct_accessRights_s(self) -> str:
+        pass
+
+    @abstractmethod
+    def _dct_title_s(self) -> str | None:
+        pass
+
+    @abstractmethod
+    def _gbl_resourceClass_sm(self) -> list[str] | None:
+        pass
+
+    @abstractmethod
+    def _dcat_bbox(self) -> str:
+        pass
+
+    @abstractmethod
+    def _locn_geometry(self) -> str:
+        pass
+
+    ####################################
+    # Shared Field Methods
+    ####################################
+    def _id(self) -> str:
+        """Shared field method: id
+
+        Construction of origin + identifier.
+        """
+        return f"{self.origin}:{self.identifier}"
+
+    def _gbl_mdModified_dt(self) -> str:
+        """Shared field method: gbl_mdModified_dt"""
+        return datetime.datetime.now(tz=datetime.UTC).strftime("%Y-%m-%d")
+
+    def _gbl_mdVersion_s(self) -> str:
+        """Shared field method: gbl_mdVersion_s"""
         return "Aardvark"
+
+    def _dct_references_s(self) -> str:
+        """Shared field method: dct_references_s
+
+        Builds http URLs for the data zip file (if MIT harvest), source and normalized
+        metadata files, in the S3 CDN bucket.
+        """
+        # determine CDN public or restricted folder
+        cdn_folder = {True: "restricted", False: "public"}[self.is_restricted]
+
+        # build URLs payload
+        cdn_root = CONFIG.http_cdn_root
+        download_urls = [
+            {
+                "label": "Source Metadata",
+                "protocol": "Download",
+                "url": f"{cdn_root}/public/{self.source_metadata_filename}",
+            },
+            {
+                "label": "Normalized Metadata",
+                "protocol": "Download",
+                "url": f"{cdn_root}/public/{self.normalized_metadata_filename}",
+            },
+        ]
+        # add data zip file URL if MIT harvest
+        if self.origin == "mit":
+            download_urls.append(
+                {
+                    "label": "Data Zipfile",
+                    "protocol": "Download",
+                    "url": f"{cdn_root}/{cdn_folder}/{self.identifier}.zip",
+                }
+            )
+        urls_payload = {"https://schema.org/downloadUrl": download_urls}
+
+        return json.dumps(urls_payload)
 
 
 @define
 class XMLSourceRecord(SourceRecord):
-    nsmap: dict = field(default=None)
+    nsmap: dict = field(default={})
     _root: etree._Element = field(default=None, repr=False)  # noqa: SLF001
 
     @property
