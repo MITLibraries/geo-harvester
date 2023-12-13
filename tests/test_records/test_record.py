@@ -105,40 +105,40 @@ def test_mitaardvark_to_json_success(
     )
 
 
-def test_record_output_filename_extension(valid_fgdc_source_record_from_zip):
-    assert valid_fgdc_source_record_from_zip.output_filename_extension == "xml"
+def test_record_output_filename_extension(fgdc_source_record_from_zip):
+    assert fgdc_source_record_from_zip.output_filename_extension == "xml"
 
 
-def test_record_source_output_filenames(valid_fgdc_source_record_from_zip):
+def test_record_source_output_filenames(fgdc_source_record_from_zip):
     assert (
-        valid_fgdc_source_record_from_zip.source_metadata_filename
+        fgdc_source_record_from_zip.source_metadata_filename
         == "SDE_DATA_AE_A8GNS_2003.source.fgdc.xml"
     )
     assert (
-        valid_fgdc_source_record_from_zip.normalized_metadata_filename
+        fgdc_source_record_from_zip.normalized_metadata_filename
         == "SDE_DATA_AE_A8GNS_2003.normalized.aardvark.json"
     )
 
 
-def test_record_shared_field_method_id_success(valid_fgdc_source_record_from_zip):
-    assert valid_fgdc_source_record_from_zip._id() == "mit:SDE_DATA_AE_A8GNS_2003"
+def test_record_shared_field_method_id_success(fgdc_source_record_from_zip):
+    assert fgdc_source_record_from_zip._id() == "mit:SDE_DATA_AE_A8GNS_2003"
 
 
 @freeze_time("2024-01-01")
 def test_record_shared_field_method_gbl_mdModified_dt_success(
-    valid_fgdc_source_record_from_zip,
+    fgdc_source_record_from_zip,
 ):
-    assert valid_fgdc_source_record_from_zip._gbl_mdModified_dt() == "2024-01-01"
+    assert fgdc_source_record_from_zip._gbl_mdModified_dt() == "2024-01-01"
 
 
 def test_record_shared_field_method_gbl_mdVersion_s_success(
-    valid_fgdc_source_record_from_zip,
+    fgdc_source_record_from_zip,
 ):
-    assert valid_fgdc_source_record_from_zip._gbl_mdVersion_s() == "Aardvark"
+    assert fgdc_source_record_from_zip._gbl_mdVersion_s() == "Aardvark"
 
 
 def test_record_shared_field_method_dct_references_s_success(
-    valid_fgdc_source_record_from_zip,
+    fgdc_source_record_from_zip,
 ):
     references = {
         "https://schema.org/downloadUrl": [
@@ -162,4 +162,15 @@ def test_record_shared_field_method_dct_references_s_success(
             },
         ]
     }
-    assert valid_fgdc_source_record_from_zip._dct_references_s() == json.dumps(references)
+    assert fgdc_source_record_from_zip._dct_references_s() == json.dumps(references)
+
+
+def test_custom_exception_has_original_exception():
+    try:
+        1 / 0  # noqa: B018
+    except Exception as exc:  # noqa: BLE001
+        message = "I am the custom exception."
+        custom_exception = FieldMethodError(exc, message)
+    assert str(custom_exception) == "I am the custom exception."
+    assert str(custom_exception.original_exception) == "division by zero"
+    assert "1 / 0" in custom_exception.get_formatted_traceback()

@@ -11,7 +11,7 @@ from harvester.aws.sqs import SQSClient, ZipFileEventMessage
 from harvester.config import Config
 from harvester.harvest import Harvester
 from harvester.harvest.mit import MITHarvester
-from harvester.records import FGDC, ISO19139, MITAardvark, XMLSourceRecord
+from harvester.records import FGDC, ISO19139, MITAardvark, Record, XMLSourceRecord
 
 
 @pytest.fixture(autouse=True)
@@ -242,9 +242,19 @@ def minimal_mitaardvark_record(minimal_mitaardvark_data):
 
 
 @pytest.fixture
-def valid_fgdc_source_record_from_zip():
+def fgdc_source_record_from_zip():
     return MITHarvester.create_source_record_from_zip_file(
         identifier="SDE_DATA_AE_A8GNS_2003",
         event="created",
         zip_file="tests/fixtures/zip_files/SDE_DATA_AE_A8GNS_2003.zip",
     )
+
+
+@pytest.fixture
+def records_for_normalize(fgdc_source_record_from_zip):
+    return [
+        Record(
+            identifier="SDE_DATA_AE_A8GNS_2003",
+            source_record=fgdc_source_record_from_zip,
+        )
+    ]

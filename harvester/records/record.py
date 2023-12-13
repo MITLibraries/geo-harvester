@@ -284,7 +284,7 @@ class SourceRecord:
                         f"Error getting value for field '{aardvark_field.name}': {exc}"
                     )
                     logger.exception(message)
-                    raise FieldMethodError(message) from exc
+                    raise FieldMethodError(exc, message) from exc
 
         # initialize a new MITAardvark instance and return
         return MITAardvark(**field_values)
