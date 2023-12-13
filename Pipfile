@@ -11,6 +11,7 @@ boto3 = "*"
 smart-open = "*"
 lxml = "*"
 jsonlines = "*"
+pycountry = "*"
 
 [dev-packages]
 black = "*"
