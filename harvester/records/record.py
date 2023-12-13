@@ -14,7 +14,7 @@ from lxml import etree  # type: ignore[import-untyped]
 from harvester.aws.sqs import ZipFileEventMessage
 from harvester.config import Config
 from harvester.records.exceptions import FieldMethodError
-from harvester.utils import dedupe_list_of_strings
+from harvester.utils import dedupe_list_of_values
 
 logger = logging.getLogger(__name__)
 
@@ -140,8 +140,8 @@ class MITAardvark:
     gbl_georeferenced_b: str | None = field(
         default=None, validator=optional(instance_of(str))
     )
-    gbl_indexYear_im: str | None = field(
-        default=None, validator=optional(instance_of(str))
+    gbl_indexYear_im: list | None = field(
+        default=None, validator=optional(instance_of(list))
     )
     gbl_resourceType_sm: list | None = field(
         default=None, validator=optional(instance_of(list))
@@ -300,7 +300,10 @@ class SourceRecord:
         # dedupe all list fields
         for field_name, field_values in all_field_values.items():
             if isinstance(field_values, list):
-                all_field_values[field_name] = dedupe_list_of_strings(field_values)
+                deduped_field_values = [
+                    value for value in field_values if value is not None
+                ]
+                all_field_values[field_name] = dedupe_list_of_values(deduped_field_values)
 
         # initialize a new MITAardvark instance and return
         return MITAardvark(**all_field_values)

@@ -1,6 +1,7 @@
 """harvester.harvest.records.fgdc"""
 # ruff: noqa: N802, N815; allows camelCase for aardvark fields
 
+import logging
 from collections import defaultdict
 from typing import Literal
 
@@ -8,6 +9,9 @@ from attrs import define, field
 from lxml import etree
 
 from harvester.records.record import XMLSourceRecord
+from harvester.utils import convert_lang_code, date_parser
+
+logger = logging.getLogger(__name__)
 
 
 @define
@@ -135,16 +139,266 @@ class FGDC(XMLSourceRecord):
         if elements:
             identifiers.extend([element.get("Name") for element in elements])
 
-        # <onlink> identifiers
+        # <onlink> handle URLs
         xpath_expr = """
         /metadata
             /idinfo
                 /citation
                     /citeinfo
-                        /onlink
+                        /onlink[contains(text(), 'handle.net')]
+        """
+        identifiers.extend(self.string_list_from_xpath(xpath_expr))
+
+        # <ftname> filename identifiers
+        xpath_expr = """
+        //metadata
+            /idinfo
+                /citation
+                    /citeinfo
+                        /ftname
+        """
+        identifiers.extend(self.string_list_from_xpath(xpath_expr))
+
+        return identifiers
+
+    def _dct_subject_sm(self) -> list[str]:
+        # NOTE: returns same data as dct_theme_sm
+        return self._dcat_theme_sm()
+
+    def _dcat_theme_sm(self) -> list[str]:
+        xpath_expr = """
+        //metadata
+            /idinfo
+                /keywords
+                    //themekey
+        """
+        return self.string_list_from_xpath(xpath_expr)
+
+    def _dct_spatial_sm(self) -> list[str]:
+        xpath_expr = """
+        //metadata
+            /idinfo
+                /keywords
+                    //placekey
+        """
+        return self.string_list_from_xpath(xpath_expr)
+
+    def _dct_temporal_sm(self) -> list[str]:
+        values = []
+        # <tempkey>
+        xpath_expr = """
+        //metadata
+            /idinfo
+                /keywords
+                    //tempkey
+        """
+        values.extend(self.string_list_from_xpath(xpath_expr))
+
+        # <timeinfo..caldate>
+        xpath_expr = """
+        //metadata
+            /idinfo
+                /timeprd
+                    /timeinfo
+                        /sngdate
+                            /caldate
+        """
+        values.extend(self.string_list_from_xpath(xpath_expr))
+
+        # <mdattim..caldate>
+        xpath_expr = """
+        //metadata
+            /idinfo
+                /timeperd
+                    /timeinfo
+                        /mdattim
+                            /sngdate
+                                /caldate
+        """
+        values.extend(self.string_list_from_xpath(xpath_expr))
+
+        # <rngdates.begdate>
+        xpath_expr = """
+        //metadata
+            /idinfo
+                /timeperd
+                    /timeinfo
+                        /rngdates
+                            /begdate
+        """
+        values.extend(self.string_list_from_xpath(xpath_expr))
+
+        # parse values
+        parsed_values = []
+        if values:
+            for value in values:
+                try:
+                    parsed_value = date_parser(value).strftime("%Y-%m-%d")
+                except Exception as exc:  # noqa: BLE001
+                    message = f"Could not parse date string: {value}, {exc}"
+                    logger.debug(message)
+                    continue
+                parsed_values.append(parsed_value)
+
+        return parsed_values
+
+    def _gbl_dateRange_drsim(self) -> list[str] | None:
+        date_ranges_xpath = """
+        //metadata
+            /idinfo
+                /timeperd
+                    /timeinfo
+                        /rngdates
+        """
+        date_range_elements = self.xpath(date_ranges_xpath)
+
+        if not date_range_elements:
+            return None
+
+        date_ranges = []
+        for date_range_element in date_range_elements:
+            try:
+                begin_date = date_parser(
+                    date_range_element.find("begdate").text
+                ).strftime("%Y")
+                end_date = date_parser(date_range_element.find("enddate").text).strftime(
+                    "%Y"
+                )
+            except Exception:  # noqa: BLE001
+                message = (
+                    "Could not extract begin or end date from date range: "
+                    f"{etree.tostring(date_range_element).decode()}"
+                )
+                logger.debug(message)
+                continue
+            date_ranges.append(f"[{begin_date} TO {end_date}]")
+        return date_ranges
+
+    def _dct_description_sm(self) -> list[str]:
+        xpath_expr = """
+        //metadata
+            /idinfo
+                /descript
+                    /abstract
+        """
+        return self.string_list_from_xpath(xpath_expr)
+
+    def _dct_creator_sm(self) -> list[str]:
+        xpath_expr = """
+        //metadata
+            /idinfo
+                /citation
+                    /citeinfo
+                        /originator
+        """
+        return self.string_list_from_xpath(xpath_expr)
+
+    def _dct_format_s(self) -> str | None:
+        xpath_expr = """
+        //metadata
+            /spdoinfo
+                /direct
         """
         values = self.string_list_from_xpath(xpath_expr)
         if values:
-            identifiers.extend(values)
+            return values[0]
+        return None
 
-        return identifiers
+    def _dct_issued_s(self) -> str | None:
+        xpath_expr = """
+        //metadata
+            /idinfo
+                /citation
+                    /citeinfo
+                        /pubdate
+        """
+        values = self.string_list_from_xpath(xpath_expr)
+        if values:
+            try:
+                return date_parser(values[0]).strftime("%Y-%m-%d")
+            except Exception as exc:  # noqa: BLE001
+                message = f"Error parsing date string: {values[0]}, {exc}"
+                logger.debug(message)
+        return None
+
+    def _dct_language_sm(self) -> list[str]:
+        xpath_expr = """
+        //metadata
+            /idinfo
+                /descript
+                    /langdata
+        """
+        lang_codes = self.string_list_from_xpath(xpath_expr)
+        three_letter_codes = []
+        for lang_code in lang_codes:
+            try:
+                three_letter_codes.append(convert_lang_code(lang_code))
+            except Exception as exc:  # noqa: BLE001
+                message = f"Error parsing language code: {lang_code}, {exc}"
+                logger.debug(message)
+                continue
+        return [code for code in three_letter_codes if code is not None]
+
+    def _dct_publisher_sm(self) -> list[str]:
+        xpath_expr = """
+        //metadata
+            /idinfo
+                /citation
+                    /citeinfo
+                        /pubinfo
+                            /publish
+        """
+        return self.string_list_from_xpath(xpath_expr)
+
+    def _dct_rights_sm(self) -> list[str]:
+        rights = []
+        xpath_expr = """
+        //metadata
+            /idinfo
+                /useconst
+        """
+        rights.extend(self.string_list_from_xpath(xpath_expr))
+        xpath_expr = """
+        //metadata
+            /idinfo
+                /acconst
+        """
+        rights.extend(self.string_list_from_xpath(xpath_expr))
+        return rights
+
+    def _gbl_indexYear_im(self) -> list[int]:
+        # get all dates from _dct_temporal_sm
+        dates = self._dct_temporal_sm()
+        years = []
+        for date in dates:
+            try:
+                years.append(int(date_parser(date).strftime("%Y")))
+            except Exception as exc:  # noqa: BLE001
+                message = f"Could not extract year from date string: {date}, {exc}"
+                logger.debug(message)
+                continue
+        return years
+
+    def _gbl_resourceType_sm(self) -> list[str]:
+        xpath_expr = """
+        //metadata
+            /spdoinfo
+                /ptvctinf
+                    /sdtsterm
+                        /sdtstype
+        """
+        return self.string_list_from_xpath(xpath_expr)
+
+    def _schema_provider_s(self) -> str | None:
+        xpath_expr = """
+        //metadata
+            /distinfo
+                /distrib
+                    /cntinfo
+                        /cntorgp
+                            /cntorg
+        """
+        values = self.string_list_from_xpath(xpath_expr)
+        if values:
+            return values[0]
+        return None
