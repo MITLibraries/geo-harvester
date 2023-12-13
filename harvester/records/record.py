@@ -14,6 +14,7 @@ from lxml import etree  # type: ignore[import-untyped]
 from harvester.aws.sqs import ZipFileEventMessage
 from harvester.config import Config
 from harvester.records.exceptions import FieldMethodError
+from harvester.utils import dedupe_list_of_strings
 
 logger = logging.getLogger(__name__)
 
@@ -284,11 +285,11 @@ class SourceRecord:
         aardvark_fields = fields(MITAardvark)
 
         # loop through fields and attempt field-level child class methods if defined
-        field_values = {}
+        all_field_values = {}
         for aardvark_field in aardvark_fields:
             if field_method := getattr(self, f"_{aardvark_field.name}", None):
                 try:
-                    field_values[aardvark_field.name] = field_method()
+                    all_field_values[aardvark_field.name] = field_method()
                 except Exception as exc:
                     message = (
                         f"Error getting value for field '{aardvark_field.name}': {exc}"
@@ -296,8 +297,13 @@ class SourceRecord:
                     logger.exception(message)
                     raise FieldMethodError(exc, message) from exc
 
+        # dedupe all list fields
+        for field_name, field_values in all_field_values.items():
+            if isinstance(field_values, list):
+                all_field_values[field_name] = dedupe_list_of_strings(field_values)
+
         # initialize a new MITAardvark instance and return
-        return MITAardvark(**field_values)
+        return MITAardvark(**all_field_values)
 
     ####################################
     # Abstract Required Field Methods
@@ -410,16 +416,17 @@ class XMLSourceRecord(SourceRecord):
         cleaned = " ".join(string.split())
         return cleaned if cleaned else None
 
-    def string_list_from_xpath(self, xpath_expr: str) -> list | None:
+    def string_list_from_xpath(self, xpath_expr: str) -> list:
         """Return unique list of strings from XPath matches.
 
-        Order will be order discovered via XPath.
+        A list will always be returned, though empty strings and None values will be
+        filtered out.  Order will be order discovered via XPath.
         """
         matches = self.xpath_query(xpath_expr)
         strings = [self.remove_whitespace(match.text) for match in matches]
         strings = [string for string in strings if string]
         if all(string is None or string == "" for string in strings):
-            return None
+            return []
         return list(set(strings))
 
 

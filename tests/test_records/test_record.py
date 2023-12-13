@@ -60,7 +60,7 @@ def test_xml_source_record_string_list_from_xpath_success(
         "yellow",
         "red",
     }
-    assert valid_generic_xml_source_record.string_list_from_xpath("//miss") is None
+    assert valid_generic_xml_source_record.string_list_from_xpath("//miss") == []
     assert valid_generic_xml_source_record.string_list_from_xpath(
         "//plants:introduced"
     ) == ["1973"]
