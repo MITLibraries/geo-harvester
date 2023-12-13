@@ -80,6 +80,17 @@ class FGDC(XMLSourceRecord):
         return None
 
     def _dcat_bbox(self) -> str:
+        """Field method: dcat_bbox.
+
+        "bbox" stands for "Bounding Box", and it should be the largest possible rectangle
+        that encompasses the geographic region for this geospatial resource.  Because
+        some metadata files contain multiple geospatial boxes or shapes, the accepted
+        approach in the GIS/geospatial community is to craft the LARGEST box that includes
+        ALL defined boxes or shapes.
+
+        To this end, min() and max() are used to select the smallest or largest value from
+        a list of latitude or longitude values, based on which ever corner is in question.
+        """
         xpath_expr = """
         //idinfo
             /spdom
