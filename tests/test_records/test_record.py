@@ -35,6 +35,19 @@ def test_xml_source_record_xpath_no_namespace_zero_results_success(
     assert len(valid_generic_xml_source_record.xpath("//apple")) == 0
 
 
+def test_xml_source_record_xpath_syntax_variations_valid(valid_generic_xml_source_record):
+    single_line_expression = "//plants:fruits/plants:apples/plants:apple/plants:color"
+    multi_line_expression = """
+    //plants:fruits
+        /plants:apples
+            /plants:apple
+                /plants:color
+    """
+    assert valid_generic_xml_source_record.xpath(
+        single_line_expression
+    ) == valid_generic_xml_source_record.xpath(multi_line_expression)
+
+
 def test_xml_source_record_string_list_from_xpath_success(
     valid_generic_xml_source_record,
 ):
