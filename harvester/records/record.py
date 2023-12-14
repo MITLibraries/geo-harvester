@@ -430,7 +430,7 @@ class XMLSourceRecord(SourceRecord):
         strings = [string for string in strings if string]
         if all(string is None or string == "" for string in strings):
             return []
-        return list(set(strings))
+        return dedupe_list_of_values(strings)
 
 
 @define
