@@ -139,7 +139,10 @@ def test_mit_harvester_incremental_harvest_two_zip_files_returned(
     with mock.patch(
         "harvester.harvest.mit.MITHarvester._identify_and_read_metadata_file"
     ) as mock_metadata_extract:
-        mock_metadata_extract.return_value = ("fgdc", FGDC(data="", event="created"))
+        mock_metadata_extract.return_value = (
+            "fgdc",
+            FGDC(origin="mit", identifier="abc123", data="", event="created"),
+        )
         records = harvester.incremental_harvest_get_source_records()
         assert len(list(records)) == 2  # noqa: PLR2004
 

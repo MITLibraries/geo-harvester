@@ -8,7 +8,7 @@ from abc import abstractmethod
 from typing import Any, Literal
 
 from attrs import asdict, define, field, fields
-from attrs.validators import instance_of, optional
+from attrs.validators import in_, instance_of, optional
 from lxml import etree  # type: ignore[import-untyped]
 
 from harvester.aws.sqs import ZipFileEventMessage
@@ -34,7 +34,7 @@ class Record:
         exception: Exception object
     """
 
-    identifier: str = field(default=None)
+    identifier: str = field()
     source_record: "SourceRecord" = field(default=None)
     normalized_record: "MITAardvark" = field(default=None)
     exception_stage: str = field(default=None)
@@ -53,17 +53,17 @@ class MITAardvark:
     """
 
     # aardvark required fields
-    dct_accessRights_s: str = field(default=None, validator=instance_of(str))
-    dct_title_s: str = field(default=None, validator=instance_of(str))
-    gbl_mdModified_dt: str = field(default=None, validator=instance_of(str))
-    gbl_mdVersion_s: str = field(default=None, validator=instance_of(str))
-    gbl_resourceClass_sm: list = field(default=None, validator=instance_of(list))
-    id: str = field(default=None, validator=instance_of(str))  # noqa: A003
+    dct_accessRights_s: str = field(validator=instance_of(str))
+    dct_title_s: str = field(validator=instance_of(str))
+    gbl_mdModified_dt: str = field(validator=instance_of(str))
+    gbl_mdVersion_s: str = field(validator=instance_of(str))
+    gbl_resourceClass_sm: list = field(validator=instance_of(list))
+    id: str = field(validator=instance_of(str))  # noqa: A003
 
     # additional MIT required fields
-    dcat_bbox: str = field(default=None, validator=instance_of(str))
-    dct_references_s: str = field(default=None, validator=instance_of(str))
-    locn_geometry: str = field(default=None, validator=instance_of(str))
+    dcat_bbox: str = field(validator=instance_of(str))
+    dct_references_s: str = field(validator=instance_of(str))
+    locn_geometry: str = field(validator=instance_of(str))
 
     # optional fields
     dcat_centroid: str | None = field(default=None, validator=optional(instance_of(str)))
@@ -199,12 +199,16 @@ class SourceRecord:
             after the record has been processed to manage the message in the queue
     """
 
-    origin: str = field(default=None)
-    identifier: str = field(default=None)
-    metadata_format: Literal["fgdc", "iso19139", "gbl1", "aardvark"] = field(default=None)
-    data: str | bytes | None = field(default=None, repr=False)
+    origin: Literal["mit", "ogm"] = field(validator=in_(["mit", "ogm"]))
+    identifier: str = field(validator=instance_of(str))
+    metadata_format: Literal["fgdc", "iso19139", "gbl1", "aardvark"] = field(
+        validator=in_(["fgdc", "iso19139", "gbl1", "aardvark"])
+    )
+    data: str | bytes = field(repr=False)
     zip_file_location: str = field(default=None)
-    event: Literal["created", "deleted"] = field(default=None)
+    event: Literal["created", "deleted"] = field(
+        default=None, validator=in_(["created", "deleted"])
+    )
     sqs_message: ZipFileEventMessage = field(default=None)
 
     @property

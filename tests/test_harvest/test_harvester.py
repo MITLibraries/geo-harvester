@@ -74,11 +74,23 @@ def test_harvester_records_with_error_filtered_out(generic_harvester_class):
     records = [
         Record(
             identifier="abc123",
-            source_record=FGDC(zip_file_location="/path/to/file1.zip", event="created"),
+            source_record=FGDC(
+                origin="mit",
+                identifier="abc123",
+                data=b"",
+                zip_file_location="/path/to/file1.zip",
+                event="created",
+            ),
         ),
         Record(
             identifier="abc123",
-            source_record=FGDC(zip_file_location="/path/to/file2.zip", event="created"),
+            source_record=FGDC(
+                origin="mit",
+                identifier="abc123",
+                data=b"",
+                zip_file_location="/path/to/file2.zip",
+                event="created",
+            ),
             exception_stage="get_source_records",
             exception=Exception("I have an error"),
         ),
@@ -98,7 +110,11 @@ def test_harvester_step_get_source_records(caplog, generic_harvester_class):
             Record(
                 identifier="abc123",
                 source_record=FGDC(
-                    zip_file_location="/path/to/file1.zip", event="created"
+                    origin="mit",
+                    identifier="abc123",
+                    data=b"",
+                    zip_file_location="/path/to/file1.zip",
+                    event="created",
                 ),
             )
         ]
