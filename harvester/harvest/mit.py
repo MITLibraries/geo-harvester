@@ -219,14 +219,20 @@ class MITHarvester(Harvester):
             ],
         }
 
+        # list of file patterns that will be skipped via fnmatch() below
         skip_conditions = [
             ".aux.xml",  # *.aux.xml maybe present but no FGDC metadata
         ]
 
+        # dictionary of the original filename linked with a lower case form for matching
         files_original = {
             filename: filename.lower() for filename in zip_file_object.namelist()
         }
 
+        # This block loops through the ordered, preferred filenames dictionary and sees
+        # if a lowercase form matches any files in the zip file, while also skipping any
+        # that match a skipped pattern in skip_conditions.  If a match is found, the
+        # original filename is used.
         for (
             metadata_format,
             metadata_filenames,
