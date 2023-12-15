@@ -389,7 +389,7 @@ class XMLSourceRecord(SourceRecord):
             self._root = etree.fromstring(self.data)
         return self._root
 
-    def xpath(self, xpath_expr: str) -> Any:  # noqa: ANN401
+    def xpath_query(self, xpath_expr: str) -> Any:  # noqa: ANN401
         """Perform XPath query.
 
         This method automatically includes the namespaces defined for the class.
@@ -409,7 +409,7 @@ class XMLSourceRecord(SourceRecord):
 
         Order will be order discovered via XPath.
         """
-        matches = self.xpath(xpath_expr)
+        matches = self.xpath_query(xpath_expr)
         strings = [self.remove_whitespace(match.text) for match in matches]
         strings = [string for string in strings if string]
         if all(string is None or string == "" for string in strings):

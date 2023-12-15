@@ -45,7 +45,7 @@ class ISO19139(XMLSourceRecord):
                             /gmd:accessConstraints
                                 /gmd:MD_RestrictionCode
         """
-        matches = self.xpath(xpath_expr)
+        matches = self.xpath_query(xpath_expr)
         if not matches:
             return "Public"
         else:
@@ -134,7 +134,7 @@ class ISO19139(XMLSourceRecord):
             return position_element.text.strip()
 
         output = defaultdict(list)
-        for temporal_element in self.xpath(
+        for temporal_element in self.xpath_query(
             """//gmd:MD_Metadata
             /gmd:identificationInfo
                 /gmd:MD_DataIdentification
@@ -259,7 +259,7 @@ class ISO19139(XMLSourceRecord):
                                         or self::gmd:northBoundLatitude
                                     ]
         """
-        bbox_elements = self.xpath(xpath_expr)
+        bbox_elements = self.xpath_query(xpath_expr)
 
         if not bbox_elements:
             return None
@@ -317,18 +317,18 @@ class ISO19139(XMLSourceRecord):
                             /gmd:onLine
                                 /gmd:CI_OnlineResource
         """
-        metadata_online_resources = self.xpath(xpath_expr)
+        metadata_online_resources = self.xpath_query(xpath_expr)
         for item in metadata_online_resources:
             label, protocol = None, None
-            if label_match := item.xpath(
+            if label_match := item.xpath_query(
                 "gmd:name/gco:CharacterString/text()", namespaces=self.nsmap
             ):
                 label = label_match[0]
-            if protocol_match := item.xpath(
+            if protocol_match := item.xpath_query(
                 "gmd:protocol/gco:CharacterString/text()", namespaces=self.nsmap
             ):
                 protocol = protocol_match[0]
-            url = item.xpath("gmd:linkage/gmd:URL/text()", namespaces=self.nsmap)[0]
+            url = item.xpath_query("gmd:linkage/gmd:URL/text()", namespaces=self.nsmap)[0]
             resources.append({"label": label, "protocol": protocol, "url": url})
 
         # add TIMDEX download URL

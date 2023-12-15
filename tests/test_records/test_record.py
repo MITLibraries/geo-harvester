@@ -19,20 +19,20 @@ def test_xml_source_record_parse_xml_root_success(valid_generic_xml_source_recor
 
 
 def test_xml_source_record_xpath_success(valid_generic_xml_source_record):
-    assert len(valid_generic_xml_source_record.xpath("//plants:apple")) == 3
+    assert len(valid_generic_xml_source_record.xpath_query("//plants:apple")) == 3
 
 
 def test_xml_source_record_xpath_bad_namespace_raise_error(
     valid_generic_xml_source_record,
 ):
     with pytest.raises(etree.XPathEvalError):
-        assert len(valid_generic_xml_source_record.xpath("//fruit:apple")) == 3
+        assert len(valid_generic_xml_source_record.xpath_query("//fruit:apple")) == 3
 
 
 def test_xml_source_record_xpath_no_namespace_zero_results_success(
     valid_generic_xml_source_record,
 ):
-    assert len(valid_generic_xml_source_record.xpath("//apple")) == 0
+    assert len(valid_generic_xml_source_record.xpath_query("//apple")) == 0
 
 
 def test_xml_source_record_xpath_syntax_variations_valid(valid_generic_xml_source_record):
@@ -43,9 +43,9 @@ def test_xml_source_record_xpath_syntax_variations_valid(valid_generic_xml_sourc
             /plants:apple
                 /plants:color
     """
-    assert valid_generic_xml_source_record.xpath(
+    assert valid_generic_xml_source_record.xpath_query(
         single_line_expression
-    ) == valid_generic_xml_source_record.xpath(multi_line_expression)
+    ) == valid_generic_xml_source_record.xpath_query(multi_line_expression)
 
 
 def test_xml_source_record_string_list_from_xpath_success(

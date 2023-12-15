@@ -98,7 +98,7 @@ class FGDC(XMLSourceRecord):
                         or self::southbc
                     ]
         """
-        bbox_elements = self.xpath(xpath_expr)
+        bbox_elements = self.xpath_query(xpath_expr)
         bbox_data = defaultdict(list)
         for boundary_elem in bbox_elements:
             element_name = etree.QName(boundary_elem).localname
@@ -131,7 +131,7 @@ class FGDC(XMLSourceRecord):
             /ptvctinf
                 /sdtsterm[@Name]
         """
-        elements = self.xpath(xpath_expr)
+        elements = self.xpath_query(xpath_expr)
         if elements:
             identifiers.extend([element.get("Name") for element in elements])
 
