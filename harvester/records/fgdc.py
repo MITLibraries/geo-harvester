@@ -100,9 +100,9 @@ class FGDC(XMLSourceRecord):
         """
         bbox_elements = self.xpath_query(xpath_expr)
         bbox_data = defaultdict(list)
-        for boundary_elem in bbox_elements:
-            element_name = etree.QName(boundary_elem).localname
-            bbox_data[element_name].append(boundary_elem.text)
+        for boundary_element in bbox_elements:
+            element_name = etree.QName(boundary_element).localname
+            bbox_data[element_name].append(boundary_element.text)
         lat_lon_envelope = ", ".join(
             [
                 min(bbox_data["westbc"]).strip(),
