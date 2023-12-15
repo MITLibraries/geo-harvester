@@ -30,26 +30,35 @@ def dedupe_list_of_values(list_of_values: list) -> list:
         - UPPERCASE
         - lowercase
     """
-    if list_of_values == []:
+    if not list_of_values:
         return list_of_values
 
     temp_dict = {}
+
     for item in list_of_values:
         if isinstance(item, str):
             key = item.lower().strip()
             value = item.strip()
-            # TitleCase
-            if value.istitle():  # noqa: SIM114; not applicable here
+            # Add key if not yet seen
+            if key not in temp_dict:
                 temp_dict[key] = value
-            # UPPERCASE
-            elif value.isupper():
-                temp_dict[key] = value
-            # lowercase or others
-            else:
-                temp_dict[key] = value
+            else:  # noqa: PLR5501
+                # If current value is TitleCase, overwrite the value in the dictionary.
+                if value.istitle():  # noqa: SIM114
+                    temp_dict[key] = value
+                # If current value is UPPERCASE and the value in dictionary isn't
+                # TitleCase, overwrite it.
+                elif value.isupper() and not temp_dict[key].istitle():  # noqa: SIM114
+                    temp_dict[key] = value
+                # If the current value is lowercase and the dictionary value isn't
+                # UPPERCASE or TitleCase, overwrite it.
+                elif value.islower() and not (
+                    temp_dict[key].isupper() or temp_dict[key].istitle()
+                ):
+                    temp_dict[key] = value
         else:
-            # handle non-string items
-            temp_dict[item] = item
+            # Handle non-string items
+            temp_dict.setdefault(item, item)
 
     return list(temp_dict.values())
 
