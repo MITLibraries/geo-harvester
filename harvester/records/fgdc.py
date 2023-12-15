@@ -45,7 +45,7 @@ class FGDC(XMLSourceRecord):
             return values[0]
         return None
 
-    def _gbl_resourceClass_sm(self) -> list[str] | None:
+    def _gbl_resourceClass_sm(self) -> list[str]:
         """Field method: gbl_resourceClass_sm
 
         Controlled vocabulary:
@@ -57,6 +57,11 @@ class FGDC(XMLSourceRecord):
             - 'Web services'
             - 'Other'
         """
+        value_map = {
+            "vector digital data": "Datasets",
+            "raster digital data": "Datasets",
+            "remote-sensing image": "Image",
+        }
         xpath_expr = """
         //idinfo
             /citation
@@ -64,20 +69,11 @@ class FGDC(XMLSourceRecord):
                     /geoform
         """
         values = self.string_list_from_xpath(xpath_expr)
-        if not values:
-            return None
-        value_map = {
-            "vector digital data": "Datasets",
-            "raster digital data": "Datasets",
-            "remote-sensing image": "Image",
-        }
-        output = []
-        for value in values:
+        mapped_values = []
+        for value in values:  # type: ignore[union-attr] # temp ignore, not need next PR
             if mapped_value := value_map.get(value.strip().lower()):
-                output.append(mapped_value)  # noqa: PERF401
-        if output:
-            return output
-        return None
+                mapped_values.append(mapped_value)  # noqa: PERF401
+        return mapped_values
 
     def _dcat_bbox(self) -> str:
         """Field method: dcat_bbox.
