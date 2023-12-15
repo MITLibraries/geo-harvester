@@ -65,7 +65,10 @@ class Harvester(ABC):
             message = f"harvest type: '{self.harvest_type}' not recognized"
             raise ValueError(message)
         for record in records:
-            message = f"Record {record.identifier}: retrieved source record"
+            message = (
+                f"Record {record.identifier}: retrieved source record, event '"
+                f"{record.source_record.event}'"
+            )
             logger.debug(message)
             self.processed_records_count += 1
             yield record
@@ -79,10 +82,13 @@ class Harvester(ABC):
         """Harvester specific method to get source records for incremental harvest."""
 
     def normalize_source_records(self, records: Iterator[Record]) -> Iterator[Record]:
-        """Method to normalize source record metadata to MITAardvark files."""
+        """Method to normalize source record metadata to MITAardvark records."""
         for record in records:
             message = f"Record {record.identifier}: normalizing source record"
             logger.debug(message)
+            # WIP: even for deleted records, we likely WILL still normalize such that we
+            # have a record to provide Transmog where 'gbl_suppressed_b=True' and and
+            # pipeline can remove from TIMDEX.
             if record.source_record.event == "deleted":
                 yield record
             else:
@@ -94,7 +100,11 @@ class Harvester(ABC):
                 yield record
 
     def update_public_cdn_bucket(self, records: Iterator[Record]) -> Iterator[Record]:
-        """Write OR delete source and normalized metadata from S3:CDN:Public."""
+        """Write OR delete source and normalized metadata from S3:CDN:Public.
+
+        TODO: this will be renamed as it will ONLY write records
+        TODO: decouple name/description from destination, focus on format
+        """
         for record in records:
             message = (
                 f"Record {record.identifier}: writing metadata records to S3:CDN:Public"
@@ -103,7 +113,10 @@ class Harvester(ABC):
             yield record
 
     def write_to_timdex_bucket(self, records: Iterator[Record]) -> Iterator[Record]:
-        """Method to write MITAardvark files to S3:TIMDEX."""
+        """Method to write MITAardvark files to S3:TIMDEX.
+
+        TODO: decouple name/description from destination, focus on format
+        """
         for record in records:
             message = (
                 f"Record {record.identifier}: writing MITAardvark records to S3:TIMDEX"

@@ -28,6 +28,17 @@ class Config:
         message = f"'{name}' not a valid configuration variable"
         raise AttributeError(message)
 
+    @property
+    def http_cdn_root(self) -> str:
+        """Property to return the base HTTP CDN URL path based on environment."""
+        return {
+            None: "https://cdn.dev.mitlibrary.net/geo",
+            "test": "https://cdn.dev.mitlibrary.net/geo",
+            "dev": "https://cdn.dev.mitlibrary.net/geo",
+            "stage": "https://cdn.stage.mitlibrary.net/geo",
+            "prod": "https://cdn.libraries.mit.edu/geo",
+        }[self.WORKSPACE]
+
 
 def configure_logger(
     logger: logging.Logger,

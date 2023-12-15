@@ -10,7 +10,8 @@ from moto import mock_s3
 from harvester.aws.sqs import SQSClient, ZipFileEventMessage
 from harvester.config import Config
 from harvester.harvest import Harvester
-from harvester.records import FGDC, ISO19139, MITAardvark, XMLSourceRecord
+from harvester.harvest.mit import MITHarvester
+from harvester.records import FGDC, ISO19139, MITAardvark, Record, XMLSourceRecord
 
 
 @pytest.fixture(autouse=True)
@@ -151,7 +152,12 @@ def config_instance() -> Config:
 def valid_generic_xml_source_record():
     with open("tests/fixtures/records/generic/generic.xml", "rb") as f:
         return XMLSourceRecord(
-            data=f.read(), event="created", nsmap={"plants": "http://example.com/plants"}
+            origin="mit",
+            identifier="generic",
+            metadata_format="fgdc",
+            data=f.read(),
+            event="created",
+            nsmap={"plants": "http://example.com/plants"},
         )
 
 
@@ -161,6 +167,8 @@ def valid_mit_iso19139_source_record():
         "tests/fixtures/records/iso19139/in_bhopal_f7ward_2011.iso19139.xml", "rb"
     ) as f:
         return ISO19139(
+            origin="mit",
+            identifier="in_bhopal_f7ward_2011",
             data=f.read(),
             event="created",
         )
@@ -170,6 +178,8 @@ def valid_mit_iso19139_source_record():
 def valid_mit_fgdc_source_record():
     with open("tests/fixtures/records/fgdc/SDE_DATA_AE_A8GNS_2003.xml", "rb") as f:
         return FGDC(
+            origin="mit",
+            identifier="SDE_DATA_AE_A8GNS_2003",
             data=f.read(),
             event="created",
         )
@@ -214,6 +224,9 @@ def mocked_required_fields_source_record(valid_generic_xml_source_record):
             return mocked_value
 
     return TestXMLSourceRecord(
+        origin="mit",
+        identifier="generic",
+        metadata_format="fgdc",
         data=valid_generic_xml_source_record.data,
         event=valid_generic_xml_source_record.event,
         nsmap=valid_generic_xml_source_record.nsmap,
@@ -238,3 +251,22 @@ def minimal_mitaardvark_data():
 @pytest.fixture
 def minimal_mitaardvark_record(minimal_mitaardvark_data):
     return MITAardvark(**minimal_mitaardvark_data)
+
+
+@pytest.fixture
+def fgdc_source_record_from_zip():
+    return MITHarvester.create_source_record_from_zip_file(
+        identifier="SDE_DATA_AE_A8GNS_2003",
+        event="created",
+        zip_file="tests/fixtures/zip_files/SDE_DATA_AE_A8GNS_2003.zip",
+    )
+
+
+@pytest.fixture
+def records_for_normalize(fgdc_source_record_from_zip):
+    return [
+        Record(
+            identifier="SDE_DATA_AE_A8GNS_2003",
+            source_record=fgdc_source_record_from_zip,
+        )
+    ]

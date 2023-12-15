@@ -29,7 +29,24 @@ class S3Client:
         """
         client = cls.get_client()
         try:
-            response = client.list_objects_v2(Bucket=bucket, Prefix=prefix)
+            continuation_token = None
+            s3_objects = []
+
+            while True:
+                list_kwargs = {"Bucket": bucket, "Prefix": prefix}
+                if continuation_token:
+                    list_kwargs["ContinuationToken"] = continuation_token
+                response = client.list_objects_v2(**list_kwargs)  # type: ignore[arg-type]
+
+                if "Contents" in response:
+                    s3_objects.extend(response["Contents"])
+
+                # stop pagination if not truncated
+                if not response.get("IsTruncated"):
+                    break
+
+                # continue with next page
+                continuation_token = response.get("NextContinuationToken")
         except (
             client.exceptions.NoSuchBucket,
             client.exceptions.ClientError,
@@ -39,9 +56,8 @@ class S3Client:
                 f"Could not list objects for: 's3://{bucket}/{prefix}', reason: {exc}"
             )
             raise ValueError(message) from exc
-        if "Contents" in response:
-            return list(response["Contents"])
-        return []
+
+        return s3_objects
 
     @classmethod
     def list_objects_uri_and_date(

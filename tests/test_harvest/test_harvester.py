@@ -5,7 +5,8 @@ import pytest
 from dateutil.parser import ParserError
 from dateutil.tz import tzutc
 
-from harvester.records import FGDC, Record
+from harvester.records import FGDC, MITAardvark, Record
+from harvester.records.exceptions import FieldMethodError
 
 
 def test_harvester_bad_harvest_type_raise_error(generic_harvester_class):
@@ -73,11 +74,23 @@ def test_harvester_records_with_error_filtered_out(generic_harvester_class):
     records = [
         Record(
             identifier="abc123",
-            source_record=FGDC(zip_file_location="/path/to/file1.zip", event="created"),
+            source_record=FGDC(
+                origin="mit",
+                identifier="abc123",
+                data=b"",
+                zip_file_location="/path/to/file1.zip",
+                event="created",
+            ),
         ),
         Record(
             identifier="abc123",
-            source_record=FGDC(zip_file_location="/path/to/file2.zip", event="created"),
+            source_record=FGDC(
+                origin="mit",
+                identifier="abc123",
+                data=b"",
+                zip_file_location="/path/to/file2.zip",
+                event="created",
+            ),
             exception_stage="get_source_records",
             exception=Exception("I have an error"),
         ),
@@ -87,7 +100,7 @@ def test_harvester_records_with_error_filtered_out(generic_harvester_class):
     assert len(harvester.failed_records) == 1
 
 
-def test_harvester_get_records(caplog, generic_harvester_class):
+def test_harvester_step_get_source_records(caplog, generic_harvester_class):
     caplog.set_level("DEBUG")
     harvester = generic_harvester_class(harvest_type="full")
     with patch.object(
@@ -97,7 +110,11 @@ def test_harvester_get_records(caplog, generic_harvester_class):
             Record(
                 identifier="abc123",
                 source_record=FGDC(
-                    zip_file_location="/path/to/file1.zip", event="created"
+                    origin="mit",
+                    identifier="abc123",
+                    data=b"",
+                    zip_file_location="/path/to/file1.zip",
+                    event="created",
                 ),
             )
         ]
@@ -105,3 +122,37 @@ def test_harvester_get_records(caplog, generic_harvester_class):
         _record = next(records)
         assert "Record abc123: retrieved source record" in caplog.text
         assert harvester.processed_records_count == 1
+
+
+def test_harvester_step_normalize_source_records_deleted_record(
+    caplog, generic_harvester_class, records_for_normalize
+):
+    caplog.set_level("DEBUG")
+    harvester = generic_harvester_class(harvest_type="full")
+    records_for_normalize[0].source_record.event = "deleted"
+    records = harvester.normalize_source_records(records_for_normalize)
+    record = next(records)
+    assert record.normalized_record is None
+
+
+def test_harvester_step_normalize_source_records_created_record_normalized_success(
+    caplog, generic_harvester_class, records_for_normalize
+):
+    caplog.set_level("DEBUG")
+    harvester = generic_harvester_class(harvest_type="full")
+    records = harvester.normalize_source_records(records_for_normalize)
+    record = next(records)
+    assert isinstance(record.normalized_record, MITAardvark)
+
+
+def test_harvester_step_normalize_source_records_stores_exception(
+    caplog, generic_harvester_class, records_for_normalize
+):
+    caplog.set_level("DEBUG")
+    harvester = generic_harvester_class(harvest_type="full")
+    records_for_normalize[0].source_record.metadata_format = "bad_format"
+    records = harvester.normalize_source_records(records_for_normalize)
+    record = next(records)
+    assert record.exception_stage == "normalize_source_records"
+    assert isinstance(record.exception, FieldMethodError)
+    assert isinstance(record.exception.original_exception, KeyError)

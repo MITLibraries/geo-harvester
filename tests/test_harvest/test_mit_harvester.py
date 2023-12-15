@@ -1,4 +1,4 @@
-# ruff: noqa: SLF001
+# ruff: noqa: SLF001, D212, D200
 from unittest import mock
 
 import pytest
@@ -139,7 +139,10 @@ def test_mit_harvester_incremental_harvest_two_zip_files_returned(
     with mock.patch(
         "harvester.harvest.mit.MITHarvester._identify_and_read_metadata_file"
     ) as mock_metadata_extract:
-        mock_metadata_extract.return_value = ("fgdc", FGDC(data="", event="created"))
+        mock_metadata_extract.return_value = (
+            "fgdc",
+            FGDC(origin="mit", identifier="abc123", data="", event="created"),
+        )
         records = harvester.incremental_harvest_get_source_records()
         assert len(list(records)) == 2  # noqa: PLR2004
 
@@ -175,3 +178,19 @@ def test_mit_harvester_find_metadata_file_missing_file_error():
             "abc123",
             "tests/fixtures/s3_cdn_restricted_legacy_single/SDE_DATA_AE_A8GNS_2003.zip",
         )
+
+
+def test_mit_harvester_metadata_file_use_skip_list_success():
+    """
+    NOTE: tis zip file contains EG_CAIRO_A25TOPO_1972.aux.xml which should be skipped
+    """
+    source_record = MITHarvester.create_source_record_from_zip_file(
+        identifier="EG_CAIRO_A25TOPO_1972",
+        event="created",
+        zip_file="tests/fixtures/zip_files/EG_CAIRO_A25TOPO_1972.zip",
+    )
+    assert source_record.metadata_format == "fgdc"
+    assert (
+        source_record.zip_file_location
+        == "tests/fixtures/zip_files/EG_CAIRO_A25TOPO_1972.zip"
+    )

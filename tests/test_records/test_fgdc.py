@@ -1,0 +1,2 @@
+def test_record_is_restricted_is_false_success(fgdc_source_record_from_zip):
+    assert not fgdc_source_record_from_zip.is_restricted

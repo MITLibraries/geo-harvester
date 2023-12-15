@@ -1,6 +1,7 @@
 """harvester.harvest.mit"""
 
 import datetime
+import fnmatch
 import glob
 import logging
 import os
@@ -54,7 +55,7 @@ class MITHarvester(Harvester):
             identifier = os.path.splitext(zip_file)[0].split("/")[-1]
             yield Record(
                 identifier=identifier,
-                source_record=self._create_source_record(
+                source_record=self.create_source_record_from_zip_file(
                     identifier=identifier,
                     zip_file=zip_file,
                     event="created",
@@ -76,7 +77,7 @@ class MITHarvester(Harvester):
             identifier = zip_file_event_message.zip_file_identifier
             yield Record(
                 identifier=identifier,
-                source_record=self._create_source_record(
+                source_record=self.create_source_record_from_zip_file(
                     identifier=identifier,
                     zip_file=zip_file_event_message.zip_file,
                     event=zip_file_event_message.event,
@@ -176,8 +177,9 @@ class MITHarvester(Harvester):
             for zip_filepath in zip_filepaths
         ]
 
+    @classmethod
     def _identify_and_read_metadata_file(
-        self, identifier: str, zip_file: str
+        cls, identifier: str, zip_file: str
     ) -> tuple[str, bytes]:
         """Identify the metadata file in a zip file and read XML bytes.
 
@@ -190,10 +192,10 @@ class MITHarvester(Harvester):
         with smart_open.open(zip_file, "rb") as file_object, zipfile.ZipFile(
             file_object
         ) as zip_file_object:
-            metadata_format, metadata_filename = self._find_metadata_file(
+            metadata_format, metadata_filename = cls._find_metadata_file(
                 zip_file_object, identifier
             )
-            metadata_bytes = self._read_metadata_file(zip_file_object, metadata_filename)
+            metadata_bytes = cls._read_metadata_file(zip_file_object, metadata_filename)
             return metadata_format, metadata_bytes
 
     @staticmethod
@@ -203,28 +205,47 @@ class MITHarvester(Harvester):
         """Identify ISO19139 or FGDC metadata file in the zip file.
 
         The ordered dictionary is opinionated to return the ISO19139 metadata first if
-        found.
+        found.  Additionally, the casing of zip filename vs zip content filenames cannot
+        be guaranteed, so we use fnmatch to look for 'iso19139' anywhere in the filename.
         """
         ordered_expected_metadata_filenames = {
             "iso19139": [
-                f"{identifier}/{identifier}.iso19139.xml",
-                f"{identifier}.iso19139.xml",
+                f"{identifier}/*iso19139.xml",
+                f"{identifier}*iso19139.xml",
             ],
             "fgdc": [
-                f"{identifier}/{identifier}.xml",
-                f"{identifier}.xml",
+                f"{identifier}/*.xml",
+                f"{identifier}*.xml",
             ],
         }
 
-        files = zip_file_object.namelist()
+        # list of file patterns that will be skipped via fnmatch() below
+        skip_conditions = [
+            ".aux.xml",  # *.aux.xml maybe present but no FGDC metadata
+        ]
+
+        # dictionary of the original filename linked with a lower case form for matching
+        files_original = {
+            filename: filename.lower() for filename in zip_file_object.namelist()
+        }
+
+        # This block loops through the ordered, preferred filenames dictionary and sees
+        # if a lowercase form matches any files in the zip file, while also skipping any
+        # that match a skipped pattern in skip_conditions.  If a match is found, the
+        # original filename is used.
         for (
             metadata_format,
             metadata_filenames,
         ) in ordered_expected_metadata_filenames.items():
             for metadata_filename in metadata_filenames:
-                if metadata_filename in files:
-                    return metadata_format, metadata_filename
-
+                for file_original, file_lower in files_original.items():
+                    if any(
+                        fnmatch.fnmatch(file_lower, f"*{skip}")
+                        for skip in skip_conditions
+                    ):
+                        continue
+                    if fnmatch.fnmatch(file_lower, metadata_filename.lower()):
+                        return metadata_format, file_original
         message = "Could not find ISO19139 or FGDC metadata file in zip file"
         raise FileNotFoundError(message)
 
@@ -236,23 +257,26 @@ class MITHarvester(Harvester):
         with zip_file_object.open(metadata_filename, "r") as metadata_file_object:
             return metadata_file_object.read()
 
-    def _create_source_record(
-        self,
+    @classmethod
+    def create_source_record_from_zip_file(
+        cls,
         identifier: str,
         zip_file: str,
         event: Literal["created", "deleted"],
         sqs_message: ZipFileEventMessage | None = None,
     ) -> SourceRecord:
         """Init a SourceRecord based on event and zip file."""
-        metadata_format, data = self._identify_and_read_metadata_file(
-            identifier, zip_file
-        )
+        metadata_format, data = cls._identify_and_read_metadata_file(identifier, zip_file)
         source_record_classes = {
             "iso19139": ISO19139,
             "fgdc": FGDC,
         }
         source_record_class = source_record_classes[metadata_format]
+        message = f"Metadata file located and identified: {source_record_class.__name__}"
+        logger.debug(message)
         return source_record_class(
+            origin="mit",
+            identifier=identifier,
             data=data,
             event=event,
             zip_file_location=zip_file,
