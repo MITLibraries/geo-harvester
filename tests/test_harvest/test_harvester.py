@@ -145,7 +145,7 @@ def test_harvester_step_normalize_source_records_created_record_normalized_succe
     assert isinstance(record.normalized_record, MITAardvark)
 
 
-def test_harvester_step_normalize_source_records_created_record_normalized_error(
+def test_harvester_step_normalize_source_records_stores_exception(
     caplog, generic_harvester_class, records_for_normalize
 ):
     caplog.set_level("DEBUG")
