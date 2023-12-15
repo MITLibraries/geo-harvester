@@ -86,6 +86,9 @@ class Harvester(ABC):
         for record in records:
             message = f"Record {record.identifier}: normalizing source record"
             logger.debug(message)
+            # WIP: even for deleted records, we likely WILL still normalize such that we
+            # have a record to provide Transmog where 'gbl_suppressed_b=True' and and
+            # pipeline can remove from TIMDEX.
             if record.source_record.event == "deleted":
                 yield record
             else:
