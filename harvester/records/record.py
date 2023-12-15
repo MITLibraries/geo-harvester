@@ -182,7 +182,13 @@ class SourceRecord:
     """Class to represent the original, source_record form of a record.
 
     A source_record record may be FGDC, ISO19139, GeoBlacklight (GBL1), or Aardvark
-    metadata formats.
+    metadata format, and those classes will extend this base class to define their own
+    specific normalization logic.
+
+    To that end, this class does contain some "shared" field methods.  These are methods,
+    that provide values for an MITAardvark file, that are shared across all metadata
+    types.  These include things like unique identifiers, static values, etc., that are
+    metadata format agnostic.
 
     Args:
         origin: origin of SourceRecord, with optional colon ":" delimited namespace
