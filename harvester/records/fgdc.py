@@ -6,6 +6,7 @@ from collections import defaultdict
 from typing import Literal
 
 from attrs import define, field
+from dateutil.parser import ParserError
 from lxml import etree
 
 from harvester.records.record import XMLSourceRecord
@@ -37,7 +38,7 @@ class FGDC(XMLSourceRecord):
                 return "Public"
         return "Restricted"
 
-    def _dct_title_s(self) -> str | None:
+    def _dct_title_s(self) -> str:
         xpath_expr = """
         //idinfo
             /citation
@@ -47,7 +48,8 @@ class FGDC(XMLSourceRecord):
         values = self.string_list_from_xpath(xpath_expr)
         if values:
             return values[0]
-        return None
+        message = "Could not find <title> element"
+        raise ValueError(message)
 
     def _gbl_resourceClass_sm(self) -> list[str]:
         """Field method: gbl_resourceClass_sm
@@ -234,7 +236,7 @@ class FGDC(XMLSourceRecord):
             for value in values:
                 try:
                     parsed_value = date_parser(value).strftime("%Y-%m-%d")
-                except Exception as exc:  # noqa: BLE001
+                except ParserError as exc:
                     message = f"Could not parse date string: {value}, {exc}"
                     logger.debug(message)
                     continue
@@ -242,7 +244,7 @@ class FGDC(XMLSourceRecord):
 
         return parsed_values
 
-    def _gbl_dateRange_drsim(self) -> list[str] | None:
+    def _gbl_dateRange_drsim(self) -> list[str]:
         date_ranges_xpath = """
         //metadata
             /idinfo
@@ -250,10 +252,7 @@ class FGDC(XMLSourceRecord):
                     /timeinfo
                         /rngdates
         """
-        date_range_elements = self.xpath(date_ranges_xpath)
-
-        if not date_range_elements:
-            return None
+        date_range_elements = self.xpath_query(date_ranges_xpath)
 
         date_ranges = []
         for date_range_element in date_range_elements:
@@ -264,10 +263,10 @@ class FGDC(XMLSourceRecord):
                 end_date = date_parser(date_range_element.find("enddate").text).strftime(
                     "%Y"
                 )
-            except Exception:  # noqa: BLE001
+            except ParserError as exc:
                 message = (
                     "Could not extract begin or end date from date range: "
-                    f"{etree.tostring(date_range_element).decode()}"
+                    f"{etree.tostring(date_range_element).decode()}, {exc}"
                 )
                 logger.debug(message)
                 continue
@@ -289,7 +288,7 @@ class FGDC(XMLSourceRecord):
             /idinfo
                 /citation
                     /citeinfo
-                        /originator
+                        /origin
         """
         return self.string_list_from_xpath(xpath_expr)
 
@@ -316,7 +315,7 @@ class FGDC(XMLSourceRecord):
         if values:
             try:
                 return date_parser(values[0]).strftime("%Y-%m-%d")
-            except Exception as exc:  # noqa: BLE001
+            except ParserError as exc:
                 message = f"Error parsing date string: {values[0]}, {exc}"
                 logger.debug(message)
         return None
@@ -373,7 +372,7 @@ class FGDC(XMLSourceRecord):
         for date in dates:
             try:
                 years.append(int(date_parser(date).strftime("%Y")))
-            except Exception as exc:  # noqa: BLE001
+            except ParserError as exc:
                 message = f"Could not extract year from date string: {date}, {exc}"
                 logger.debug(message)
                 continue
