@@ -60,7 +60,7 @@ def test_xml_source_record_string_list_from_xpath_success(
         "yellow",
         "red",
     }
-    assert valid_generic_xml_source_record.string_list_from_xpath("//miss") is None
+    assert valid_generic_xml_source_record.string_list_from_xpath("//miss") == []
     assert valid_generic_xml_source_record.string_list_from_xpath(
         "//plants:introduced"
     ) == ["1973"]
@@ -187,3 +187,38 @@ def test_custom_exception_has_original_exception():
     assert str(custom_exception) == "I am the custom exception."
     assert str(custom_exception.original_exception) == "division by zero"
     assert "1 / 0" in custom_exception.get_formatted_traceback()
+
+
+def test_record_shared_field_method_schema_provider_s_mit_success(
+    fgdc_source_record_from_zip,
+):
+    assert fgdc_source_record_from_zip._schema_provider_s() == "GIS Lab, MIT Libraries"
+
+
+def test_xml_source_record_single_string_from_xpath_match_success(
+    valid_generic_xml_source_record,
+):
+    assert (
+        valid_generic_xml_source_record.single_string_from_xpath(
+            "/plants:fruits/plants:description"
+        )
+        == "List of fruits."
+    )
+
+
+def test_xml_source_record_single_string_from_xpath_miss_success(
+    valid_generic_xml_source_record,
+):
+    assert (
+        valid_generic_xml_source_record.single_string_from_xpath(
+            "/plants:fruits/plants:does_not_exist"
+        )
+        is None
+    )
+
+
+def test_xml_source_record_single_string_from_xpath_multiple_raise_error(
+    valid_generic_xml_source_record,
+):
+    with pytest.raises(ValueError, match="Expected one or none matches for XPath query"):
+        valid_generic_xml_source_record.single_string_from_xpath("//plants:description")

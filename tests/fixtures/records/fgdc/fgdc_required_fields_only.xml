@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<metadata>
+    <idinfo>
+        <citation>
+            <citeinfo>
+                <geoform Sync="TRUE">remote-sensing image</geoform>
+                <title>Egypt, Cairo (Topographic Map, 1972)</title>
+            </citeinfo>
+        </citation>
+        <accconst>Restricted Access Online: Access granted to Licensee only. Available
+            only to MIT affiliates.
+        </accconst>
+        <spdom>
+            <bounding>
+                <westbc Sync="TRUE">31.161907</westbc>
+                <eastbc Sync="TRUE">31.381609</eastbc>
+                <northbc Sync="TRUE">30.141311</northbc>
+                <southbc Sync="TRUE">29.994131</southbc>
+            </bounding>
+            <lboundng>
+                <leftbc Sync="TRUE">31.161907</leftbc>
+                <rightbc Sync="TRUE">31.381609</rightbc>
+                <bottombc Sync="TRUE">29.994131</bottombc>
+                <topbc Sync="TRUE">30.141311</topbc>
+            </lboundng>
+        </spdom>
+    </idinfo>
+</metadata>

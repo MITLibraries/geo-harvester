@@ -270,3 +270,43 @@ def records_for_normalize(fgdc_source_record_from_zip):
             source_record=fgdc_source_record_from_zip,
         )
     ]
+
+
+@pytest.fixture
+def fgdc_source_record_all_fields():
+    identifier = "SDE_DATA_US_P2HIGHWAYS_2005"
+    with open("tests/fixtures/records/fgdc/fgdc_all_fields.xml", "rb") as f:
+        return FGDC(
+            identifier=identifier,
+            origin="mit",
+            metadata_format="fgdc",
+            event="created",
+            data=f.read(),
+        )
+
+
+@pytest.fixture
+def fgdc_source_record_required_fields():
+    identifier = "EG_CAIRO_A25TOPO_1972"
+    with open("tests/fixtures/records/fgdc/fgdc_required_fields_only.xml", "rb") as f:
+        return FGDC(
+            identifier=identifier,
+            origin="mit",
+            metadata_format="fgdc",
+            event="created",
+            data=f.read(),
+        )
+
+
+@pytest.fixture
+def xpath_returns_nothing():
+    with patch.object(XMLSourceRecord, "xpath_query") as mocked_xpath:
+        mocked_xpath.return_value = []
+        yield mocked_xpath
+
+
+@pytest.fixture
+def strings_from_xpath_unhandled_value():
+    with patch.object(XMLSourceRecord, "string_list_from_xpath") as mocked_xpath_strings:
+        mocked_xpath_strings.return_value = ["HIGHLY_UNUSUAL_VALUE_123"]
+        yield mocked_xpath_strings

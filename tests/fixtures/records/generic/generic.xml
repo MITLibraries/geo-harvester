@@ -1,6 +1,7 @@
 <fruits
     xmlns="http://example.com/plants"
 >
+    <description>List of fruits.</description>
     <apples>
         <apple>
             <name>Pink Lady</name>

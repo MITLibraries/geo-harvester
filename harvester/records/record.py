@@ -14,6 +14,7 @@ from lxml import etree  # type: ignore[import-untyped]
 from harvester.aws.sqs import ZipFileEventMessage
 from harvester.config import Config
 from harvester.records.exceptions import FieldMethodError
+from harvester.utils import dedupe_list_of_values
 
 logger = logging.getLogger(__name__)
 
@@ -139,8 +140,8 @@ class MITAardvark:
     gbl_georeferenced_b: str | None = field(
         default=None, validator=optional(instance_of(str))
     )
-    gbl_indexYear_im: str | None = field(
-        default=None, validator=optional(instance_of(str))
+    gbl_indexYear_im: list | None = field(
+        default=None, validator=optional(instance_of(list))
     )
     gbl_resourceType_sm: list | None = field(
         default=None, validator=optional(instance_of(list))
@@ -284,11 +285,11 @@ class SourceRecord:
         aardvark_fields = fields(MITAardvark)
 
         # loop through fields and attempt field-level child class methods if defined
-        field_values = {}
+        all_field_values = {}
         for aardvark_field in aardvark_fields:
             if field_method := getattr(self, f"_{aardvark_field.name}", None):
                 try:
-                    field_values[aardvark_field.name] = field_method()
+                    all_field_values[aardvark_field.name] = field_method()
                 except Exception as exc:
                     message = (
                         f"Error getting value for field '{aardvark_field.name}': {exc}"
@@ -296,8 +297,16 @@ class SourceRecord:
                     logger.exception(message)
                     raise FieldMethodError(exc, message) from exc
 
+        # dedupe all list fields
+        for field_name, field_values in all_field_values.items():
+            if isinstance(field_values, list):
+                deduped_field_values = [
+                    value for value in field_values if value is not None
+                ]
+                all_field_values[field_name] = dedupe_list_of_values(deduped_field_values)
+
         # initialize a new MITAardvark instance and return
-        return MITAardvark(**field_values)
+        return MITAardvark(**all_field_values)
 
     ####################################
     # Abstract Required Field Methods
@@ -377,6 +386,67 @@ class SourceRecord:
 
         return json.dumps(urls_payload)
 
+    def _schema_provider_s(self) -> str:
+        """Shared field method: schema_provider_s
+
+        For MIT harvests, provider is "GIS Lab, MIT Libraries".
+        For OGM harvests, provider will come from OGM harvest configuration.
+        """
+        if self.origin == "mit":
+            return "GIS Lab, MIT Libraries"
+        if self.origin == "ogm":
+            # WIP: will be sorted out during OGM harvest work
+            message = "OGM harvests not yet implemented"
+            raise NotImplementedError(message)
+        message = f"Harvest origin {self.origin} not recognized."
+        raise ValueError(message)
+
+    def _dcat_theme_sm(self) -> list[str]:
+        """Shared field method: dcat_theme_sm
+
+        The Aardvark field 'dcat_theme_sm' is designed to be a controlled set of terms
+        from this list: https://opengeometadata.org/ogm-aardvark/#theme-values.  The
+        shared approach across all metadata formats is to retrieve all values pulled by
+        _dct_subject_sm, then extract any subset that matches these terms.
+        """
+        if not hasattr(self, "_dct_subject_sm"):
+            message = (
+                "Field method not defined for 'dct_subject_sm', "
+                "cannot extract controlled thematic keywords for 'dcat_theme_sm'."
+            )
+            logger.debug(message)
+            return []
+
+        subjects = self._dct_subject_sm()
+        theme_list = [
+            "agriculture",
+            "biology",
+            "boundaries",
+            "climate",
+            "economy",
+            "elevation",
+            "environment",
+            "events",
+            "geology",
+            "health",
+            "imagery",
+            "inland waters",
+            "land cover",
+            "location",
+            "military",
+            "oceans",
+            "property",
+            "society",
+            "structure",
+            "transportation",
+            "utilities",
+        ]
+        return [
+            subject.title()
+            for subject in subjects
+            if subject.lower().strip() in theme_list
+        ]
+
 
 @define
 class XMLSourceRecord(SourceRecord):
@@ -410,17 +480,35 @@ class XMLSourceRecord(SourceRecord):
         cleaned = " ".join(string.split())
         return cleaned if cleaned else None
 
-    def string_list_from_xpath(self, xpath_expr: str) -> list | None:
+    def string_list_from_xpath(self, xpath_expr: str) -> list:
         """Return unique list of strings from XPath matches.
 
-        Order will be order discovered via XPath.
+        A list will always be returned, though empty strings and None values will be
+        filtered out.  Order will be order discovered via XPath.
         """
         matches = self.xpath_query(xpath_expr)
         strings = [self.remove_whitespace(match.text) for match in matches]
         strings = [string for string in strings if string]
         if all(string is None or string == "" for string in strings):
+            return []
+        return dedupe_list_of_values(strings)
+
+    def single_string_from_xpath(self, xpath_expr: str) -> str | None:
+        """Return single string or None from an Xpath query.
+
+        If the XPath query returns MORE than one textual element, an exception will be
+        raised.
+        """
+        matches = self.xpath_query(xpath_expr)
+        if not matches:
             return None
-        return list(set(strings))
+        if len(matches) > 1:
+            message = (
+                "Expected one or none matches for XPath query, "
+                f"but {len(matches)} were found."
+            )
+            raise ValueError(message)
+        return self.remove_whitespace(matches[0].text)
 
 
 @define
