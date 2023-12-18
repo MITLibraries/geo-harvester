@@ -401,6 +401,52 @@ class SourceRecord:
         message = f"Harvest origin {self.origin} not recognized."
         raise ValueError(message)
 
+    def _dcat_theme_sm(self) -> list[str]:
+        """Shared field method: dcat_theme_sm
+
+        The Aardvark field 'dcat_theme_sm' is designed to be a controlled set of terms
+        from this list: https://opengeometadata.org/ogm-aardvark/#theme-values.  The
+        shared approach across all metadata formats is to retrieve all values pulled by
+        _dct_subject_sm, then extract any subset that matches these terms.
+        """
+        if not hasattr(self, "_dct_subject_sm"):
+            message = (
+                "Field method not defined for 'dct_subject_sm', "
+                "cannot extract controlled thematic keywords for 'dcat_theme_sm'."
+            )
+            logger.debug(message)
+            return []
+
+        subjects = self._dct_subject_sm()
+        theme_list = [
+            "agriculture",
+            "biology",
+            "boundaries",
+            "climate",
+            "economy",
+            "elevation",
+            "environment",
+            "events",
+            "geology",
+            "health",
+            "imagery",
+            "inland waters",
+            "land cover",
+            "location",
+            "military",
+            "oceans",
+            "property",
+            "society",
+            "structure",
+            "transportation",
+            "utilities",
+        ]
+        return [
+            subject.title()
+            for subject in subjects
+            if subject.lower().strip() in theme_list
+        ]
+
 
 @define
 class XMLSourceRecord(SourceRecord):

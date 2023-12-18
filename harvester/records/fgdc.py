@@ -163,10 +163,6 @@ class FGDC(XMLSourceRecord):
         return identifiers
 
     def _dct_subject_sm(self) -> list[str]:
-        # NOTE: returns same data as dct_theme_sm
-        return self._dcat_theme_sm()
-
-    def _dcat_theme_sm(self) -> list[str]:
         xpath_expr = """
         //metadata
             /idinfo

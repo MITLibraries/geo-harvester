@@ -94,10 +94,7 @@ def test_fgdc_optional_dct_subject_sm(fgdc_source_record_all_fields):
 
 def test_fgdc_optional_dcat_theme_sm(fgdc_source_record_all_fields):
     assert fgdc_source_record_all_fields._dcat_theme_sm() == [
-        "Land value taxation",
-        "City planning",
-        "planningCadastre",
-        "boundaries",
+        "Boundaries",
     ]
 
 
