@@ -253,16 +253,3 @@ def test_fgdc_optional_gbl_indexYear_im_date_parse_log_continue(
 
 def test_fgdc_optional_gbl_resourceType_sm(fgdc_source_record_all_fields):
     assert fgdc_source_record_all_fields._gbl_resourceType_sm() == ["G-polygon"]
-
-
-def test_fgdc_optional_schema_provider_s(fgdc_source_record_all_fields):
-    assert (
-        fgdc_source_record_all_fields._schema_provider_s()
-        == "NYC Department of City Planning"
-    )
-
-
-def test_fgdc_schema_provider_s_missing_element_returns_none(
-    fgdc_source_record_required_fields, xpath_returns_nothing
-):
-    assert fgdc_source_record_required_fields._schema_provider_s() is None

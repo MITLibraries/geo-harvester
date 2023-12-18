@@ -386,6 +386,21 @@ class SourceRecord:
 
         return json.dumps(urls_payload)
 
+    def _schema_provider_s(self) -> str:
+        """Shared field method: schema_provider_s
+
+        For MIT harvests, provider is "GIS Lab, MIT Libraries".
+        For OGM harvests, provider will come from OGM harvest configuration.
+        """
+        if self.origin == "mit":
+            return "GIS Lab, MIT Libraries"
+        if self.origin == "ogm":
+            # WIP: will be sorted out during OGM harvest work
+            message = "OGM harvests not yet implemented"
+            raise NotImplementedError(message)
+        message = f"Harvest origin {self.origin} not recognized."
+        raise ValueError(message)
+
 
 @define
 class XMLSourceRecord(SourceRecord):

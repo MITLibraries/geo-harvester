@@ -383,17 +383,3 @@ class FGDC(XMLSourceRecord):
                         /sdtstype
         """
         return self.string_list_from_xpath(xpath_expr)
-
-    def _schema_provider_s(self) -> str | None:
-        xpath_expr = """
-        //metadata
-            /distinfo
-                /distrib
-                    /cntinfo
-                        /cntorgp
-                            /cntorg
-        """
-        values = self.string_list_from_xpath(xpath_expr)
-        if values:
-            return values[0]
-        return None
