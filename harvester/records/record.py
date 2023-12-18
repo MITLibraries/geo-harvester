@@ -432,6 +432,23 @@ class XMLSourceRecord(SourceRecord):
             return []
         return dedupe_list_of_values(strings)
 
+    def single_string_from_xpath(self, xpath_expr: str) -> str | None:
+        """Return single string or None from an Xpath query.
+
+        If the XPath query returns MORE than one textual element, an exception will be
+        raised.
+        """
+        matches = self.xpath_query(xpath_expr)
+        if not matches:
+            return None
+        if len(matches) > 1:
+            message = (
+                "Expected one or none matches for XPath query, "
+                f"but {len(matches)} were found."
+            )
+            raise ValueError(message)
+        return self.remove_whitespace(matches[0].text)
+
 
 @define
 class JSONSourceRecord(SourceRecord):

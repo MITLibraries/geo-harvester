@@ -29,9 +29,8 @@ class FGDC(XMLSourceRecord):
         //idinfo
             /accconst
         """
-        matches = self.string_list_from_xpath(xpath_expr)
-        if matches:
-            value = matches[0]
+        value = self.single_string_from_xpath(xpath_expr)
+        if value:
             if "Restricted" in value:
                 return "Restricted"
             if "Unrestricted" in value:
@@ -45,11 +44,11 @@ class FGDC(XMLSourceRecord):
                 /citeinfo
                     /title
         """
-        values = self.string_list_from_xpath(xpath_expr)
-        if values:
-            return values[0]
-        message = "Could not find <title> element"
-        raise ValueError(message)
+        value = self.single_string_from_xpath(xpath_expr)
+        if not value:
+            message = "Could not find <title> element"
+            raise ValueError(message)
+        return value
 
     def _gbl_resourceClass_sm(self) -> list[str]:
         """Field method: gbl_resourceClass_sm
@@ -298,10 +297,7 @@ class FGDC(XMLSourceRecord):
             /spdoinfo
                 /direct
         """
-        values = self.string_list_from_xpath(xpath_expr)
-        if values:
-            return values[0]
-        return None
+        return self.single_string_from_xpath(xpath_expr)
 
     def _dct_issued_s(self) -> str | None:
         xpath_expr = """
@@ -311,12 +307,12 @@ class FGDC(XMLSourceRecord):
                     /citeinfo
                         /pubdate
         """
-        values = self.string_list_from_xpath(xpath_expr)
-        if values:
+        value = self.single_string_from_xpath(xpath_expr)
+        if value:
             try:
-                return date_parser(values[0]).strftime("%Y-%m-%d")
+                return date_parser(value).strftime("%Y-%m-%d")
             except ParserError as exc:
-                message = f"Error parsing date string: {values[0]}, {exc}"
+                message = f"Error parsing date string: {value}, {exc}"
                 logger.debug(message)
         return None
 
