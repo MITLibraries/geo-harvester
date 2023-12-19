@@ -447,6 +447,21 @@ class SourceRecord:
             if subject.lower().strip() in theme_list
         ]
 
+    def _gbl_suppressed_b(self) -> bool:
+        """Shared field method: gbl_suppressed_b
+
+        For MITAardvark records, this field is used to indicate if the record should be
+        considered deleted, and therefore will be removed from downstream discovery layers
+        like TIMDEX.
+
+        The boolean value is determined by the SourceRecord.event:
+            - "created" = False (record is not suppressed)
+            - "deleted" = True (record is suppressed)
+        """
+        if self.event == "deleted":
+            return True
+        return False
+
 
 @define
 class XMLSourceRecord(SourceRecord):
