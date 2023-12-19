@@ -1,6 +1,7 @@
-# ruff: noqa: N802, S301
+# ruff: noqa: N802, S301, SLF001
+
 import json
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import boto3
 import pytest
@@ -334,3 +335,27 @@ def strings_from_xpath_unhandled_value():
     with patch.object(XMLSourceRecord, "string_list_from_xpath") as mocked_xpath_strings:
         mocked_xpath_strings.return_value = ["HIGHLY_UNUSUAL_VALUE_123"]
         yield mocked_xpath_strings
+
+
+@pytest.fixture
+def records_for_writing(fgdc_source_record_from_zip):
+    record = Record(
+        identifier="SDE_DATA_AE_A8GNS_2003",
+        source_record=fgdc_source_record_from_zip,
+    )
+    record.normalized_record = record.source_record.normalize()
+    return [record]
+
+
+@pytest.fixture
+def mocked_source_writer(generic_harvester_class):
+    mock_source_writer = MagicMock()
+    generic_harvester_class._write_source_metadata = mock_source_writer
+    return mock_source_writer
+
+
+@pytest.fixture
+def mocked_normalized_writer(generic_harvester_class):
+    mock_normalized_writer = MagicMock()
+    generic_harvester_class._write_normalized_metadata = mock_normalized_writer
+    return mock_normalized_writer

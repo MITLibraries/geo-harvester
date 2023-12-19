@@ -119,7 +119,7 @@ class Harvester(ABC):
                     record.exception_stage = "write_metadata.source"
                     record.exception = exc
                     yield record
-                    continue
+                    continue  # pragma: nocover
 
             # write normalized
             if self.output_normalized_directory:
@@ -131,7 +131,7 @@ class Harvester(ABC):
                     record.exception_stage = "write_metadata.normalized"
                     record.exception = exc
                     yield record
-                    continue
+                    continue  # pragma: nocover
 
             yield record
 
