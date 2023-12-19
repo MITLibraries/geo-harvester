@@ -25,6 +25,9 @@ class Harvester(ABC):
     harvest_type: Literal["full", "incremental"] = field(default=None)
     from_date: str = field(default=None)
     until_date: str = field(default=None)
+    output_source_directory: str = field(default=None)
+    output_normalized_directory: str = field(default=None)
+    output_file: str = field(default=None)
 
     processed_records_count: int = field(default=0)
     failed_records: list[Record] = field(default=[])

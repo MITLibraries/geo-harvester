@@ -76,17 +76,52 @@ def ping(ctx: click.Context) -> None:
     type=str,
     help="filter for files modified before this date; format YYYY-MM-DD.",
 )
+@click.option(
+    "-osd",
+    "--output-source-directory",
+    required=False,
+    envvar="S3_PUBLIC_CDN_ROOT",
+    type=str,
+    help="Directory to write source metadata for EACH harvested record file with naming "
+    "convention '<identifier>.<format>.source.xml|json'. Defaults to env var "
+    "S3_PUBLIC_CDN_ROOT if not set.",
+)
+@click.option(
+    "-ond",
+    "--output-normalized-directory",
+    required=False,
+    envvar="S3_PUBLIC_CDN_ROOT",
+    type=str,
+    help="Directory to write normalized MITAardvark metadata for EACH harvested record "
+    "file with naming convention '<identifier>.aardvark.normalized.json'. Defaults "
+    "to env var S3_PUBLIC_CDN_ROOT if not set.",
+)
+@click.option(
+    "-o",
+    "--output-file",
+    required=False,
+    type=str,
+    help="Filepath to write single, combined JSONLines file of normalized MITAardvark "
+    "metadata for ALL harvested records.  This is the expected format for the "
+    "TIMDEX pipeline.",
+)
 @click.pass_context
 def harvest(
     ctx: click.Context,
     harvest_type: str,
     from_date: str,
     until_date: str,
+    output_source_directory: str,
+    output_normalized_directory: str,
+    output_file: str,
 ) -> None:
     """Harvest command with sub-commands for different sources."""
     ctx.obj["HARVEST_TYPE"] = harvest_type
     ctx.obj["FROM_DATE"] = from_date
     ctx.obj["UNTIL_DATE"] = until_date
+    ctx.obj["OUTPUT_SOURCE_DIRECTORY"] = output_source_directory
+    ctx.obj["OUTPUT_NORMALIZED_DIRECTORY"] = output_normalized_directory
+    ctx.obj["OUTPUT_FILE"] = output_file
 
 
 # Attach harvest group to main command
@@ -133,18 +168,17 @@ def harvest_mit(
     preserve_sqs_messages: bool,
 ) -> None:
     """Harvest and normalize MIT geospatial metadata records."""
-    harvest_type = ctx.obj["HARVEST_TYPE"]
-    from_date = ctx.obj["FROM_DATE"]
-    until_date = ctx.obj["UNTIL_DATE"]
-
     harvester = MITHarvester(
-        harvest_type=harvest_type,
-        from_date=from_date,
-        until_date=until_date,
+        harvest_type=ctx.obj["HARVEST_TYPE"],
+        from_date=ctx.obj["FROM_DATE"],
+        until_date=ctx.obj["UNTIL_DATE"],
         input_files=input_files,
         sqs_topic_name=sqs_topic_name,
         skip_sqs_check=skip_sqs_check,
         preserve_sqs_messages=preserve_sqs_messages,
+        output_source_directory=ctx.obj["OUTPUT_SOURCE_DIRECTORY"],
+        output_normalized_directory=ctx.obj["OUTPUT_NORMALIZED_DIRECTORY"],
+        output_file=ctx.obj["OUTPUT_FILE"],
     )
     results = harvester.harvest()
     logger.info(results)
