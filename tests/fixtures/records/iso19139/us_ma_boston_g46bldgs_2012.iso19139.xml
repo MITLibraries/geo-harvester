@@ -1,0 +1,943 @@
+<?xml version="1.0"?>
+<MD_Metadata xmlns="http://www.isotc211.org/2005/gmd"
+             xmlns:gco="http://www.isotc211.org/2005/gco"
+             xmlns:gts="http://www.isotc211.org/2005/gts"
+             xmlns:srv="http://www.isotc211.org/2005/srv"
+             xmlns:gml="http://www.opengis.net/gml/3.2"
+             xmlns:gmx="http://www.isotc211.org/2005/gmx"
+             xmlns:xlink="http://www.w3.org/1999/xlink"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <language>
+        <LanguageCode codeList="http://www.loc.gov/standards/iso639-2/php/code_list.php"
+                      codeListValue="eng" codeSpace="ISO639-2">eng
+        </LanguageCode>
+    </language>
+    <characterSet>
+        <MD_CharacterSetCode
+                codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode"
+                codeListValue="utf8" codeSpace="ISOTC211/19115">utf8
+        </MD_CharacterSetCode>
+    </characterSet>
+    <hierarchyLevel>
+        <MD_ScopeCode
+                codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ScopeCode"
+                codeListValue="dataset" codeSpace="ISOTC211/19115">dataset
+        </MD_ScopeCode>
+    </hierarchyLevel>
+    <hierarchyLevelName>
+        <gco:CharacterString>dataset</gco:CharacterString>
+    </hierarchyLevelName>
+    <contact>
+        <CI_ResponsibleParty>
+            <contactInfo>
+                <CI_Contact>
+                    <address>
+                        <CI_Address>
+                            <deliveryPoint>
+                                <gco:CharacterString>Academic Technology
+                                </gco:CharacterString>
+                            </deliveryPoint>
+                            <deliveryPoint>
+                                <gco:CharacterString>16 Dearborn Rd.</gco:CharacterString>
+                            </deliveryPoint>
+                            <city>
+                                <gco:CharacterString>Somerville</gco:CharacterString>
+                            </city>
+                            <administrativeArea>
+                                <gco:CharacterString>MA</gco:CharacterString>
+                            </administrativeArea>
+                            <postalCode>
+                                <gco:CharacterString>02144</gco:CharacterString>
+                            </postalCode>
+                            <country>
+                                <Country
+                                        codeList="http://www.iso.org/iso/country_codes/iso_3166_code_lists.htm"
+                                        codeListValue="US" codeSpace="ISO3166-1">US
+                                </Country>
+                            </country>
+                        </CI_Address>
+                    </address>
+                </CI_Contact>
+            </contactInfo>
+            <role>
+                <CI_RoleCode
+                        codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
+                        codeListValue="pointOfContact" codeSpace="ISOTC211/19115">
+                    pointOfContact
+                </CI_RoleCode>
+            </role>
+        </CI_ResponsibleParty>
+    </contact>
+    <dateStamp>
+        <gco:Date>2017-08-07</gco:Date>
+    </dateStamp>
+    <metadataStandardName>
+        <gco:CharacterString>ISO 19139 Geographic Information - Metadata - Implementation
+            Specification
+        </gco:CharacterString>
+    </metadataStandardName>
+    <metadataStandardVersion>
+        <gco:CharacterString>2007</gco:CharacterString>
+    </metadataStandardVersion>
+    <spatialRepresentationInfo>
+        <MD_VectorSpatialRepresentation>
+            <topologyLevel>
+                <MD_TopologyLevelCode
+                        codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_TopologyLevelCode"
+                        codeListValue="geometryOnly" codeSpace="ISOTC211/19115">
+                    geometryOnly
+                </MD_TopologyLevelCode>
+            </topologyLevel>
+            <geometricObjects>
+                <MD_GeometricObjects>
+                    <geometricObjectType>
+                        <MD_GeometricObjectTypeCode
+                                codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_GeometricObjectTypeCode"
+                                codeListValue="composite" codeSpace="ISOTC211/19115">
+                            composite
+                        </MD_GeometricObjectTypeCode>
+                    </geometricObjectType>
+                    <geometricObjectCount>
+                        <gco:Integer>129370</gco:Integer>
+                    </geometricObjectCount>
+                </MD_GeometricObjects>
+            </geometricObjects>
+        </MD_VectorSpatialRepresentation>
+    </spatialRepresentationInfo>
+    <referenceSystemInfo>
+        <MD_ReferenceSystem>
+            <referenceSystemIdentifier>
+                <RS_Identifier>
+                    <code>
+                        <gco:CharacterString>4326</gco:CharacterString>
+                    </code>
+                    <codeSpace>
+                        <gco:CharacterString>EPSG</gco:CharacterString>
+                    </codeSpace>
+                    <version>
+                        <gco:CharacterString>6.2(3.0.1)</gco:CharacterString>
+                    </version>
+                </RS_Identifier>
+            </referenceSystemIdentifier>
+        </MD_ReferenceSystem>
+    </referenceSystemInfo>
+    <identificationInfo>
+        <MD_DataIdentification>
+            <citation>
+                <CI_Citation>
+                    <title>
+                        <gco:CharacterString>Boston, MA (Building Footprints, 2012)
+                        </gco:CharacterString>
+                    </title>
+                    <date>
+                        <CI_Date>
+                            <date>
+                                <gco:Date>2012-01-19</gco:Date>
+                            </date>
+                            <dateType>
+                                <CI_DateTypeCode
+                                        codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode"
+                                        codeListValue="publication"
+                                        codeSpace="ISOTC211/19115">publication
+                                </CI_DateTypeCode>
+                            </dateType>
+                        </CI_Date>
+                    </date>
+                    <citedResponsibleParty>
+                        <CI_ResponsibleParty>
+                            <organisationName>
+                                <gco:CharacterString>Boston (Mass.). Dept. of Innovation
+                                    and Technology.
+                                </gco:CharacterString>
+                            </organisationName>
+                            <role>
+                                <CI_RoleCode
+                                        codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
+                                        codeListValue="originator"
+                                        codeSpace="ISOTC211/19115">originator
+                                </CI_RoleCode>
+                            </role>
+                        </CI_ResponsibleParty>
+                    </citedResponsibleParty>
+                    <citedResponsibleParty>
+                        <CI_ResponsibleParty>
+                            <organisationName>
+                                <gco:CharacterString>Boston Department of Innovation and
+                                    Technology (DoIT)
+                                </gco:CharacterString>
+                            </organisationName>
+                            <role>
+                                <CI_RoleCode
+                                        codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
+                                        codeListValue="publisher"
+                                        codeSpace="ISOTC211/19115">publisher
+                                </CI_RoleCode>
+                            </role>
+                        </CI_ResponsibleParty>
+                    </citedResponsibleParty>
+                    <presentationForm>
+                        <CI_PresentationFormCode
+                                codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_PresentationFormCode"
+                                codeListValue="mapDigital" codeSpace="ISOTC211/19115">
+                            mapDigital
+                        </CI_PresentationFormCode>
+                    </presentationForm>
+                    <collectiveTitle>
+                        <gco:CharacterString>Boston DOIT GIS Data</gco:CharacterString>
+                    </collectiveTitle>
+                </CI_Citation>
+            </citation>
+            <abstract>
+                <gco:CharacterString>This polygon layer represents building footprints in
+                    Boston, MA
+                </gco:CharacterString>
+            </abstract>
+            <purpose>
+                <gco:CharacterString>This layer is intended for researchers, students, and
+                    policy makers for reference and mapping purposes, and may be used for
+                    basic applications such as viewing, querying, and map output
+                    production, or to provide a basemap to support graphical overlays and
+                    analysis with other spatial data.
+                </gco:CharacterString>
+            </purpose>
+            <status>
+                <MD_ProgressCode
+                        codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ProgressCode"
+                        codeListValue="completed" codeSpace="ISOTC211/19115">completed
+                </MD_ProgressCode>
+            </status>
+            <pointOfContact>
+                <CI_ResponsibleParty>
+                    <individualName>
+                        <gco:CharacterString>William Toussaint</gco:CharacterString>
+                    </individualName>
+                    <organisationName>
+                        <gco:CharacterString>City of Boston, MA-DoIT Department
+                        </gco:CharacterString>
+                    </organisationName>
+                    <positionName>
+                        <gco:CharacterString>GIS Data Manager, GISP</gco:CharacterString>
+                    </positionName>
+                    <contactInfo>
+                        <CI_Contact>
+                            <phone>
+                                <CI_Telephone>
+                                    <voice>
+                                        <gco:CharacterString>617-635-4798
+                                        </gco:CharacterString>
+                                    </voice>
+                                </CI_Telephone>
+                            </phone>
+                            <address>
+                                <CI_Address>
+                                    <deliveryPoint>
+                                        <gco:CharacterString>1 City Hall Square
+                                        </gco:CharacterString>
+                                    </deliveryPoint>
+                                    <deliveryPoint>
+                                        <gco:CharacterString>Room 703
+                                        </gco:CharacterString>
+                                    </deliveryPoint>
+                                    <city>
+                                        <gco:CharacterString>Boston</gco:CharacterString>
+                                    </city>
+                                    <administrativeArea>
+                                        <gco:CharacterString>MA</gco:CharacterString>
+                                    </administrativeArea>
+                                    <postalCode>
+                                        <gco:CharacterString>02201-2021
+                                        </gco:CharacterString>
+                                    </postalCode>
+                                    <country>
+                                        <Country
+                                                codeList="http://www.iso.org/iso/country_codes/iso_3166_code_lists.htm"
+                                                codeListValue="US" codeSpace="ISO3166-1">
+                                            US
+                                        </Country>
+                                    </country>
+                                    <electronicMailAddress>
+                                        <gco:CharacterString>
+                                            Claire.Lane@CityofBoston.gov
+                                        </gco:CharacterString>
+                                    </electronicMailAddress>
+                                </CI_Address>
+                            </address>
+                        </CI_Contact>
+                    </contactInfo>
+                    <role>
+                        <CI_RoleCode
+                                codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
+                                codeListValue="pointOfContact" codeSpace="ISOTC211/19115">
+                            pointOfContact
+                        </CI_RoleCode>
+                    </role>
+                </CI_ResponsibleParty>
+            </pointOfContact>
+            <resourceMaintenance>
+                <MD_MaintenanceInformation>
+                    <maintenanceAndUpdateFrequency>
+                        <MD_MaintenanceFrequencyCode
+                                codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_MaintenanceFrequencyCode"
+                                codeListValue="annually" codeSpace="ISOTC211/19115">
+                            annually
+                        </MD_MaintenanceFrequencyCode>
+                    </maintenanceAndUpdateFrequency>
+                </MD_MaintenanceInformation>
+            </resourceMaintenance>
+            <descriptiveKeywords>
+                <MD_Keywords>
+                    <keyword>
+                        <gco:CharacterString>Boston</gco:CharacterString>
+                    </keyword>
+                    <keyword>
+                        <gco:CharacterString>Massachusetts</gco:CharacterString>
+                    </keyword>
+                    <keyword>
+                        <gco:CharacterString>Suffolk</gco:CharacterString>
+                    </keyword>
+                    <keyword>
+                        <gco:CharacterString>New England</gco:CharacterString>
+                    </keyword>
+                    <keyword>
+                        <gco:CharacterString>US</gco:CharacterString>
+                    </keyword>
+                    <keyword>
+                        <gco:CharacterString>MA</gco:CharacterString>
+                    </keyword>
+                    <keyword>
+                        <gco:CharacterString>Eastern Massachusetts</gco:CharacterString>
+                    </keyword>
+                    <type>
+                        <MD_KeywordTypeCode
+                                codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode"
+                                codeListValue="place" codeSpace="ISOTC211/19115">place
+                        </MD_KeywordTypeCode>
+                    </type>
+                    <thesaurusName>
+                        <CI_Citation>
+                            <title>
+                                <gco:CharacterString>GNIS</gco:CharacterString>
+                            </title>
+                            <date gco:nilReason="missing"/>
+                        </CI_Citation>
+                    </thesaurusName>
+                </MD_Keywords>
+            </descriptiveKeywords>
+            <descriptiveKeywords>
+                <MD_Keywords>
+                    <keyword>
+                        <gco:CharacterString>Northern Hemisphere</gco:CharacterString>
+                    </keyword>
+                    <keyword>
+                        <gco:CharacterString>Western Hemisphere</gco:CharacterString>
+                    </keyword>
+                    <keyword>
+                        <gco:CharacterString>United States</gco:CharacterString>
+                    </keyword>
+                    <type>
+                        <MD_KeywordTypeCode
+                                codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode"
+                                codeListValue="place" codeSpace="ISOTC211/19115">place
+                        </MD_KeywordTypeCode>
+                    </type>
+                    <thesaurusName>
+                        <CI_Citation>
+                            <title>
+                                <gco:CharacterString>LCNH</gco:CharacterString>
+                            </title>
+                            <date gco:nilReason="missing"/>
+                        </CI_Citation>
+                    </thesaurusName>
+                </MD_Keywords>
+            </descriptiveKeywords>
+            <descriptiveKeywords>
+                <MD_Keywords>
+                    <keyword>
+                        <gco:CharacterString>20120101</gco:CharacterString>
+                    </keyword>
+                    <type>
+                        <MD_KeywordTypeCode
+                                codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode"
+                                codeListValue="temporal" codeSpace="ISOTC211/19115">
+                            temporal
+                        </MD_KeywordTypeCode>
+                    </type>
+                </MD_Keywords>
+            </descriptiveKeywords>
+            <descriptiveKeywords>
+                <MD_Keywords>
+                    <keyword>
+                        <gco:CharacterString>polygon</gco:CharacterString>
+                    </keyword>
+                    <type>
+                        <MD_KeywordTypeCode
+                                codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode"
+                                codeListValue="theme" codeSpace="ISOTC211/19115">theme
+                        </MD_KeywordTypeCode>
+                    </type>
+                    <thesaurusName>
+                        <CI_Citation>
+                            <title>
+                                <gco:CharacterString>FGDC</gco:CharacterString>
+                            </title>
+                            <date gco:nilReason="missing"/>
+                        </CI_Citation>
+                    </thesaurusName>
+                </MD_Keywords>
+            </descriptiveKeywords>
+            <descriptiveKeywords>
+                <MD_Keywords>
+                    <keyword>
+                        <gco:CharacterString>structure</gco:CharacterString>
+                    </keyword>
+                    <type>
+                        <MD_KeywordTypeCode
+                                codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode"
+                                codeListValue="theme" codeSpace="ISOTC211/19115">theme
+                        </MD_KeywordTypeCode>
+                    </type>
+                    <thesaurusName>
+                        <CI_Citation>
+                            <title>
+                                <gco:CharacterString>ISO 19115 Topic Category
+                                </gco:CharacterString>
+                            </title>
+                            <date gco:nilReason="missing"/>
+                        </CI_Citation>
+                    </thesaurusName>
+                </MD_Keywords>
+            </descriptiveKeywords>
+            <descriptiveKeywords>
+                <MD_Keywords>
+                    <keyword>
+                        <gco:CharacterString>Buildings</gco:CharacterString>
+                    </keyword>
+                    <type>
+                        <MD_KeywordTypeCode
+                                codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode"
+                                codeListValue="theme" codeSpace="ISOTC211/19115">theme
+                        </MD_KeywordTypeCode>
+                    </type>
+                    <thesaurusName>
+                        <CI_Citation>
+                            <title>
+                                <gco:CharacterString>LCSH</gco:CharacterString>
+                            </title>
+                            <date gco:nilReason="missing"/>
+                        </CI_Citation>
+                    </thesaurusName>
+                </MD_Keywords>
+            </descriptiveKeywords>
+            <resourceConstraints>
+                <MD_Constraints>
+                    <useLimitation>
+                        <gco:CharacterString>For educational noncommercial use only.
+                        </gco:CharacterString>
+                    </useLimitation>
+                </MD_Constraints>
+            </resourceConstraints>
+            <resourceConstraints>
+                <MD_LegalConstraints>
+                    <useLimitation>
+                        <gco:CharacterString>Although this data is being distributed by
+                            MIT, no warranty expressed or implied is made by the Institute
+                            as to the accuracy of the data and related materials. The act
+                            of distribution shall not constitute any such warranty, and no
+                            responsibility is assumed by the Institute in the use of this
+                            data, or related materials.
+                        </gco:CharacterString>
+                    </useLimitation>
+                    <accessConstraints>
+                        <MD_RestrictionCode
+                                codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode"
+                                codeListValue="otherRestrictions"
+                                codeSpace="ISOTC211/19115">otherRestrictions
+                        </MD_RestrictionCode>
+                    </accessConstraints>
+                    <otherConstraints>
+                        <gco:CharacterString>Unrestricted Access</gco:CharacterString>
+                    </otherConstraints>
+                </MD_LegalConstraints>
+            </resourceConstraints>
+            <aggregationInfo>
+                <MD_AggregateInformation>
+                    <aggregateDataSetName>
+                        <CI_Citation>
+                            <title>
+                                <gco:CharacterString>Boston DOIT GIS Data
+                                </gco:CharacterString>
+                            </title>
+                            <date>
+                                <CI_Date>
+                                    <date>
+                                        <gco:Date>2012-01-09</gco:Date>
+                                    </date>
+                                    <dateType>
+                                        <CI_DateTypeCode
+                                                codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode"
+                                                codeListValue="publication"
+                                                codeSpace="ISOTC211/19115">publication
+                                        </CI_DateTypeCode>
+                                    </dateType>
+                                </CI_Date>
+                            </date>
+                            <citedResponsibleParty>
+                                <CI_ResponsibleParty>
+                                    <organisationName>
+                                        <gco:CharacterString>Boston (Mass.). Dept. of
+                                            Innovation and Technology.
+                                        </gco:CharacterString>
+                                    </organisationName>
+                                    <role>
+                                        <CI_RoleCode
+                                                codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
+                                                codeListValue="originator"
+                                                codeSpace="ISOTC211/19115">originator
+                                        </CI_RoleCode>
+                                    </role>
+                                </CI_ResponsibleParty>
+                            </citedResponsibleParty>
+                            <citedResponsibleParty>
+                                <CI_ResponsibleParty>
+                                    <organisationName>
+                                        <gco:CharacterString>Boston (Mass.). Dept. of
+                                            Innovation and Technology.
+                                        </gco:CharacterString>
+                                    </organisationName>
+                                    <contactInfo>
+                                        <CI_Contact>
+                                            <address>
+                                                <CI_Address>
+                                                    <deliveryPoint>
+                                                        <gco:CharacterString>Boston
+                                                            (Mass.)
+                                                        </gco:CharacterString>
+                                                    </deliveryPoint>
+                                                </CI_Address>
+                                            </address>
+                                        </CI_Contact>
+                                    </contactInfo>
+                                    <role>
+                                        <CI_RoleCode
+                                                codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
+                                                codeListValue="publisher"
+                                                codeSpace="ISOTC211/19115">publisher
+                                        </CI_RoleCode>
+                                    </role>
+                                </CI_ResponsibleParty>
+                            </citedResponsibleParty>
+                        </CI_Citation>
+                    </aggregateDataSetName>
+                    <associationType>
+                        <DS_AssociationTypeCode
+                                codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode"
+                                codeListValue="largerWorkCitation"
+                                codeSpace="ISOTC211/19115">largerWorkCitation
+                        </DS_AssociationTypeCode>
+                    </associationType>
+                </MD_AggregateInformation>
+            </aggregationInfo>
+            <spatialRepresentationType>
+                <MD_SpatialRepresentationTypeCode
+                        codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_SpatialRepresentationTypeCode"
+                        codeListValue="vector" codeSpace="ISOTC211/19115">vector
+                </MD_SpatialRepresentationTypeCode>
+            </spatialRepresentationType>
+            <language>
+                <LanguageCode
+                        codeList="http://www.loc.gov/standards/iso639-2/php/code_list.php"
+                        codeListValue="eng" codeSpace="ISO639-2">eng
+                </LanguageCode>
+            </language>
+            <characterSet>
+                <MD_CharacterSetCode
+                        codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode"
+                        codeListValue="utf8" codeSpace="ISOTC211/19115">utf8
+                </MD_CharacterSetCode>
+            </characterSet>
+            <topicCategory>
+                <MD_TopicCategoryCode>structure</MD_TopicCategoryCode>
+            </topicCategory>
+            <environmentDescription>
+                <gco:CharacterString>Microsoft Windows Vista Version 6.1 (Build 7601)
+                    Service Pack 1; ESRI ArcCatalog 9.3.1.4000
+                </gco:CharacterString>
+            </environmentDescription>
+            <extent>
+                <EX_Extent>
+                    <geographicElement>
+                        <EX_GeographicBoundingBox>
+                            <extentTypeCode>
+                                <gco:Boolean>true</gco:Boolean>
+                            </extentTypeCode>
+                            <westBoundLongitude>
+                                <gco:Decimal>-71.18611</gco:Decimal>
+                            </westBoundLongitude>
+                            <eastBoundLongitude>
+                                <gco:Decimal>-70.92481</gco:Decimal>
+                            </eastBoundLongitude>
+                            <southBoundLatitude>
+                                <gco:Decimal>42.229271</gco:Decimal>
+                            </southBoundLatitude>
+                            <northBoundLatitude>
+                                <gco:Decimal>42.398736</gco:Decimal>
+                            </northBoundLatitude>
+                        </EX_GeographicBoundingBox>
+                    </geographicElement>
+                </EX_Extent>
+            </extent>
+            <extent>
+                <EX_Extent>
+                    <description>
+                        <gco:CharacterString>publication date</gco:CharacterString>
+                    </description>
+                    <temporalElement>
+                        <EX_TemporalExtent>
+                            <extent>
+                                <gml:TimeInstant
+                                        gml:id="IDDRE50FNPLRGRPKQRX2QWSWF5EGIU4OPZUXFR4XIXWE4KA224JPWJ">
+                                    <gml:timePosition>2012-01-19</gml:timePosition>
+                                </gml:TimeInstant>
+                            </extent>
+                        </EX_TemporalExtent>
+                    </temporalElement>
+                </EX_Extent>
+            </extent>
+            <extent>
+                <EX_Extent>
+                    <geographicElement>
+                        <EX_GeographicBoundingBox>
+                            <extentTypeCode>
+                                <gco:Boolean>true</gco:Boolean>
+                            </extentTypeCode>
+                            <westBoundLongitude>
+                                <gco:Decimal>-71.18611</gco:Decimal>
+                            </westBoundLongitude>
+                            <eastBoundLongitude>
+                                <gco:Decimal>-70.92481</gco:Decimal>
+                            </eastBoundLongitude>
+                            <southBoundLatitude>
+                                <gco:Decimal>42.229271</gco:Decimal>
+                            </southBoundLatitude>
+                            <northBoundLatitude>
+                                <gco:Decimal>42.398736</gco:Decimal>
+                            </northBoundLatitude>
+                        </EX_GeographicBoundingBox>
+                    </geographicElement>
+                </EX_Extent>
+            </extent>
+        </MD_DataIdentification>
+    </identificationInfo>
+    <distributionInfo>
+        <MD_Distribution>
+            <distributionFormat>
+                <MD_Format>
+                    <name>
+                        <gco:CharacterString>Shapefile</gco:CharacterString>
+                    </name>
+                    <version gco:nilReason="missing"/>
+                </MD_Format>
+            </distributionFormat>
+            <distributor>
+                <MD_Distributor>
+                    <distributorContact>
+                        <CI_ResponsibleParty>
+                            <organisationName>
+                                <gco:CharacterString>GIS Lab, MIT Libraries
+                                </gco:CharacterString>
+                            </organisationName>
+                            <positionName>
+                                <gco:CharacterString>GIS Specialist</gco:CharacterString>
+                            </positionName>
+                            <contactInfo>
+                                <CI_Contact>
+                                    <address>
+                                        <CI_Address>
+                                            <deliveryPoint>
+                                                <gco:CharacterString>77 Massachusetts
+                                                    Ave.
+                                                </gco:CharacterString>
+                                            </deliveryPoint>
+                                            <deliveryPoint>
+                                                <gco:CharacterString>Rotch Library 7-238
+                                                </gco:CharacterString>
+                                            </deliveryPoint>
+                                            <city>
+                                                <gco:CharacterString>Cambridge
+                                                </gco:CharacterString>
+                                            </city>
+                                            <administrativeArea>
+                                                <gco:CharacterString>MA
+                                                </gco:CharacterString>
+                                            </administrativeArea>
+                                            <postalCode>
+                                                <gco:CharacterString>02139-4307
+                                                </gco:CharacterString>
+                                            </postalCode>
+                                            <country>
+                                                <Country
+                                                        codeList="http://www.iso.org/iso/country_codes/iso_3166_code_lists.htm"
+                                                        codeListValue="US"
+                                                        codeSpace="ISO3166-1">US
+                                                </Country>
+                                            </country>
+                                            <electronicMailAddress>
+                                                <gco:CharacterString>gishelp@mit.edu
+                                                </gco:CharacterString>
+                                            </electronicMailAddress>
+                                        </CI_Address>
+                                    </address>
+                                    <hoursOfService>
+                                        <gco:CharacterString>Monday - Friday, 9:00 am -
+                                            5:00 pm EST-USA
+                                        </gco:CharacterString>
+                                    </hoursOfService>
+                                </CI_Contact>
+                            </contactInfo>
+                            <role>
+                                <CI_RoleCode
+                                        codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
+                                        codeListValue="distributor"
+                                        codeSpace="ISOTC211/19115">distributor
+                                </CI_RoleCode>
+                            </role>
+                        </CI_ResponsibleParty>
+                    </distributorContact>
+                    <distributionOrderProcess>
+                        <MD_StandardOrderProcess>
+                            <fees>
+                                <gco:CharacterString>None</gco:CharacterString>
+                            </fees>
+                            <orderingInstructions>
+                                <gco:CharacterString>Web-based distribution only
+                                </gco:CharacterString>
+                            </orderingInstructions>
+                        </MD_StandardOrderProcess>
+                    </distributionOrderProcess>
+                    <distributorFormat>
+                        <MD_Format>
+                            <name>
+                                <gco:CharacterString>SHP</gco:CharacterString>
+                            </name>
+                            <version gco:nilReason="missing"/>
+                        </MD_Format>
+                    </distributorFormat>
+                    <distributorTransferOptions>
+                        <MD_DigitalTransferOptions>
+                            <transferSize>
+                                <gco:Real>39.096</gco:Real>
+                            </transferSize>
+                            <onLine>
+                                <CI_OnlineResource>
+                                    <linkage>
+                                        <URL>http://gis.tufts.edu</URL>
+                                    </linkage>
+                                </CI_OnlineResource>
+                            </onLine>
+                        </MD_DigitalTransferOptions>
+                    </distributorTransferOptions>
+                </MD_Distributor>
+            </distributor>
+            <transferOptions>
+                <MD_DigitalTransferOptions>
+                    <transferSize>
+                        <gco:Real>39.096</gco:Real>
+                    </transferSize>
+                    <onLine>
+                        <CI_OnlineResource>
+                            <linkage>
+                                <URL>http://www.cityofboston.gov/DoIT/</URL>
+                            </linkage>
+                        </CI_OnlineResource>
+                    </onLine>
+                </MD_DigitalTransferOptions>
+            </transferOptions>
+        </MD_Distribution>
+    </distributionInfo>
+    <dataQualityInfo>
+        <DQ_DataQuality>
+            <scope>
+                <DQ_Scope>
+                    <level>
+                        <MD_ScopeCode
+                                codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ScopeCode"
+                                codeListValue="dataset" codeSpace="ISOTC211/19115">dataset
+                        </MD_ScopeCode>
+                    </level>
+                </DQ_Scope>
+            </scope>
+            <lineage>
+                <LI_Lineage>
+                    <processStep>
+                        <LI_ProcessStep>
+                            <description>
+                                <gco:CharacterString>Name changed from BUILDINGS to
+                                    BostonBuildings12.
+                                </gco:CharacterString>
+                            </description>
+                            <dateTime>
+                                <gco:DateTime>2012-07-10T00:00:00</gco:DateTime>
+                            </dateTime>
+                            <processor>
+                                <CI_ResponsibleParty>
+                                    <organisationName>
+                                        <gco:CharacterString>Tufts University GIS Center
+                                        </gco:CharacterString>
+                                    </organisationName>
+                                    <positionName>
+                                        <gco:CharacterString>GIS Data Technician
+                                        </gco:CharacterString>
+                                    </positionName>
+                                    <contactInfo>
+                                        <CI_Contact>
+                                            <phone>
+                                                <CI_Telephone>
+                                                    <voice>
+                                                        <gco:CharacterString>
+                                                            617-627-3380
+                                                        </gco:CharacterString>
+                                                    </voice>
+                                                </CI_Telephone>
+                                            </phone>
+                                            <address>
+                                                <CI_Address>
+                                                    <deliveryPoint>
+                                                        <gco:CharacterString>Academic
+                                                            Technology
+                                                        </gco:CharacterString>
+                                                    </deliveryPoint>
+                                                    <deliveryPoint>
+                                                        <gco:CharacterString>16 Dearborn
+                                                            Rd
+                                                        </gco:CharacterString>
+                                                    </deliveryPoint>
+                                                    <city>
+                                                        <gco:CharacterString>Somerville
+                                                        </gco:CharacterString>
+                                                    </city>
+                                                    <administrativeArea>
+                                                        <gco:CharacterString>MA
+                                                        </gco:CharacterString>
+                                                    </administrativeArea>
+                                                    <postalCode>
+                                                        <gco:CharacterString>02144
+                                                        </gco:CharacterString>
+                                                    </postalCode>
+                                                    <country>
+                                                        <Country
+                                                                codeList="http://www.iso.org/iso/country_codes/iso_3166_code_lists.htm"
+                                                                codeListValue="US"
+                                                                codeSpace="ISO3166-1">US
+                                                        </Country>
+                                                    </country>
+                                                    <electronicMailAddress>
+                                                        <gco:CharacterString>
+                                                            gis-support@elist.tufts.edu
+                                                        </gco:CharacterString>
+                                                    </electronicMailAddress>
+                                                </CI_Address>
+                                            </address>
+                                            <hoursOfService>
+                                                <gco:CharacterString>Monday-Friday, 9:00
+                                                    AM-5:00 PM, EST-USA
+                                                </gco:CharacterString>
+                                            </hoursOfService>
+                                        </CI_Contact>
+                                    </contactInfo>
+                                    <role>
+                                        <CI_RoleCode
+                                                codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode"
+                                                codeListValue="processor"
+                                                codeSpace="ISOTC211/19115">processor
+                                        </CI_RoleCode>
+                                    </role>
+                                </CI_ResponsibleParty>
+                            </processor>
+                        </LI_ProcessStep>
+                    </processStep>
+                    <processStep>
+                        <LI_ProcessStep>
+                            <description>
+                                <gco:CharacterString>Metadata imported.
+                                </gco:CharacterString>
+                            </description>
+                            <dateTime>
+                                <gco:DateTime>2012-07-11T14:13:33</gco:DateTime>
+                            </dateTime>
+                            <source>
+                                <LI_Source>
+                                    <sourceCitation>
+                                        <CI_Citation>
+                                            <title gco:nilReason="missing"/>
+                                            <alternateTitle>
+                                                <gco:CharacterString>
+                                                    C:\Users\nsusma01\AppData\Local\Temp\xmlA5FA.tmp
+                                                </gco:CharacterString>
+                                            </alternateTitle>
+                                            <date gco:nilReason="missing"/>
+                                        </CI_Citation>
+                                    </sourceCitation>
+                                </LI_Source>
+                            </source>
+                        </LI_ProcessStep>
+                    </processStep>
+                    <processStep>
+                        <LI_ProcessStep>
+                            <description>
+                                <gco:CharacterString>Metadata imported.
+                                </gco:CharacterString>
+                            </description>
+                            <dateTime>
+                                <gco:DateTime>2017-05-31T12:20:39</gco:DateTime>
+                            </dateTime>
+                            <source>
+                                <LI_Source>
+                                    <sourceCitation>
+                                        <CI_Citation>
+                                            <title gco:nilReason="missing"/>
+                                            <alternateTitle>
+                                                <gco:CharacterString>
+                                                    F:\Mwrable\GIS_Data\City of Boston
+                                                    Buildings 2012\fgdc (7).xml
+                                                </gco:CharacterString>
+                                            </alternateTitle>
+                                            <date gco:nilReason="missing"/>
+                                        </CI_Citation>
+                                    </sourceCitation>
+                                </LI_Source>
+                            </source>
+                        </LI_ProcessStep>
+                    </processStep>
+                    <processStep>
+                        <LI_ProcessStep>
+                            <description>
+                                <gco:CharacterString>Metadata imported.
+                                </gco:CharacterString>
+                            </description>
+                            <dateTime>
+                                <gco:DateTime>2017-07-31T16:48:48</gco:DateTime>
+                            </dateTime>
+                            <source>
+                                <LI_Source>
+                                    <sourceCitation>
+                                        <CI_Citation>
+                                            <title gco:nilReason="missing"/>
+                                            <alternateTitle>
+                                                <gco:CharacterString>
+                                                    F:\Mwrable\GIS_Data\City of Boston
+                                                    Buildings
+                                                    2012\Buildings\Buildings.shp.xml
+                                                </gco:CharacterString>
+                                            </alternateTitle>
+                                            <date gco:nilReason="missing"/>
+                                        </CI_Citation>
+                                    </sourceCitation>
+                                </LI_Source>
+                            </source>
+                        </LI_ProcessStep>
+                    </processStep>
+                </LI_Lineage>
+            </lineage>
+        </DQ_DataQuality>
+    </dataQualityInfo>
+</MD_Metadata>
