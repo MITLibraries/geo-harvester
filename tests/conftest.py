@@ -273,26 +273,50 @@ def records_for_normalize(fgdc_source_record_from_zip):
 
 
 @pytest.fixture
-def fgdc_source_record_all_fields():
-    identifier = "SDE_DATA_US_P2HIGHWAYS_2005"
-    with open("tests/fixtures/records/fgdc/fgdc_all_fields.xml", "rb") as f:
-        return FGDC(
-            identifier=identifier,
-            origin="mit",
-            metadata_format="fgdc",
-            event="created",
-            data=f.read(),
-        )
-
-
-@pytest.fixture
 def fgdc_source_record_required_fields():
     identifier = "EG_CAIRO_A25TOPO_1972"
     with open("tests/fixtures/records/fgdc/fgdc_required_fields_only.xml", "rb") as f:
         return FGDC(
             identifier=identifier,
             origin="mit",
-            metadata_format="fgdc",
+            event="created",
+            data=f.read(),
+        )
+
+
+@pytest.fixture
+def fgdc_source_record_all_fields():
+    identifier = "SDE_DATA_US_P2HIGHWAYS_2005"
+    with open("tests/fixtures/records/fgdc/fgdc_all_fields.xml", "rb") as f:
+        return FGDC(
+            identifier=identifier,
+            origin="mit",
+            event="created",
+            data=f.read(),
+        )
+
+
+@pytest.fixture
+def iso19139_source_record_required_fields():
+    identifier = "def456"
+    with open(
+        "tests/fixtures/records/iso19139/iso19139_required_fields_only.xml", "rb"
+    ) as f:
+        return ISO19139(
+            identifier=identifier,
+            origin="mit",
+            event="created",
+            data=f.read(),
+        )
+
+
+@pytest.fixture
+def iso19139_source_record_all_fields():
+    identifier = "abc123"
+    with open("tests/fixtures/records/iso19139/iso19139_all_fields.xml", "rb") as f:
+        return ISO19139(
+            identifier=identifier,
+            origin="mit",
             event="created",
             data=f.read(),
         )
