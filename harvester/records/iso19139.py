@@ -1,16 +1,20 @@
 """harvester.harvest.records.iso19139"""
-# ruff: noqa
-# mypy: ignore-errors
+# ruff: noqa: N802, N815; allows camelCase for aardvark fields
+# ruff: noqa: PERF401; preferring more explicit, non list comprehensions
 
+import logging
 from collections import defaultdict
-from dateutil.parser import parse as date_parser
-import json
 from typing import Literal
 
 from attrs import define, field
+from dateutil.parser import ParserError
+from dateutil.parser import parse as date_parser
 from lxml import etree
 
 from harvester.records.record import XMLSourceRecord
+from harvester.utils import convert_lang_code
+
+logger = logging.getLogger(__name__)
 
 
 @define
@@ -24,17 +28,34 @@ class ISO19139(XMLSourceRecord):
             "gco": "http://www.isotc211.org/2005/gco",
             "gts": "http://www.isotc211.org/2005/gts",
             "srv": "http://www.isotc211.org/2005/srv",
-            "gml": "http://www.opengis.net/gml",
+            "gml": "http://www.opengis.net/gml/3.2",
         },
         repr=False,
     )
 
-    ########################
-    # Required Field Methods
-    ########################
-    def _dct_accessRights_s(self):
+    def __attrs_post_init__(self) -> None:
+        """Post-init hook for attrs class.
+
+        Actions performed:
+            - dynamically update namespace map (self.nsmap) if differences detected
         """
-        NOTE: presence of any <MD_RestrictionCode> indicates restricted resource
+        nsmap = self.root.nsmap
+        for prefix, default_uri in self.nsmap.items():
+            file_uri = nsmap.get(prefix)
+            if file_uri is not None and file_uri != default_uri:
+                self.nsmap[prefix] = file_uri
+
+    ##########################
+    # Required Field Methods
+    ##########################
+    def _dct_accessRights_s(self) -> str:
+        """Field method: dct_accessRights_s
+
+        If <MD_RestrictionCode> is not present, assume "Public".
+
+        Else, retrieve all <MD_RestrictionCode> elements and look for indication of
+        "Public" access in element text or attributes.  If not explicitly "Public",
+        default to "Restricted".
         """
         xpath_expr = """
         //gmd:MD_Metadata
@@ -45,13 +66,24 @@ class ISO19139(XMLSourceRecord):
                             /gmd:accessConstraints
                                 /gmd:MD_RestrictionCode
         """
-        matches = self.xpath_query(xpath_expr)
-        if not matches:
+        restriction_elements = self.xpath_query(xpath_expr)
+        if not restriction_elements:
             return "Public"
-        else:
-            return "Restricted"
 
-    def _dct_title_s(self) -> str:
+        restriction_codes = []
+        for restriction_element in restriction_elements:
+            if restriction_text := restriction_element.text:
+                restriction_codes.append(restriction_text)
+            if attribute_code := restriction_element.attrib.get("codeListValue"):
+                restriction_codes.append(attribute_code)
+
+        for code in restriction_codes:
+            if "public" in code or "unrestricted" in code:
+                return "Public"
+
+        return "Restricted"
+
+    def _dct_title_s(self) -> str | None:
         xpath_expr = """
         //gmd:MD_Metadata
             /gmd:identificationInfo
@@ -61,15 +93,23 @@ class ISO19139(XMLSourceRecord):
                             /gmd:title
                                 /gco:CharacterString
         """
-        values = self.string_list_from_xpath(xpath_expr)
-        if values:
-            return values[0]
-        return None
+        value = self.single_string_from_xpath(xpath_expr)
+        if not value:
+            message = "Could not find <title> element"
+            raise ValueError(message)
+        return value
 
-    def _gbl_resourceClass_sm(self):
-        """
-        Controlled vocabulary: ['Datasets','Maps','Imagery','Collections','Websites',
-        'Web services','Other']
+    def _gbl_resourceClass_sm(self) -> list[str]:
+        """Field method: gbl_resourceClass_sm
+
+        Controlled vocabulary:
+            - 'Datasets'
+            - 'Maps'
+            - 'Imagery'
+            - 'Collections'
+            - 'Websites'
+            - 'Web services'
+            - 'Other'
         """
         xpath_expr = """
         //gmd:MD_Metadata
@@ -78,10 +118,28 @@ class ISO19139(XMLSourceRecord):
         """
         values = self.string_list_from_xpath(xpath_expr)
         if not values:
-            return None
-        # TODO: complete and improve this mapping
+            return []
+
+        # While the following values are allowed for <MD_ScopeCode> only the value
+        # "dataset" has been found in example ISO19139 files, and therefore is the only
+        # one mapped at this time.
         value_map = {
+            "attribute": None,
+            "attributeType": None,
+            "collectionHardware": None,
+            "collectionSession": None,
             "dataset": "Datasets",
+            "series": None,
+            "nonGeographicDataset": None,
+            "dimensionGroup": None,
+            "feature": None,
+            "featureType": None,
+            "property": None,
+            "fieldSession": None,
+            "software": None,
+            "service": None,
+            "model": None,
+            "tile": None,
         }
         output = []
         for value in values:
@@ -89,160 +147,17 @@ class ISO19139(XMLSourceRecord):
                 output.append(mapped_value)
         return output
 
-    def _get_temporal_extents(self):
-        """
-        https://www.ncei.noaa.gov/sites/default/files/2020-04/ISO%2019115-2%20Workbook_Part%20II%20Extentions%20for%20imagery%20and%20Gridded%20Data.pdf
-            - pp. 71 explains TimeInstant vs TimePeriod
+    def _dcat_bbox(self) -> str:
+        """Field method: dcat_bbox.
 
-        TimeInstant example:
-        --------------------
-        <gmd:EX_TemporalExtent id="boundingTemporalExtent">
-            <gmd:extent>
-                <gml:TimeInstant gml:id="tp_114854">
-                    <gml:description>ground condition</gml:description>
-                    <gml:timePosition>1990-11-03T00:00:00</gml:timePosition>
-                </gml:TimeInstant>
-            </gmd:extent>
-        </gmd:EX_TemporalExtent>
+        "bbox" stands for "Bounding Box", and it should be the largest possible rectangle
+        that encompasses the geographic region for this geospatial resource.  Because
+        some metadata files contain multiple geospatial boxes or shapes, the accepted
+        approach in the GIS/geospatial community is to craft the LARGEST box that includes
+        ALL defined boxes or shapes.
 
-
-        TimePeriod example:
-        -------------------
-        <gmd:temporalElement>
-            <gmd:EX_TemporalExtent id="boundingTemporalExtent">
-                <gmd:extent>
-                    <gml:TimePeriod gml:id="tp_1234">
-                        <gml:description>ground condition</gml:description>
-                        <gml:beginPosition>1990-11-03T00:00:00</gml:beginPosition>
-                        <gml:endPosition indeterminatePosition="now"/>
-                    </gml:TimePeriod>
-                </gmd:extent>
-            </gmd:EX_TemporalExtent>
-        </gmd:temporalElement>
-
-        :return: {
-            "instances": list[ datetime ],
-            "periods": list[ tuple[datetime,datetime] ]
-        }
-        """
-
-        def parse_time_position(position_element):
-            if position_element is None:
-                return None
-            if ip := position_element.attrib.get("indeterminatePosition"):
-                return ip
-            return position_element.text.strip()
-
-        output = defaultdict(list)
-        for temporal_element in self.xpath_query(
-            """//gmd:MD_Metadata
-            /gmd:identificationInfo
-                /gmd:MD_DataIdentification
-                /gmd:extent
-                    /gmd:EX_Extent
-                        /gmd:temporalElement
-                            /gmd:EX_TemporalExtent"""
-        ):
-            # TimeInstant
-            instant = temporal_element.find(
-                "gmd:extent/gml:TimeInstant", namespaces=self.nsmap
-            )
-            if instant is not None:
-                temporal_dict = {
-                    "description": None,
-                    "timestamp": None,
-                }
-                description = instant.find("gml:description", namespaces=self.nsmap)
-                if description is not None:
-                    temporal_dict["description"] = description.text
-                temporal_dict["timestamp"] = parse_time_position(
-                    instant.find("gml:timePosition", namespaces=self.nsmap)
-                )
-                output["instances"].append(temporal_dict)
-
-            # TimePeriod
-            period = temporal_element.find(
-                "gmd:extent/gml:TimePeriod", namespaces=self.nsmap
-            )
-            if period is not None:
-                temporal_dict = {
-                    "description": None,
-                    "begin_timestamp": None,
-                    "end_timestamp": None,
-                }
-                description = period.find("gml:description", namespaces=self.nsmap)
-                if description is not None:
-                    temporal_dict["description"] = description.text
-                temporal_dict["begin_timestamp"] = parse_time_position(
-                    period.find("gml:beginPosition", namespaces=self.nsmap)
-                )
-                temporal_dict["end_timestamp"] = parse_time_position(
-                    period.find("gml:endPosition", namespaces=self.nsmap)
-                )
-                output["periods"].append(temporal_dict)
-
-        return output
-
-    def _dcat_bbox(self):
-        """
-        NOTE: dcat_bbox is not repeatable, but ISO files may have multiple BBOX sections.
-            Community XSLT approach is to take min/max for edges to create the largest
-            reasonable bounding box.
-
-        Example multiple bounding boxes:
-        <extent>
-            <EX_Extent>
-                <geographicElement>
-                    <EX_GeographicBoundingBox>
-                        <westBoundLongitude>
-                            <gco:Decimal>-92.889337</gco:Decimal>
-                        </westBoundLongitude>
-                        <eastBoundLongitude>
-                            <gco:Decimal>-86.763988</gco:Decimal>
-                        </eastBoundLongitude>
-                        <southBoundLatitude>
-                            <gco:Decimal>42.49193</gco:Decimal>
-                        </southBoundLatitude>
-                        <northBoundLatitude>
-                            <gco:Decimal>47.080713</gco:Decimal>
-                        </northBoundLatitude>
-                    </EX_GeographicBoundingBox>
-                </geographicElement>
-                <temporalElement>
-                    <EX_TemporalExtent>
-                        <extent>
-                            <gml:TimeInstant gml:id="d191563e532">
-                                <gml:timePosition>2017-01-01T00:00:00
-                                </gml:timePosition>
-                            </gml:TimeInstant>
-                        </extent>
-                    </EX_TemporalExtent>
-                </temporalElement>
-            </EX_Extent>
-        </extent>
-        <extent>
-            <EX_Extent>
-                <geographicElement>
-                    <EX_GeographicBoundingBox>
-                        <extentTypeCode>
-                            <gco:Boolean>true</gco:Boolean>
-                        </extentTypeCode>
-                        <westBoundLongitude>
-                            <gco:Decimal>-92.889337</gco:Decimal>
-                        </westBoundLongitude>
-                        <eastBoundLongitude>
-                            <gco:Decimal>-86.763988</gco:Decimal>
-                        </eastBoundLongitude>
-                        <southBoundLatitude>
-                            <gco:Decimal>42.49193</gco:Decimal>
-                        </southBoundLatitude>
-                        <northBoundLatitude>
-                            <gco:Decimal>47.080705</gco:Decimal>
-                        </northBoundLatitude>
-                    </EX_GeographicBoundingBox>
-                </geographicElement>
-            </EX_Extent>
-        </extent>
+        To this end, min() and max() are used to select the smallest or largest value from
+        a list of latitude or longitude values, based on which ever corner is in question.
         """
         xpath_expr = """
         //gmd:MD_Metadata
@@ -261,9 +176,6 @@ class ISO19139(XMLSourceRecord):
         """
         bbox_elements = self.xpath_query(xpath_expr)
 
-        if not bbox_elements:
-            return None
-
         # build dictionary of min/max values from all bounding boxes found
         bbox_data = defaultdict(list)
         for boundary_elem in bbox_elements:
@@ -280,71 +192,10 @@ class ISO19139(XMLSourceRecord):
 
         return f"ENVELOPE({lat_lon_envelope})"
 
-    def _dct_references_s(self):
-        """
-        https://opengeometadata.org/ogm-aardvark/#references
-        https://opengeometadata.org/configure-references-links/
+    def _locn_geometry(self) -> str:
+        """Field method: locn_geometry
 
-        NOTE: not multivalued, but serialized JSON, so can contain multiple URLs
-
-        Example:
-        {
-          "dct_references_s": "{\"http://schema.org/downloadUrl\":[
-            {
-              \"url\":\"https://cugir-data.s3.amazonaws.com/00/79/50/cugir-007950.zip\",
-              \"label\":\"Shapefile\"
-            },
-            {
-              \"url\":\"https://cugir-data.s3.amazonaws.com/00/79/50/agBROO.pdf\",
-              \"label\":\"PDF\"
-            },
-            {
-              \"url\":\"https://cugir-data.s3.amazonaws.com/00/79/50/agBROO2011.kmz\",
-              \"label\":\"KMZ\"
-            }]
-          }"
-        }
-        """
-        resources = []
-
-        # extract URLs from metadata
-        xpath_expr = """
-        //gmd:MD_Metadata
-            /gmd:distributionInfo
-                /gmd:MD_Distribution
-                    /gmd:transferOptions
-                        /gmd:MD_DigitalTransferOptions
-                            /gmd:onLine
-                                /gmd:CI_OnlineResource
-        """
-        metadata_online_resources = self.xpath_query(xpath_expr)
-        for item in metadata_online_resources:
-            label, protocol = None, None
-            if label_match := item.xpath_query(
-                "gmd:name/gco:CharacterString/text()", namespaces=self.nsmap
-            ):
-                label = label_match[0]
-            if protocol_match := item.xpath_query(
-                "gmd:protocol/gco:CharacterString/text()", namespaces=self.nsmap
-            ):
-                protocol = protocol_match[0]
-            url = item.xpath_query("gmd:linkage/gmd:URL/text()", namespaces=self.nsmap)[0]
-            resources.append({"label": label, "protocol": protocol, "url": url})
-
-        # add TIMDEX download URL
-        resources.append(
-            {
-                "label": "TIMDEX S3 Zipfile",
-                "protocol": "Download",
-                "url": "https://mit.s3.amazonaws.com/path/to/zip/file.zip",
-            }
-        )
-        return json.dumps({"http://schema.org/downloadUrl": resources}, indent=None)
-
-    def _locn_geometry(self):
-        """
-        NOTE: currently mirroring dcat_bbox
-            - consider more advanced geographies if present
+        NOTE: at this time, duplicating bounding box content from dcat_bbox
         """
         return self._dcat_bbox()
 
