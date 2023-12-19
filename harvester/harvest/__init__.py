@@ -86,18 +86,12 @@ class Harvester(ABC):
         for record in records:
             message = f"Record {record.identifier}: normalizing source record"
             logger.debug(message)
-            # WIP: even for deleted records, we likely WILL still normalize such that we
-            # have a record to provide Transmog where 'gbl_suppressed_b=True' and and
-            # pipeline can remove from TIMDEX.
-            if record.source_record.event == "deleted":
-                yield record
-            else:
-                try:
-                    record.normalized_record = record.source_record.normalize()
-                except Exception as exc:  # noqa: BLE001
-                    record.exception_stage = "normalize_source_records"
-                    record.exception = exc
-                yield record
+            try:
+                record.normalized_record = record.source_record.normalize()
+            except Exception as exc:  # noqa: BLE001
+                record.exception_stage = "normalize_source_records"
+                record.exception = exc
+            yield record
 
     def update_public_cdn_bucket(self, records: Iterator[Record]) -> Iterator[Record]:
         """Write OR delete source and normalized metadata from S3:CDN:Public.

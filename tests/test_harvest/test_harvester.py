@@ -124,7 +124,7 @@ def test_harvester_step_get_source_records(caplog, generic_harvester_class):
         assert harvester.processed_records_count == 1
 
 
-def test_harvester_step_normalize_source_records_deleted_record(
+def test_harvester_step_normalize_source_records_deleted_record_set_gbl_suppressed(
     caplog, generic_harvester_class, records_for_normalize
 ):
     caplog.set_level("DEBUG")
@@ -132,7 +132,7 @@ def test_harvester_step_normalize_source_records_deleted_record(
     records_for_normalize[0].source_record.event = "deleted"
     records = harvester.normalize_source_records(records_for_normalize)
     record = next(records)
-    assert record.normalized_record is None
+    assert record.normalized_record.gbl_suppressed_b
 
 
 def test_harvester_step_normalize_source_records_created_record_normalized_success(
