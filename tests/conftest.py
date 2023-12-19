@@ -291,7 +291,6 @@ def fgdc_source_record_all_fields():
         return FGDC(
             identifier=identifier,
             origin="mit",
-            metadata_format="fgdc",
             event="created",
             data=f.read(),
         )

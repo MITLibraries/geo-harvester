@@ -199,10 +199,10 @@ class ISO19139(XMLSourceRecord):
         """
         return self._dcat_bbox()
 
-    ########################
+    ##########################
     # Optional Field Methods
-    ########################
-    def _dct_description_sm(self):
+    ##########################
+    def _dct_description_sm(self) -> list[str]:
         xpath_expr = """
         //gmd:MD_Metadata
             /gmd:identificationInfo
@@ -223,17 +223,7 @@ class ISO19139(XMLSourceRecord):
         """
         return self.string_list_from_xpath(xpath_expr)
 
-    def _dcat_theme_sm(self) -> list[str]:
-        xpath_expr = """
-        //gmd:MD_Metadata
-            /gmd:identificationInfo
-                /gmd:MD_DataIdentification
-                    /gmd:topicCategory
-                        /gmd:MD_TopicCategoryCode
-        """
-        return self.string_list_from_xpath(xpath_expr)
-
-    def _dct_alternative_sm(self):
+    def _dct_alternative_sm(self) -> list[str]:
         xpath_expr = """
         //gmd:MD_DataIdentification
             /gmd:citation
@@ -243,7 +233,7 @@ class ISO19139(XMLSourceRecord):
         """
         return self.string_list_from_xpath(xpath_expr)
 
-    def _dct_creator_sm(self):
+    def _dct_creator_sm(self) -> list[str]:
         xpath_expr = """
         //gmd:MD_Metadata
             /gmd:identificationInfo
@@ -254,16 +244,16 @@ class ISO19139(XMLSourceRecord):
                                 gmd:CI_ResponsibleParty
                                     /gmd:role
                                         /gmd:CI_RoleCode
-                                            /@codeListValue = 'originator' 
+                                            /@codeListValue = 'originator'
                                 and not(
                                     gmd:CI_ResponsibleParty
                                         /gmd:organisationName
-                                            /gco:CharacterString 
-                                    | gmd:individualName/gco:CharacterString 
+                                            /gco:CharacterString
+                                    | gmd:individualName/gco:CharacterString
                                         = preceding-sibling::gmd:citedResponsibleParty
                                             /gmd:CI_ResponsibleParty
                                                 /gmd:organisationName
-                                                    /gco:CharacterString 
+                                                    /gco:CharacterString
                                     | gmd:individualName
                                         /gco:CharacterString
                                 )
@@ -274,7 +264,7 @@ class ISO19139(XMLSourceRecord):
         """
         return self.string_list_from_xpath(xpath_expr)
 
-    def _dct_format_s(self):
+    def _dct_format_s(self) -> str | None:
         xpath_expr = """
         //gmd:MD_Metadata
             /gmd:distributionInfo
@@ -284,12 +274,9 @@ class ISO19139(XMLSourceRecord):
                             /gmd:name
                                 /gco:CharacterString
         """
-        values = self.string_list_from_xpath(xpath_expr)
-        if values:
-            return values[0]
-        return None
+        return self.single_string_from_xpath(xpath_expr)
 
-    def _dct_issued_s(self):
+    def _dct_issued_s(self) -> str | None:
         xpath_expr = """
         //gmd:MD_Metadata
             /gmd:identificationInfo
@@ -297,17 +284,25 @@ class ISO19139(XMLSourceRecord):
                     /gmd:citation
                         /gmd:CI_Citation
                             /gmd:date
-                                /gmd:CI_Date[gmd:dateType
-                                    /gmd:CI_DateTypeCode[text() = 'publication']]
-                                        /gmd:date/gco:Date
+                                /gmd:CI_Date[
+                                    gmd:dateType
+                                        /gmd:CI_DateTypeCode[
+                                            normalize-space(text()) = 'publication'
+                                        ]
+                                ]
+                                    /gmd:date
+                                        /gco:Date
         """
-        values = self.string_list_from_xpath(xpath_expr)
-        if values:
-            value = values[0]
-            return date_parser(value).strftime("%Y")
+        value = self.single_string_from_xpath(xpath_expr)
+        if value:
+            try:
+                return date_parser(value).strftime("%Y-%m-%d")
+            except ParserError as exc:
+                message = f"Error parsing date string: {value}, {exc}"
+                logger.debug(message)
         return None
 
-    def _dct_identifier_sm(self):
+    def _dct_identifier_sm(self) -> list[str]:
         xpath_expr = """
         //gmd:MD_Metadata
             /gmd:identificationInfo
@@ -321,10 +316,7 @@ class ISO19139(XMLSourceRecord):
         """
         return self.string_list_from_xpath(xpath_expr)
 
-    def _dct_language_sm(self):
-        """
-        NOTE: controlled via https://opengeometadata.org/ogm-aardvark/#language-values
-        """
+    def _dct_language_sm(self) -> list[str]:
         xpath_expr = """
         //gmd:MD_Metadata
             /gmd:identificationInfo
@@ -332,9 +324,18 @@ class ISO19139(XMLSourceRecord):
                     /gmd:language
                         /gmd:LanguageCode
         """
-        return self.string_list_from_xpath(xpath_expr)
+        lang_codes = self.string_list_from_xpath(xpath_expr)
+        three_letter_codes = []
+        for lang_code in lang_codes:
+            try:
+                three_letter_codes.append(convert_lang_code(lang_code))
+            except Exception as exc:  # noqa: BLE001
+                message = f"Error parsing language code: {lang_code}, {exc}"
+                logger.debug(message)
+                continue
+        return [code for code in three_letter_codes if code is not None]
 
-    def _dct_publisher_sm(self):
+    def _dct_publisher_sm(self) -> list[str]:
         xpath_expr = """
         //gmd:CI_ResponsibleParty[
             gmd:role
@@ -344,7 +345,7 @@ class ISO19139(XMLSourceRecord):
         """
         return self.string_list_from_xpath(xpath_expr)
 
-    def _dct_rights_sm(self):
+    def _dct_rights_sm(self) -> list[str]:
         xpath_expr = """
         //gmd:MD_Metadata
             /gmd:identificationInfo
@@ -354,7 +355,7 @@ class ISO19139(XMLSourceRecord):
         """
         return self.string_list_from_xpath(xpath_expr)
 
-    def _dct_spatial_sm(self):
+    def _dct_spatial_sm(self) -> list[str]:
         xpath_expr = """
         //gmd:MD_Metadata
             /gmd:identificationInfo
@@ -369,7 +370,7 @@ class ISO19139(XMLSourceRecord):
         """
         return self.string_list_from_xpath(xpath_expr)
 
-    def _dct_subject_sm(self):
+    def _dct_subject_sm(self) -> list[str]:
         xpath_expr = """
         //gmd:MD_Metadata
             /gmd:identificationInfo
@@ -379,23 +380,53 @@ class ISO19139(XMLSourceRecord):
         """
         return self.string_list_from_xpath(xpath_expr)
 
-    def _dct_temporal_sm(self):
+    def _dct_temporal_sm(self) -> list[str]:
         temporal_elements = self._get_temporal_extents()
         output = []
+
         for instant in temporal_elements["instances"]:
-            output.append(instant["timestamp"])
+            try:
+                output.append(date_parser(instant["timestamp"]).strftime("%Y-%m-%d"))
+            except ParserError as exc:
+                message = f"Could not parse date string: {instant['timestamp']}, {exc}"
+                logger.debug(message)
+                continue
+
         for period in temporal_elements["periods"]:
-            output.append(f"{period['begin_timestamp']}-{period['end_timestamp']}")
+            try:
+                begin_year = date_parser(period["begin_timestamp"]).strftime("%Y")
+                end_year = date_parser(period["end_timestamp"]).strftime("%Y")
+            except ParserError as exc:
+                message = (
+                    "Could not extract begin or end date from time period: "
+                    f"{period}, {exc}"
+                )
+                logger.debug(message)
+                continue
+            output.append(f"{begin_year}-{end_year}")
+
         return output
 
-    def _gbl_dateRange_drsim(self):
+    def _gbl_dateRange_drsim(self) -> list[str]:
         temporal_elements = self._get_temporal_extents()
         output = []
+
         for period in temporal_elements["periods"]:
-            output.append(f"{period['begin_timestamp']}-{period['end_timestamp']}")
+            try:
+                begin_year = date_parser(period["begin_timestamp"]).strftime("%Y")
+                end_year = date_parser(period["end_timestamp"]).strftime("%Y")
+            except ParserError as exc:
+                message = (
+                    "Could not extract begin or end date from time period: "
+                    f"{period}, {exc}"
+                )
+                logger.debug(message)
+                continue
+            output.append(f"{begin_year} TO {end_year}")
+
         return output
 
-    def _gbl_resourceType_sm(self):
+    def _gbl_resourceType_sm(self) -> list[str]:
         xpath_expr = """
         //gmd:MD_Metadata
             /gmd:identificationInfo
@@ -411,14 +442,165 @@ class ISO19139(XMLSourceRecord):
         """
         return self.string_list_from_xpath(xpath_expr)
 
-    def _gbl_suppressed_b(self):
-        return False
+    def _gbl_indexYear_im(self) -> list[int]:
+        """Field method: gbl_indexYear_im
 
-    def _gbl_wxsIdentifier_s(self):
+        Retrieves temporal elements, then extracts timestamps from both instances and
+        periods.  From this list of timestamps, attempt is made to parse an integer year.
         """
-        TODO: look into meaningful identifiers from ISO file
-        """
-        return "geo:mit:<PLACEHOLDER_FROM_MIT_ISO_ID>"
+        temporal_elements = self._get_temporal_extents()
 
-    def _schema_provider_s(self):
-        return "MIT"
+        # extract date strings from instances and periods
+        dates = [instance["timestamp"] for instance in temporal_elements["instances"]]
+        dates.extend(
+            [
+                timestamp
+                for period in temporal_elements["periods"]
+                for timestamp in (period["begin_timestamp"], period["end_timestamp"])
+            ]
+        )
+
+        # convert dates to year integers
+        years = []
+        for date in dates:
+            try:
+                years.append(int(date_parser(date).strftime("%Y")))
+            except ParserError as exc:
+                message = f"Could not extract year from date string: {date}, {exc}"
+                logger.debug(message)
+                continue
+        return years
+
+    ##########################
+    # Utility / Helper Methods
+    ##########################
+    def _get_temporal_extents(self) -> dict:
+        """Method to extract TimeInstant and TimePeriod temporal extents.
+
+        https://www.ncei.noaa.gov/sites/default/files/2020-04/ISO%2019115-2
+        %20Workbook_Part%20II%20Extentions%20for%20imagery%20and%20Gridded%20Data.pdf
+            - pp. 71 explains TimeInstant vs TimePeriod
+
+        Because multiple field methods utilize TemporalExtents, and there is some logic
+        required to parse them, this has been centralized into this one method for use
+        by multiple field methods.  Those fields methods use one or both of the
+        "instances" and "periods" returned from this method.
+
+        Returns:
+            dict {
+                "instances": list[dict{description, timestamp}],
+                "periods": list[dict{description, begin_timestamp, end_timestamp}]
+            }
+        """
+        # get temporal elements
+        temporal_elements = self.xpath_query(
+            """
+            //gmd:MD_Metadata
+                /gmd:identificationInfo
+                    /gmd:MD_DataIdentification
+                        /gmd:extent
+                            /gmd:EX_Extent
+                                /gmd:temporalElement
+                                    /gmd:EX_TemporalExtent
+            """
+        )
+
+        # parse TimeInstant and TimePeriods
+        output = defaultdict(list)
+        for temporal_element in temporal_elements:
+            if time_instant := self._parse_time_instance(temporal_element):
+                output["instances"].append(time_instant)
+            if time_period := self._parse_time_period(temporal_element):
+                output["periods"].append(time_period)
+
+        return output
+
+    def _parse_time_instance(
+        self,
+        temporal_element: etree._Element,  # noqa: SLF001,
+    ) -> dict | None:
+        """Parse TimeInstant
+
+        TimeInstant example:
+        --------------------
+        <gmd:EX_TemporalExtent id="boundingTemporalExtent">
+            <gmd:extent>
+                <gml:TimeInstant gml:id="tp_114854">
+                    <gml:description>ground condition</gml:description>
+                    <gml:timePosition>1990-11-03T00:00:00</gml:timePosition>
+                </gml:TimeInstant>
+            </gmd:extent>
+        </gmd:EX_TemporalExtent>
+        """
+        instant = temporal_element.find(
+            "gmd:extent/gml:TimeInstant", namespaces=self.nsmap
+        )
+
+        if instant is None:
+            return None
+
+        time_instant_dict: dict[str, str | None] = {
+            "description": None,
+            "timestamp": None,
+        }
+        description = instant.find("gml:description", namespaces=self.nsmap)
+        if description is not None:
+            time_instant_dict["description"] = description.text
+        time_instant_dict["timestamp"] = self._parse_time_position(
+            instant.find("gml:timePosition", namespaces=self.nsmap)
+        )
+        return time_instant_dict
+
+    def _parse_time_period(
+        self,
+        temporal_element: etree._Element,  # noqa: SLF001,
+    ) -> dict | None:
+        """Parse TimePeriod
+
+        TimePeriod example:
+        -------------------
+        <gmd:temporalElement>
+            <gmd:EX_TemporalExtent id="boundingTemporalExtent">
+                <gmd:extent>
+                    <gml:TimePeriod gml:id="tp_1234">
+                        <gml:description>ground condition</gml:description>
+                        <gml:beginPosition>1990-11-03T00:00:00</gml:beginPosition>
+                        <gml:endPosition indeterminatePosition="now"/>
+                    </gml:TimePeriod>
+                </gmd:extent>
+            </gmd:EX_TemporalExtent>
+        </gmd:temporalElement>
+        """
+        period = temporal_element.find("gmd:extent/gml:TimePeriod", namespaces=self.nsmap)
+
+        if period is None:
+            return None
+
+        time_period_dict: dict[str, str | None] = {
+            "description": None,
+            "begin_timestamp": None,
+            "end_timestamp": None,
+        }
+        description = period.find("gml:description", namespaces=self.nsmap)
+        if description is not None:
+            time_period_dict["description"] = description.text
+        time_period_dict["begin_timestamp"] = self._parse_time_position(
+            period.find("gml:beginPosition", namespaces=self.nsmap)
+        )
+        time_period_dict["end_timestamp"] = self._parse_time_position(
+            period.find("gml:endPosition", namespaces=self.nsmap)
+        )
+        return time_period_dict
+
+    @staticmethod
+    def _parse_time_position(
+        position_element: etree._Element | None,  # noqa: SLF001
+    ) -> str | None:
+        """Parse timestamp from temporal element from attribute or text."""
+        if position_element is None:
+            return None
+        if ip := position_element.attrib.get("indeterminatePosition"):
+            return str(ip)
+        if position_element.text:
+            return position_element.text.strip()
+        return None
