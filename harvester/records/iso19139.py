@@ -73,9 +73,9 @@ class ISO19139(XMLSourceRecord):
         restriction_codes = []
         for restriction_element in restriction_elements:
             if restriction_text := restriction_element.text:
-                restriction_codes.append(restriction_text)
+                restriction_codes.append(restriction_text.strip().lower())
             if attribute_code := restriction_element.attrib.get("codeListValue"):
-                restriction_codes.append(attribute_code)
+                restriction_codes.append(attribute_code.strip().lower())
 
         for code in restriction_codes:
             if "public" in code or "unrestricted" in code:
