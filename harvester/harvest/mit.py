@@ -3,6 +3,7 @@
 import datetime
 import fnmatch
 import glob
+import json
 import logging
 import os
 import zipfile
@@ -12,6 +13,7 @@ from typing import Literal
 import smart_open  # type: ignore[import-untyped]
 from attrs import define, field
 
+from harvester.aws.eventbridge import EventBridgeClient
 from harvester.aws.s3 import S3Client
 from harvester.aws.sqs import SQSClient, ZipFileEventMessage
 from harvester.config import Config
@@ -97,19 +99,75 @@ class MITHarvester(Harvester):
             records = self.filter_failed_records(self.delete_sqs_messages(records))
         yield from records
 
+    def send_eventbridge_event(self, records: Iterator[Record]) -> Iterator[Record]:
+        """Method to send EventBridge event indicating access restrictions.
+
+        These events are handled by the StepFunction "geo-upload-<ENV>-shapefile-handler".
+        That StepFunction will take one of three paths based on the event payload:
+
+            1. Copy zip file data from Restricted to Public CDN bucket
+                - detail.restricted=false
+            2. Delete zip file data from Public CDN bucket
+                - detail.restricted=true
+            3. Delete zip file data AND metadata from Public CDN bucket
+                - detail.deleted=true
+
+        The goal is to decouple KNOWING whether a record is deleted or restricted (this
+        harvester) and actually MANAGING files in S3.  By sending EventBridge events about
+        the record's deleted and restricted status, that work is handled elsewhere.
+        """
+        bucket, path = CONFIG.S3_PUBLIC_CDN_ROOT.removeprefix("s3://").split("/", 1)
+        path = path.removesuffix("/")
+
+        for record in records:
+            message = f"Record {record.identifier}: sending EventBridge event"
+            logger.debug(message)
+            try:
+                self._prepare_payload_and_send_event(bucket, path, record)
+            except Exception as exc:  # noqa: BLE001
+                record.exception_stage = "send_eventbridge_event"
+                record.exception = exc
+
+            yield record
+
+    def _prepare_payload_and_send_event(
+        self, bucket: str, path: str, record: Record
+    ) -> str:
+        """Prepare event detail and send event.
+
+        Example detail dictionary, which is serialized to JSON string:
+            'Detail': {
+                'bucket': 'cdn-origin-dev-XXX',
+                'identifier': 'ABC123',
+                'restricted': 'false',
+                'deleted': 'true',
+                'objects': [
+                    {'Key': 'cdn/geo/public/ABC123.source.fgdc.xml'},
+                    {'Key': 'cdn/geo/public/ABC123.normalized.aardvark.json'},
+                    {'Key': 'cdn/geo/public/ABC123.zip'}
+                ]
+            }
+                - both 'restricted' and 'deleted' are boolean strings, not true booleans
+        """
+        detail = {
+            "bucket": bucket,
+            "identifier": record.identifier,
+            "restricted": json.dumps(record.source_record.is_restricted),
+            "deleted": json.dumps(record.source_record.is_deleted),
+            "objects": [
+                {"Key": f"{path}/{record.source_record.source_metadata_filename}"},
+                {"Key": f"{path}/{record.source_record.normalized_metadata_filename}"},
+                {"Key": f"{path}/{record.identifier}.zip"},
+            ],
+        }
+        return EventBridgeClient.send_event(detail=detail)
+
     @property
     def sqs_client(self) -> SQSClient:
         """Return an SQSClient, reusing if already cached on self."""
         if not self._sqs_client:
             self._sqs_client = SQSClient(self.sqs_topic_name)
         return self._sqs_client
-
-    def send_eventbridge_event(self, records: Iterator[Record]) -> Iterator[Record]:
-        """Method to send EventBridge events indicating access restrictions."""
-        for record in records:
-            message = f"Record {record.identifier}: sending EventBridge event"
-            logger.debug(message)
-            yield record
 
     def delete_sqs_messages(self, records: Iterator[Record]) -> Iterator[Record]:
         """Method to delete SQS message after record has been successfully processed."""

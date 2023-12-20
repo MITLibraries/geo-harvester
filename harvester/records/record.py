@@ -291,6 +291,16 @@ class SourceRecord:
             None: True,
         }[self._dct_accessRights_s()]
 
+    @property
+    def is_deleted(self) -> bool:
+        """Property to return boolean if source record is considered deleted.
+
+        This valuation is based on the event that brought the record into harvest.
+        """
+        if self.event == "deleted":
+            return True
+        return False
+
     def normalize(self) -> MITAardvark:
         """Method to normalize a SourceRecord to an MIT Aardvark MITAardvark instance.
 
