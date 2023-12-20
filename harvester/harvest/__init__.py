@@ -102,8 +102,8 @@ class Harvester(ABC):
         """Write source and normalized metadata as standalone files.
 
         This step is driven by presence of one or both CLI options:
-            "--output-source": write source records
-            "--output-normalized": write normalized records
+            "--output-source-directory": write source records
+            "--output-normalized-directory": write normalized records
 
         Source and normalized metadata files are most commonly written to the public CDN
         bucket to facilitate download.
@@ -157,7 +157,7 @@ class Harvester(ABC):
         """Write single, combined JSONLines file of all normalized MITAardvark.
 
         This step is driven by presence of the CLI option:
-            "--output-normalized-combined": write combined normalized metadata
+            "--output-file": write combined normalized metadata
 
         This is the expected file format expected and used by the TIMDEX pipeline.
 
