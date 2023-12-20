@@ -517,7 +517,7 @@ class ISO19139(XMLSourceRecord):
 
     def _parse_time_instance(
         self,
-        temporal_element: etree._Element,  # noqa: SLF001,
+        temporal_element: etree._Element,
     ) -> dict | None:
         """Parse TimeInstant
 
@@ -553,7 +553,7 @@ class ISO19139(XMLSourceRecord):
 
     def _parse_time_period(
         self,
-        temporal_element: etree._Element,  # noqa: SLF001,
+        temporal_element: etree._Element,
     ) -> dict | None:
         """Parse TimePeriod
 
@@ -594,7 +594,7 @@ class ISO19139(XMLSourceRecord):
 
     @staticmethod
     def _parse_time_position(
-        position_element: etree._Element | None,  # noqa: SLF001
+        position_element: etree._Element | None,
     ) -> str | None:
         """Parse timestamp from temporal element from attribute or text."""
         if position_element is None:
