@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, mock_open, patch
 import pytest
 from dateutil.parser import ParserError
 from dateutil.tz import tzutc
+from freezegun import freeze_time
 
 from harvester.records import FGDC, MITAardvark, Record
 from harvester.records.exceptions import FieldMethodError
@@ -242,6 +243,7 @@ def test_harvester_write_source_metadata_success(
     file_obj.write.assert_called_once_with(record.source_record.data)
 
 
+@freeze_time("2024-01-01")
 def test_harvester_write_normalized_metadata_success(
     generic_harvester_class, records_for_writing
 ):
