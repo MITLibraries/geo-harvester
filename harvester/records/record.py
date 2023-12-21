@@ -4,16 +4,20 @@
 import datetime
 import json
 import logging
+import os
 from abc import abstractmethod
 from typing import Any, Literal
 
 from attrs import asdict, define, field, fields
-from attrs.validators import in_, instance_of, optional
+from attrs.validators import in_, instance_of
+from jsonschema import FormatChecker
+from jsonschema.validators import Draft202012Validator
 from lxml import etree  # type: ignore[import-untyped]
+from referencing import Registry, Resource
 
 from harvester.aws.sqs import ZipFileEventMessage
 from harvester.config import Config
-from harvester.records.exceptions import FieldMethodError
+from harvester.records.exceptions import FieldMethodError, JSONSchemaValidationError
 from harvester.utils import dedupe_list_of_values
 
 logger = logging.getLogger(__name__)
@@ -54,117 +58,136 @@ class MITAardvark:
     """
 
     # aardvark required fields
-    dct_accessRights_s: str = field(validator=instance_of(str))
-    dct_title_s: str = field(validator=instance_of(str))
-    gbl_mdModified_dt: str = field(validator=instance_of(str))
-    gbl_mdVersion_s: str = field(validator=instance_of(str))
-    gbl_resourceClass_sm: list = field(validator=instance_of(list))
-    id: str = field(validator=instance_of(str))  # noqa: A003
+    dct_accessRights_s: str
+    dct_title_s: str
+    gbl_mdModified_dt: str
+    gbl_mdVersion_s: str
+    gbl_resourceClass_sm: list
+    id: str  # noqa: A003
 
     # additional MIT required fields
-    dcat_bbox: str = field(validator=instance_of(str))
-    dct_references_s: str = field(validator=instance_of(str))
-    locn_geometry: str = field(validator=instance_of(str))
+    dcat_bbox: str
+    dct_references_s: str
+    locn_geometry: str
 
     # optional fields
-    dcat_centroid: str | None = field(default=None, validator=optional(instance_of(str)))
-    dcat_keyword_sm: list | None = field(
-        default=None, validator=optional(instance_of(list))
-    )
-    dcat_theme_sm: list | None = field(
-        default=None, validator=optional(instance_of(list))
-    )
-    dct_alternative_sm: list | None = field(
-        default=None, validator=optional(instance_of(list))
-    )
-    dct_creator_sm: list | None = field(
-        default=None, validator=optional(instance_of(list))
-    )
-    dct_description_sm: list | None = field(
-        default=None, validator=optional(instance_of(list))
-    )
-    dct_format_s: str | None = field(default=None, validator=optional(instance_of(str)))
-    dct_identifier_sm: list | None = field(
-        default=None, validator=optional(instance_of(list))
-    )
-    dct_isPartOf_sm: list | None = field(
-        default=None, validator=optional(instance_of(list))
-    )
-    dct_isReplacedBy_sm: list | None = field(
-        default=None, validator=optional(instance_of(list))
-    )
-    dct_issued_s: str | None = field(default=None, validator=optional(instance_of(str)))
-    dct_isVersionOf_sm: list | None = field(
-        default=None, validator=optional(instance_of(list))
-    )
-    dct_language_sm: list | None = field(
-        default=None, validator=optional(instance_of(list))
-    )
-    dct_license_sm: list | None = field(
-        default=None, validator=optional(instance_of(list))
-    )
-    dct_publisher_sm: list | None = field(
-        default=None, validator=optional(instance_of(list))
-    )
-    dct_relation_sm: list | None = field(
-        default=None, validator=optional(instance_of(list))
-    )
-    dct_replaces_sm: list | None = field(
-        default=None, validator=optional(instance_of(list))
-    )
-    dct_rights_sm: list | None = field(
-        default=None, validator=optional(instance_of(list))
-    )
-    dct_rightsHolder_sm: list | None = field(
-        default=None, validator=optional(instance_of(list))
-    )
-    dct_source_sm: list | None = field(
-        default=None, validator=optional(instance_of(list))
-    )
-    dct_spatial_sm: list | None = field(
-        default=None, validator=optional(instance_of(list))
-    )
-    dct_subject_sm: list | None = field(
-        default=None, validator=optional(instance_of(list))
-    )
-    dct_temporal_sm: list | None = field(
-        default=None, validator=optional(instance_of(list))
-    )
-    gbl_dateRange_drsim: list | None = field(
-        default=None, validator=optional(instance_of(list))
-    )
-    gbl_displayNote_sm: list | None = field(
-        default=None, validator=optional(instance_of(list))
-    )
-    gbl_fileSize_s: str | None = field(default=None, validator=optional(instance_of(str)))
-    gbl_georeferenced_b: str | None = field(
-        default=None, validator=optional(instance_of(str))
-    )
-    gbl_indexYear_im: list | None = field(
-        default=None, validator=optional(instance_of(list))
-    )
-    gbl_resourceType_sm: list | None = field(
-        default=None, validator=optional(instance_of(list))
-    )
-    gbl_suppressed_b: bool | None = field(
-        default=None, validator=optional(instance_of(bool))
-    )
-    gbl_wxsIdentifier_s: str | None = field(
-        default=None, validator=optional(instance_of(str))
-    )
-    pcdm_memberOf_sm: list | None = field(
-        default=None, validator=optional(instance_of(list))
-    )
-    schema_provider_s: str | None = field(
-        default=None, validator=optional(instance_of(str))
-    )
+    dcat_centroid: str = field(default=None)
+    dcat_keyword_sm: list = field(default=None)
+    dcat_theme_sm: list = field(default=None)
+    dct_alternative_sm: list = field(default=None)
+    dct_creator_sm: list = field(default=None)
+    dct_description_sm: list = field(default=None)
+    dct_format_s: str = field(default=None)
+    dct_identifier_sm: list = field(default=None)
+    dct_isPartOf_sm: list = field(default=None)
+    dct_isReplacedBy_sm: list = field(default=None)
+    dct_issued_s: str = field(default=None)
+    dct_isVersionOf_sm: list = field(default=None)
+    dct_language_sm: list = field(default=None)
+    dct_license_sm: list = field(default=None)
+    dct_publisher_sm: list = field(default=None)
+    dct_relation_sm: list = field(default=None)
+    dct_replaces_sm: list = field(default=None)
+    dct_rights_sm: list = field(default=None)
+    dct_rightsHolder_sm: list = field(default=None)
+    dct_source_sm: list = field(default=None)
+    dct_spatial_sm: list = field(default=None)
+    dct_subject_sm: list = field(default=None)
+    dct_temporal_sm: list = field(default=None)
+    gbl_dateRange_drsim: list = field(default=None)
+    gbl_displayNote_sm: list = field(default=None)
+    gbl_fileSize_s: str = field(default=None)
+    gbl_georeferenced_b: str = field(default=None)
+    gbl_indexYear_im: list = field(default=None)
+    gbl_resourceType_sm: list = field(default=None)
+    gbl_suppressed_b: bool = field(default=None)
+    gbl_wxsIdentifier_s: str = field(default=None)
+    pcdm_memberOf_sm: list = field(default=None)
+    schema_provider_s: str = field(default=None)
+
+    def __attrs_post_init__(self) -> None:
+        """Run JSON schema validation on the created MITAardvark record
+
+        The JSON schema validation is performed in addition to the validation of
+        arguments through attrs attribute validators.
+        """
+        self.validate()
+
+    @property
+    def json_schemas(self) -> dict:
+        """Load JSON schemas for validating MITAardvark records.
+
+        To validate MITAardvark records, the validator relies on two schemas:
+           * MITAardvark schema;
+           * OpenGeoMetadata's (OGM) Geoblacklight Aardvark schema.
+
+        The MITAardvark schema will comprise of majority of OGM's Aardvark schema,
+        with several updates for MIT's purposes. The schemas are read from
+        harvester/records/schemas directory and later added to a referencing.Registry.
+        Once in the registry, the validator can use the schemas to validate data.
+
+        Returns:
+            dict: JSON schemas for validating MITAardvark records.
+        """
+        schemas = {}
+        schema_dir = os.path.join(os.path.dirname(__file__), "schemas")
+        with open(schema_dir + "/mit-schema-aardvark.json") as f:
+            schemas["mit-schema-aardvark"] = json.loads(f.read())
+        with open(schema_dir + "/geoblacklight-schema-aardvark.json") as f:
+            schemas["geoblacklight-schema-aardvark"] = json.loads(f.read())
+        return schemas
+
+    @property
+    def validator(self) -> Draft202012Validator:
+        """Create a validator with JSON schemas for evaluating MITAardvark records.
+
+        An instance referencing.Registry is created with the required schema added as
+        resources. When the validator is created, the registry is included as an argument.
+        This enables the validator to use the schemas for validation.
+
+        Note: For more information on
+            * registries: https://python-jsonschema.readthedocs.io/en/stable/referencing
+            * validators: https://python-jsonschema.readthedocs.io/en/stable/validate/#the-validator-protocol
+
+        Returns:
+            Draft202012Validator: JSON schema validator with MITAardvark and OGM Aardvark
+                schemas.
+        """
+        registry: Registry = Registry().with_resources(
+            [
+                (
+                    "mit-schema-aardvark",
+                    Resource.from_contents(self.json_schemas["mit-schema-aardvark"]),
+                ),
+                (
+                    "geoblacklight-schema-aardvark",
+                    Resource.from_contents(
+                        self.json_schemas["geoblacklight-schema-aardvark"]
+                    ),
+                ),
+            ]
+        )
+        return Draft202012Validator(
+            schema=self.json_schemas["mit-schema-aardvark"],
+            registry=registry,
+            format_checker=FormatChecker(),
+        )
 
     def validate(self) -> None:
         """Validate that Aardvark is compliant for MIT purposes.
 
-        WIP: until JSONSchema work from Jira GDT-49
+        The validator is retrieved in order to use .iter_errors() to iterate through
+        each of the validation errors in the normalized record. If there are any errors,
+        they are compiled into a single error message that appears in a
+        JSONSchemaValidationError exception.
         """
-        raise NotImplementedError  # pragma: nocover
+        validation_errors = sorted(self.validator.iter_errors(self.to_dict()), key=str)
+
+        if validation_errors:
+            exc = JSONSchemaValidationError(validation_errors)
+            logger.debug(exc.message)
+            raise exc
+        logger.debug("The normalized MITAardvark record is valid")
 
     def to_dict(self) -> dict:
         """Dump MITAardvark record to dictionary."""
@@ -344,7 +367,7 @@ class SourceRecord:
 
     def _gbl_mdModified_dt(self) -> str:
         """Shared field method: gbl_mdModified_dt"""
-        return datetime.datetime.now(tz=datetime.UTC).strftime("%Y-%m-%d")
+        return datetime.datetime.now(tz=datetime.UTC).replace(microsecond=0).isoformat()
 
     def _gbl_mdVersion_s(self) -> str:
         """Shared field method: gbl_mdVersion_s"""
@@ -466,10 +489,10 @@ class SourceRecord:
 @define
 class XMLSourceRecord(SourceRecord):
     nsmap: dict = field(default={})
-    _root: etree._Element = field(default=None, repr=False)  # noqa: SLF001
+    _root: etree._Element = field(default=None, repr=False)
 
     @property
-    def root(self) -> etree._Element:  # noqa: SLF001
+    def root(self) -> etree._Element:
         """Property to parse raw xml bytes and return lxml Element.
 
         This property uses a cached instance at self._root if present to avoid re-parsing

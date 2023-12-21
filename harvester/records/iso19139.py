@@ -102,14 +102,8 @@ class ISO19139(XMLSourceRecord):
     def _gbl_resourceClass_sm(self) -> list[str]:
         """Field method: gbl_resourceClass_sm
 
-        Controlled vocabulary:
-            - 'Datasets'
-            - 'Maps'
-            - 'Imagery'
-            - 'Collections'
-            - 'Websites'
-            - 'Web services'
-            - 'Other'
+        For a complete set of accepted values, see
+            harvester.records.schemas.mit-schema-aardvark.json
         """
         xpath_expr = """
         //gmd:MD_Metadata
@@ -517,7 +511,7 @@ class ISO19139(XMLSourceRecord):
 
     def _parse_time_instance(
         self,
-        temporal_element: etree._Element,  # noqa: SLF001,
+        temporal_element: etree._Element,
     ) -> dict | None:
         """Parse TimeInstant
 
@@ -553,7 +547,7 @@ class ISO19139(XMLSourceRecord):
 
     def _parse_time_period(
         self,
-        temporal_element: etree._Element,  # noqa: SLF001,
+        temporal_element: etree._Element,
     ) -> dict | None:
         """Parse TimePeriod
 
@@ -594,7 +588,7 @@ class ISO19139(XMLSourceRecord):
 
     @staticmethod
     def _parse_time_position(
-        position_element: etree._Element | None,  # noqa: SLF001
+        position_element: etree._Element | None,
     ) -> str | None:
         """Parse timestamp from temporal element from attribute or text."""
         if position_element is None:
