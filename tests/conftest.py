@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, patch
 import boto3
 import pytest
 from click.testing import CliRunner
+from freezegun import freeze_time
 from moto import mock_s3
 
 from harvester.aws.sqs import SQSClient, ZipFileEventMessage
@@ -373,6 +374,7 @@ def strings_from_xpath_unhandled_value():
 
 
 @pytest.fixture
+@freeze_time("2024-01-01")
 def records_for_writing(fgdc_source_record_from_zip):
     record = Record(
         identifier="SDE_DATA_AE_A8GNS_2003",

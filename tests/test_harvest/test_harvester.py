@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, mock_open, patch
 import pytest
 from dateutil.parser import ParserError
 from dateutil.tz import tzutc
+from freezegun import freeze_time
 
 from harvester.records import FGDC, MITAardvark, Record
 from harvester.records.exceptions import FieldMethodError
@@ -26,11 +27,11 @@ def test_harvester_from_until_date_parsing_success(generic_harvester_class):
         from_date=from_date,
         until_date=until_date,
     )
-    assert harvester.from_datetime_object == datetime.datetime(
-        2000, 1, 1, 5, 0, tzinfo=tzutc()
+    assert harvester.from_datetime_object == datetime.datetime(2000, 1, 1).astimezone(
+        tzutc()
     )
-    assert harvester.until_datetime_object == datetime.datetime(
-        2050, 12, 31, 5, 0, tzinfo=tzutc()
+    assert harvester.until_datetime_object == datetime.datetime(2050, 12, 31).astimezone(
+        tzutc()
     )
 
 
@@ -242,6 +243,7 @@ def test_harvester_write_source_metadata_success(
     file_obj.write.assert_called_once_with(record.source_record.data)
 
 
+@freeze_time("2024-01-01")
 def test_harvester_write_normalized_metadata_success(
     generic_harvester_class, records_for_writing
 ):
