@@ -1,5 +1,7 @@
+# ruff: noqa: SLF001
+
 import datetime
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 from dateutil.parser import ParserError
@@ -156,3 +158,138 @@ def test_harvester_step_normalize_source_records_stores_exception(
     assert record.exception_stage == "normalize_source_records"
     assert isinstance(record.exception, FieldMethodError)
     assert isinstance(record.exception.original_exception, KeyError)
+
+
+def test_harvester_step_write_source_and_normalized_both_success(
+    caplog,
+    generic_harvester_class,
+    records_for_writing,
+    mocked_source_writer,
+    mocked_normalized_writer,
+):
+    caplog.set_level("DEBUG")
+    harvester = generic_harvester_class(
+        harvest_type="full",
+        output_source_directory="output",
+        output_normalized_directory="output",
+    )
+    output_record = next(harvester.write_source_and_normalized(records_for_writing))
+    mocked_source_writer.assert_called_once_with(output_record)
+    mocked_normalized_writer.assert_called_once_with(output_record)
+
+
+def test_harvester_step_write_source_and_normalized_source_exception_log_and_yield(
+    caplog,
+    generic_harvester_class,
+    records_for_writing,
+    mocked_source_writer,
+    mocked_normalized_writer,
+):
+    caplog.set_level("DEBUG")
+    mocked_source_writer.side_effect = Exception("source write error!")
+
+    harvester = generic_harvester_class(
+        harvest_type="full",
+        output_source_directory="output",
+        output_normalized_directory="output",
+    )
+    output_record = next(harvester.write_source_and_normalized(records_for_writing))
+
+    mocked_source_writer.assert_called_once_with(output_record)
+    mocked_normalized_writer.assert_not_called()
+    assert output_record.exception_stage == "write_metadata.source"
+    assert str(output_record.exception) == "source write error!"
+
+
+def test_harvester_step_write_source_and_normalized_normalized_exception_log_and_yield(
+    caplog,
+    generic_harvester_class,
+    records_for_writing,
+    mocked_source_writer,
+    mocked_normalized_writer,
+):
+    caplog.set_level("DEBUG")
+    mocked_normalized_writer.side_effect = Exception("normalized write error!")
+
+    harvester = generic_harvester_class(
+        harvest_type="full",
+        output_source_directory="output",
+        output_normalized_directory="output",
+    )
+    output_record = next(harvester.write_source_and_normalized(records_for_writing))
+
+    mocked_source_writer.assert_called_once_with(output_record)
+    mocked_source_writer.assert_called_once_with(output_record)
+    assert output_record.exception_stage == "write_metadata.normalized"
+    assert str(output_record.exception) == "normalized write error!"
+
+
+def test_harvester_write_source_metadata_success(
+    generic_harvester_class, records_for_writing
+):
+    harvester = generic_harvester_class(
+        harvest_type="full",
+        output_source_directory="output",
+    )
+    record = records_for_writing[0]
+    mocked_open = mock_open()
+    with patch("harvester.harvest.smart_open.open", mocked_open):
+        harvester._write_source_metadata(record)
+    mocked_open.assert_called_with(
+        f"output/{record.source_record.source_metadata_filename}", "wb"
+    )
+    file_obj = mocked_open()
+    file_obj.write.assert_called_once_with(record.source_record.data)
+
+
+def test_harvester_write_normalized_metadata_success(
+    generic_harvester_class, records_for_writing
+):
+    harvester = generic_harvester_class(
+        harvest_type="full",
+        output_normalized_directory="output",
+    )
+    record = records_for_writing[0]
+    mocked_open = mock_open()
+    with patch("harvester.harvest.smart_open.open", mocked_open):
+        harvester._write_normalized_metadata(record)
+    mocked_open.assert_called_with(
+        f"output/{record.source_record.normalized_metadata_filename}", "w"
+    )
+    file_obj = mocked_open()
+    file_obj.write.assert_called_once_with(
+        record.source_record.normalize().to_json(pretty=False)
+    )
+
+
+def test_harvester_step_write_combined_normalized_success(
+    caplog,
+    generic_harvester_class,
+    records_for_writing,
+):
+    output_file = "output/combined_normalized.jsonl"
+    harvester = generic_harvester_class(harvest_type="full", output_file=output_file)
+    mocked_open = mock_open()
+    with patch("harvester.harvest.smart_open.open", mocked_open):
+        _ = list(harvester.write_combined_normalized(records_for_writing))
+    mocked_open.assert_called_with(output_file, "w")
+
+
+def test_harvester_step_write_combined_normalized_write_error_log_and_continue(
+    caplog,
+    generic_harvester_class,
+    records_for_writing,
+):
+    output_file = "output/combined_normalized.jsonl"
+    harvester = generic_harvester_class(harvest_type="full", output_file=output_file)
+    mocked_open = mock_open()
+    mocked_writer = MagicMock()
+    exception_message = "Error during write!"
+    mocked_writer.write.side_effect = Exception(exception_message)
+    with patch("harvester.harvest.smart_open.open", mocked_open), patch(
+        "jsonlines.Writer", return_value=mocked_writer
+    ):
+        output_record = next(harvester.write_combined_normalized(records_for_writing))
+    mocked_open.assert_called_with(output_file, "w")
+    assert output_record.exception_stage == "write_combined_normalized"
+    assert str(output_record.exception) == exception_message

@@ -82,6 +82,23 @@ Options:
                                   date; format YYYY-MM-DD.
   -u, --until-date TEXT           filter for files modified before this date;
                                   format YYYY-MM-DD.
+  -osd, --output-source-directory TEXT
+                                  Directory to write source metadata for EACH
+                                  harvested record file with naming convention
+                                  '<identifier>.<format>.source.xml|json'.
+                                  Defaults to env var S3_PUBLIC_CDN_ROOT if
+                                  not set.
+  -ond, --output-normalized-directory TEXT
+                                  Directory to write normalized MITAardvark
+                                  metadata for EACH harvested record file with
+                                  naming convention
+                                  '<identifier>.aardvark.normalized.json'.
+                                  Defaults to env var S3_PUBLIC_CDN_ROOT if
+                                  not set.
+  -o, --output-file TEXT          Filepath to write single, combined JSONLines
+                                  file of normalized MITAardvark metadata for
+                                  ALL harvested records.  This is the expected
+                                  format for the TIMDEX pipeline.
   -h, --help                      Show this message and exit.
 
 Commands:
