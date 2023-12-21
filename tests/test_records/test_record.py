@@ -103,19 +103,22 @@ def test_source_record_normalize_field_method_fails_raise_error(
 
 
 def test_mitaardvark_to_dict_success(
-    valid_required_mitaardvark_record, valid_required_mitaardvark_data
+    valid_mitaardvark_record_required_fields, valid_mitaardvark_data_required_fields
 ):
-    assert valid_required_mitaardvark_record.to_dict() == valid_required_mitaardvark_data
+    assert (
+        valid_mitaardvark_record_required_fields.to_dict()
+        == valid_mitaardvark_data_required_fields
+    )
 
 
 def test_mitaardvark_to_json_success(
-    valid_required_mitaardvark_record, valid_required_mitaardvark_data
+    valid_mitaardvark_record_required_fields, valid_mitaardvark_data_required_fields
 ):
-    assert valid_required_mitaardvark_record.to_json() == json.dumps(
-        valid_required_mitaardvark_data, indent=2
+    assert valid_mitaardvark_record_required_fields.to_json() == json.dumps(
+        valid_mitaardvark_data_required_fields, indent=2
     )
-    assert valid_required_mitaardvark_record.to_json(pretty=False) == json.dumps(
-        valid_required_mitaardvark_data
+    assert valid_mitaardvark_record_required_fields.to_json(pretty=False) == json.dumps(
+        valid_mitaardvark_data_required_fields
     )
 
 
