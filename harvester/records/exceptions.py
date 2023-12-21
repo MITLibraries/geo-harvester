@@ -25,6 +25,26 @@ class JSONSchemaValidationError(ValidationError):
         super().__init__(message=self.get_formatted_message())
 
     def get_formatted_message(self) -> str:
+        """Get string representation of the compiled errors from JSON schema validation.
+
+        The default error messages from jsonschema.exceptions.ValidationError does not
+        include the field name. The field name can be extracted from the the .json_path
+        attribute. Below are some examples of the validation errors in their original
+        format:
+
+            1. A validation error for a field expecting a 'date-time' format:
+               - ValidationError.json_path: $.gbl_mdModified_dt
+               - ValidationError.message: 2023-12-13' is not a 'date-time'
+            2. A validation error for a field that is required:
+               - ValidationError.json_path: $
+               - ValidationError.message: 'dct_accessRights_s' is a required property
+
+        This method ensures that the error messages adhere to the following format:
+            "field: <field_name>, <validation_error_message",
+
+        Returns:
+            str: Compiled validation error messages from JSON schema validation.
+        """
         error_messages = []
         for error in self.validation_errors:
             if "is a required property" in error.message:

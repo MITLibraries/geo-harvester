@@ -102,14 +102,8 @@ class ISO19139(XMLSourceRecord):
     def _gbl_resourceClass_sm(self) -> list[str]:
         """Field method: gbl_resourceClass_sm
 
-        Controlled vocabulary:
-            - 'Datasets'
-            - 'Maps'
-            - 'Imagery'
-            - 'Collections'
-            - 'Websites'
-            - 'Web services'
-            - 'Other'
+        For a complete set of accepted values, see
+            harvester.records.schemas.mit-schema-aardvark.json
         """
         xpath_expr = """
         //gmd:MD_Metadata

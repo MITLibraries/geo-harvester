@@ -235,7 +235,7 @@ def mocked_required_fields_source_record(valid_generic_xml_source_record):
 
 
 @pytest.fixture
-def valid_minimal_mitaardvark_data():
+def valid_mitaardvark_data_required_fields():
     return {
         "dct_accessRights_s": "value here",
         "dct_title_s": "value here",
@@ -250,17 +250,17 @@ def valid_minimal_mitaardvark_data():
 
 
 @pytest.fixture
-def valid_optional_mitaardvark_data(valid_minimal_mitaardvark_data):
-    valid_minimal_mitaardvark_data.update(
+def valid_mitaardvark_data_optional_fields(valid_mitaardvark_data_required_fields):
+    valid_mitaardvark_data_required_fields.update(
         {
             "dcat_centroid": "value here",
         }
     )
-    return valid_minimal_mitaardvark_data
+    return valid_mitaardvark_data_required_fields
 
 
 @pytest.fixture
-def invalid_minimal_mitaardvark_data():
+def invalid_mitaardvark_data_required_fields():
     return {
         "dct_accessRights_s": None,
         "dct_title_s": "value here",
@@ -275,18 +275,18 @@ def invalid_minimal_mitaardvark_data():
 
 
 @pytest.fixture
-def invalid_optional_mitaardvark_data(invalid_minimal_mitaardvark_data):
-    invalid_minimal_mitaardvark_data.update(
+def invalid_mitaardvark_data_optional_fields(invalid_mitaardvark_data_required_fields):
+    invalid_mitaardvark_data_required_fields.update(
         {
             "dcat_centroid": 1,
         }
     )
-    return invalid_minimal_mitaardvark_data
+    return invalid_mitaardvark_data_required_fields
 
 
 @pytest.fixture
-def valid_minimal_mitaardvark_record(valid_minimal_mitaardvark_data):
-    return MITAardvark(**valid_minimal_mitaardvark_data)
+def valid_mitaardvark_record_required_fields(valid_mitaardvark_data_required_fields):
+    return MITAardvark(**valid_mitaardvark_data_required_fields)
 
 
 @pytest.fixture

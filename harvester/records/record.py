@@ -122,9 +122,9 @@ class MITAardvark:
            * OpenGeoMetadata's (OGM) Geoblacklight Aardvark schema.
 
         The MITAardvark schema will comprise of majority of OGM's Aardvark schema,
-        with several updates for MIT's purposes. The schemas are read from the
-        'data' directory and later added to a referencing.Registry. Once in the registry,
-        the validator can use the schemas to validate data.
+        with several updates for MIT's purposes. The schemas are read from
+        harvester/records/schemas directory and later added to a referencing.Registry.
+        Once in the registry, the validator can use the schemas to validate data.
 
         Returns:
             dict: JSON schemas for validating MITAardvark records.

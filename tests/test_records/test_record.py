@@ -103,19 +103,19 @@ def test_source_record_normalize_field_method_fails_raise_error(
 
 
 def test_mitaardvark_to_dict_success(
-    valid_minimal_mitaardvark_record, valid_minimal_mitaardvark_data
+    valid_required_mitaardvark_record, valid_required_mitaardvark_data
 ):
-    assert valid_minimal_mitaardvark_record.to_dict() == valid_minimal_mitaardvark_data
+    assert valid_required_mitaardvark_record.to_dict() == valid_required_mitaardvark_data
 
 
 def test_mitaardvark_to_json_success(
-    valid_minimal_mitaardvark_record, valid_minimal_mitaardvark_data
+    valid_required_mitaardvark_record, valid_required_mitaardvark_data
 ):
-    assert valid_minimal_mitaardvark_record.to_json() == json.dumps(
-        valid_minimal_mitaardvark_data, indent=2
+    assert valid_required_mitaardvark_record.to_json() == json.dumps(
+        valid_required_mitaardvark_data, indent=2
     )
-    assert valid_minimal_mitaardvark_record.to_json(pretty=False) == json.dumps(
-        valid_minimal_mitaardvark_data
+    assert valid_required_mitaardvark_record.to_json(pretty=False) == json.dumps(
+        valid_required_mitaardvark_data
     )
 
 
@@ -225,31 +225,33 @@ def test_xml_source_record_single_string_from_xpath_multiple_raise_error(
         valid_generic_xml_source_record.single_string_from_xpath("//plants:description")
 
 
-def test_minimal_mitaardvark_record_jsonschema_validation_success(
-    caplog, valid_minimal_mitaardvark_data
+def test_mitaardvark_record_required_fields_jsonschema_validation_success(
+    caplog, valid_mitaardvark_data_required_fields
 ):
     caplog.set_level("DEBUG")
-    MITAardvark(**valid_minimal_mitaardvark_data)
+    MITAardvark(**valid_mitaardvark_data_required_fields)
     assert "The normalized MITAardvark record is valid" in caplog.text
 
 
-def test_minimal_mitaardvark_record_jsonschema_validation_raise_compiled_error(
-    caplog, invalid_minimal_mitaardvark_data
+def test_mitaardvark_record_required_fields_jsonschema_validation_raise_compiled_error(
+    caplog, invalid_mitaardvark_data_required_fields
 ):
-    """This test shows the compiled validatkon errors from JSON schema validation.
+    """This test shows the compiled validation errors from JSON schema validation.
 
-    'invalid_minimal_mitaardvark_data' fixture contains the following schema violations:
-    1. gbl_mdModified_dt: Date not meeting expected 'date-time' format
-    2. gbl_mdVersion_s: Unexpected value provided to field restricted to a single value
-    3. gbl_resourceClass_sm: Unexpected value provided to field restricted to a fix set
-       of values
-    4. dct_accessRights_s: 'None' provided to a required field
-    5. id: Integer provided to a field restricted to 'string' values
+    'invalid_mitaardvark_data_required_fields' fixture contains the following schema
+    violations:
+        1. gbl_mdModified_dt: Date not meeting expected 'date-time' format
+        2. gbl_mdVersion_s: Unexpected value provided to a field restricted to a single
+           value
+        3. gbl_resourceClass_sm: Unexpected value provided to field restricted to a fix
+           set of values
+        4. dct_accessRights_s: 'None' provided to a required field
+        5. id: Integer provided to a field restricted to 'string' values
     """
     caplog.set_level("DEBUG")
-    assert invalid_minimal_mitaardvark_data["dct_accessRights_s"] is None
+    assert invalid_mitaardvark_data_required_fields["dct_accessRights_s"] is None
     with pytest.raises(JSONSchemaValidationError):
-        MITAardvark(**invalid_minimal_mitaardvark_data)
+        MITAardvark(**invalid_mitaardvark_data_required_fields)
     validation_error_messages = "\n".join(
         [
             "The normalized MITAardvark record is invalid:",
@@ -266,9 +268,9 @@ def test_minimal_mitaardvark_record_jsonschema_validation_raise_compiled_error(
     assert validation_error_messages in caplog.text
 
 
-def test_optional_mitaardvark_record_jsonschema_validation_success(
-    caplog, valid_optional_mitaardvark_data
+def test_mitaardvark_record_optional_fields_jsonschema_validation_success(
+    caplog, valid_mitaardvark_data_optional_fields
 ):
     caplog.set_level("DEBUG")
-    MITAardvark(**valid_optional_mitaardvark_data)
+    MITAardvark(**valid_mitaardvark_data_optional_fields)
     assert "The normalized MITAardvark record is valid" in caplog.text
