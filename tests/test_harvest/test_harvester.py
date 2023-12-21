@@ -26,11 +26,11 @@ def test_harvester_from_until_date_parsing_success(generic_harvester_class):
         from_date=from_date,
         until_date=until_date,
     )
-    assert harvester.from_datetime_object == datetime.datetime(
-        2000, 1, 1, 5, 0, tzinfo=tzutc()
+    assert harvester.from_datetime_object == datetime.datetime(2000, 1, 1).astimezone(
+        tzutc()
     )
-    assert harvester.until_datetime_object == datetime.datetime(
-        2050, 12, 31, 5, 0, tzinfo=tzutc()
+    assert harvester.until_datetime_object == datetime.datetime(2050, 12, 31).astimezone(
+        tzutc()
     )
 
 
