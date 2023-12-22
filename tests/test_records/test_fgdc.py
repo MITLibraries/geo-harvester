@@ -42,7 +42,7 @@ def test_fgdc_record_required_dct_title_s_missing_raises_error(
 
 
 def test_fgdc_record_required_gbl_resourceClass_sm(fgdc_source_record_required_fields):
-    assert fgdc_source_record_required_fields._gbl_resourceClass_sm() == ["Image"]
+    assert fgdc_source_record_required_fields._gbl_resourceClass_sm() == ["Imagery"]
 
 
 def test_fgdc_record_required_gbl_resourceClass_sm_missing_return_empty_list(
