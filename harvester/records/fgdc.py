@@ -65,7 +65,7 @@ class FGDC(XMLSourceRecord):
         value_map = {
             "vector digital data": "Datasets",
             "raster digital data": "Datasets",
-            "remote-sensing image": "Image",
+            "remote-sensing image": "Imagery",
         }
         xpath_expr = """
         //idinfo
