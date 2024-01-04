@@ -25,7 +25,7 @@ ruff = "*"
 ipython = "*"
 moto = "*"
 types-python-dateutil = "*"
-boto3-stubs = {version = "*", extras = ["eventbridge", "s3", "sqs"]}
+boto3-stubs = {version = "*", extras = ["events", "s3", "sqs"]}
 lxml-stubs = "*"
 freezegun = "*"
 types-jsonschema = "*"

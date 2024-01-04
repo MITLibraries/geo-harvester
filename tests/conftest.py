@@ -396,3 +396,14 @@ def mocked_normalized_writer(generic_harvester_class):
     mock_normalized_writer = MagicMock()
     generic_harvester_class._write_normalized_metadata = mock_normalized_writer
     return mock_normalized_writer
+
+
+@pytest.fixture
+def records_for_mit_steps(records_for_writing):
+    return records_for_writing
+
+
+@pytest.fixture
+def mock_eventbridge_client(mock_boto3_sqs_client):
+    with patch("harvester.aws.eventbridge.boto3.client") as mock_client:
+        yield mock_client.return_value

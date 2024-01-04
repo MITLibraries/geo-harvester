@@ -27,7 +27,7 @@ S3_PUBLIC_CDN_ROOT=### S3 bucket + prefix for CDN public, e.g. 's3://<bucket>/pa
 
 ### Optional
 ```shell
-GEOHARVESTER_SQS_TOPIC_NAME=### default value for CLI argument --sqs-arn
+GEOHARVESTER_SQS_TOPIC_NAME=### default value for CLI argument --sqs-topic-name
 ```
 
 ## CLI Commands
