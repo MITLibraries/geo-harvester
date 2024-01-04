@@ -109,7 +109,7 @@ class MITHarvester(Harvester):
                 - detail.restricted=false
             2. Delete zip file data from Public CDN bucket
                 - detail.restricted=true
-            3. Delete zip file data AND metadata from Public CDN bucket
+            3. Delete zip file data AND metadata from Public AND Restricted CDN bucket
                 - detail.deleted=true
 
         The goal is to decouple KNOWING whether a record is deleted or restricted (this
