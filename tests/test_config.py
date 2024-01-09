@@ -60,4 +60,4 @@ def test_config_env_var_access_error(config_instance):
 
 
 def test_config_cdn_root(config_instance):
-    assert config_instance.http_cdn_root == "https://cdn.dev.mitlibrary.net/geo"
+    assert config_instance.http_cdn_root == "https://cdn.dev1.mitlibrary.net/geo"
