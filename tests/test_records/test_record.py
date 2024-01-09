@@ -162,19 +162,19 @@ def test_record_shared_field_method_dct_references_s_success(
             {
                 "label": "Source Metadata",
                 "protocol": "Download",
-                "url": "https://cdn.dev.mitlibrary.net/geo/public"
+                "url": "https://cdn.dev1.mitlibrary.net/geo/public"
                 "/SDE_DATA_AE_A8GNS_2003.source.fgdc.xml",
             },
             {
                 "label": "Normalized Metadata",
                 "protocol": "Download",
-                "url": "https://cdn.dev.mitlibrary.net/geo/public"
+                "url": "https://cdn.dev1.mitlibrary.net/geo/public"
                 "/SDE_DATA_AE_A8GNS_2003.normalized.aardvark.json",
             },
             {
                 "label": "Data Zipfile",
                 "protocol": "Download",
-                "url": "https://cdn.dev.mitlibrary.net/geo/public"
+                "url": "https://cdn.dev1.mitlibrary.net/geo/public"
                 "/SDE_DATA_AE_A8GNS_2003.zip",
             },
         ]
