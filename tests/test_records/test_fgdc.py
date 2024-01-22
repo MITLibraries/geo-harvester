@@ -60,14 +60,14 @@ def test_fgdc_record_required_gbl_resourceClass_sm_unhandled_value_return_none(
 def test_fgdc_record_required_dcat_bbox(fgdc_source_record_required_fields):
     assert (
         fgdc_source_record_required_fields._dcat_bbox()
-        == "ENVELOPE(31.161907, 29.994131, 31.381609, 30.141311)"
+        == "ENVELOPE(31.161907, 31.381609, 30.141311, 29.994131)"
     )
 
 
 def test_fgdc_record_required_locn_geometry(fgdc_source_record_required_fields):
     assert (
         fgdc_source_record_required_fields._locn_geometry()
-        == "ENVELOPE(31.161907, 29.994131, 31.381609, 30.141311)"
+        == "ENVELOPE(31.161907, 31.381609, 30.141311, 29.994131)"
     )
 
 
