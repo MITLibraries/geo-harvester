@@ -178,9 +178,9 @@ class ISO19139(XMLSourceRecord):
         lat_lon_envelope = ", ".join(
             [
                 min(bbox_data["westBoundLongitude"]).strip(),
-                max(bbox_data["southBoundLatitude"]).strip(),
                 max(bbox_data["eastBoundLongitude"]).strip(),
-                min(bbox_data["northBoundLatitude"]).strip(),
+                max(bbox_data["northBoundLatitude"]).strip(),
+                min(bbox_data["southBoundLatitude"]).strip(),
             ]
         )
 

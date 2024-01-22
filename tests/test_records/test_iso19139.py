@@ -65,14 +65,14 @@ def test_iso19139_record_required_gbl_resourceClass_sm_unhandled_value_return_no
 def test_iso19139_record_required_dcat_bbox(iso19139_source_record_required_fields):
     assert (
         iso19139_source_record_required_fields._dcat_bbox()
-        == "ENVELOPE(88, -16.5, 138, 25.833333)"
+        == "ENVELOPE(88, 138, 25.833333, -16.5)"
     )
 
 
 def test_iso19139_record_required_locn_geometry(iso19139_source_record_required_fields):
     assert (
         iso19139_source_record_required_fields._locn_geometry()
-        == "ENVELOPE(88, -16.5, 138, 25.833333)"
+        == "ENVELOPE(88, 138, 25.833333, -16.5)"
     )
 
 
