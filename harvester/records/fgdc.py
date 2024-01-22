@@ -112,8 +112,8 @@ class FGDC(XMLSourceRecord):
             [
                 min(bbox_data["westbc"]).strip(),
                 max(bbox_data["eastbc"]).strip(),
-                min(bbox_data["northbc"]).strip(),
-                max(bbox_data["southbc"]).strip(),
+                max(bbox_data["northbc"]).strip(),
+                min(bbox_data["southbc"]).strip(),
             ]
         )
         return f"ENVELOPE({lat_lon_envelope})"
