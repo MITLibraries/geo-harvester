@@ -78,6 +78,7 @@ def test_fgdc_record_required_locn_geometry(fgdc_source_record_required_fields):
 
 def test_fgdc_optional_dct_identifier_sm(fgdc_source_record_all_fields):
     assert fgdc_source_record_all_fields._dct_identifier_sm() == [
+        "SDE_DATA_US_P2HIGHWAYS_2005",
         "BKMapPLUTO",
         "US_NY_NYC_BK_G47TXLOTS_2012",
     ]
