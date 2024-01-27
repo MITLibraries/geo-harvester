@@ -32,19 +32,25 @@ class Harvester(ABC):
     output_file: str = field(default=None)
 
     processed_records_count: int = field(default=0)
-    failed_records: list[Record] = field(default=[])
-    successful_records: list[Record] = field(default=[])
+    failed_records: list[Record] = field(factory=list)
+    successful_records: list[str] = field(factory=list)
 
     def harvest(self) -> dict:
-        """Main entrypoint for harvests."""
+        """Main entrypoint for harvests.
+
+        This method chains together multiple methods, passing an iterator of Records.  The
+        effect is a single record is fully processed as it's pulled through the methods
+        via the loop that saves successfully processed Record identifiers.  Any failures,
+        for any steps, are caught via the self.filter_failed_records() method, and the
+        full failed Record instance is saved to self.failed_records.
+        """
         records = self.filter_failed_records(self.get_source_records())
         records = self.filter_failed_records(self.normalize_source_records(records))
         records = self.filter_failed_records(self.write_source_and_normalized(records))
         records = self.filter_failed_records(self.write_combined_normalized(records))
         records = self.filter_failed_records(self.harvester_specific_steps(records))
 
-        # NOTE: this will be revised with better understanding of what to keep
-        self.successful_records = list(records)
+        self.successful_records = [record.identifier for record in records]
 
         return {
             "processed_records_count": self.processed_records_count,
