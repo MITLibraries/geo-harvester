@@ -101,6 +101,10 @@ def test_harvester_records_with_error_filtered_out(generic_harvester_class):
     harvester = generic_harvester_class(harvest_type="full")
     assert len(list(harvester.filter_failed_records(records))) == 1
     assert len(harvester.failed_records) == 1
+    failed_record = harvester.failed_records[0]
+    assert failed_record["record_identifier"] == "abc123"
+    assert failed_record["harvest_step"] == "get_source_records"
+    assert str(failed_record["exception"]) == "I have an error"
 
 
 def test_harvester_step_get_source_records(caplog, generic_harvester_class):

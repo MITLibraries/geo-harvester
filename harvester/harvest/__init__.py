@@ -32,7 +32,7 @@ class Harvester(ABC):
     output_file: str = field(default=None)
 
     processed_records_count: int = field(default=0)
-    failed_records: list[Record] = field(factory=list)
+    failed_records: list[dict] = field(factory=list)
     successful_records: list[str] = field(factory=list)
 
     def harvest(self) -> dict:
@@ -192,14 +192,22 @@ class Harvester(ABC):
             yield from records
 
     def filter_failed_records(self, records: Iterator[Record]) -> Iterator[Record]:
-        """Filter and log Records that encountered an exception."""
+        """Filter out and log Records that encountered an exception.
+
+        For Records that encounter an exception during any stage in the harvest pipeline,
+        a dictionary is saved with the Record's identifier, the failed step, and the
+        encountered Exception object.  The Record is then removed from the remainder of
+        the harvest by not yielding it.  Records without exception are yielded untouched.
+        """
         for record in records:
             if record.exception:
-                self.failed_records.append(record)
-                message = (
-                    f"Record error: '{record.identifier}', "
-                    f"step: '{record.exception_stage}', exception: '{record.exception}'"
-                )
+                failure_dict = {
+                    "record_identifier": record.identifier,
+                    "harvest_step": record.exception_stage,
+                    "exception": record.exception,
+                }
+                self.failed_records.append(failure_dict)
+                message = f"Record error: {failure_dict}"
                 logger.error(message)
             else:
                 yield record
