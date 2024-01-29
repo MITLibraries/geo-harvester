@@ -38,6 +38,7 @@ class MITHarvester(Harvester):
     sqs_topic_name: str = field(default=None)
     skip_sqs_check: bool = field(default=False)
     preserve_sqs_messages: bool = field(default=False)
+    skip_eventbridge_events: bool = field(default=False)
     _sqs_client: SQSClient = field(default=None)
 
     def full_harvest_get_source_records(self) -> Iterator[Record]:
@@ -120,13 +121,14 @@ class MITHarvester(Harvester):
         path = path.removesuffix("/")
 
         for record in records:
-            message = f"Record {record.identifier}: sending EventBridge event"
-            logger.debug(message)
-            try:
-                self._prepare_payload_and_send_event(bucket, path, record)
-            except Exception as exc:  # noqa: BLE001
-                record.exception_stage = "send_eventbridge_event"
-                record.exception = exc
+            if not self.skip_eventbridge_events:
+                message = f"Record {record.identifier}: sending EventBridge event"
+                logger.debug(message)
+                try:
+                    self._prepare_payload_and_send_event(bucket, path, record)
+                except Exception as exc:  # noqa: BLE001
+                    record.exception_stage = "send_eventbridge_event"
+                    record.exception = exc
 
             yield record
 

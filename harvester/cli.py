@@ -159,6 +159,12 @@ main.add_command(harvest)
     is_flag=True,
     help="If set, SQS messages will remain in the queue after incremental harvest.",
 )
+@click.option(
+    "--skip-eventbridge-events",
+    required=False,
+    is_flag=True,
+    help="If set, will skip sending EventBridge events to manage files in CDN.",
+)
 @click.pass_context
 def harvest_mit(
     ctx: click.Context,
@@ -166,6 +172,7 @@ def harvest_mit(
     sqs_topic_name: str,
     skip_sqs_check: bool,
     preserve_sqs_messages: bool,
+    skip_eventbridge_events: bool,
 ) -> None:
     """Harvest and normalize MIT geospatial metadata records."""
     harvester = MITHarvester(
@@ -176,6 +183,7 @@ def harvest_mit(
         sqs_topic_name=sqs_topic_name,
         skip_sqs_check=skip_sqs_check,
         preserve_sqs_messages=preserve_sqs_messages,
+        skip_eventbridge_events=skip_eventbridge_events,
         output_source_directory=ctx.obj["OUTPUT_SOURCE_DIRECTORY"],
         output_normalized_directory=ctx.obj["OUTPUT_NORMALIZED_DIRECTORY"],
         output_file=ctx.obj["OUTPUT_FILE"],
