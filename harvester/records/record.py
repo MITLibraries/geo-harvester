@@ -217,6 +217,9 @@ class SourceRecord:
     Args:
         origin: origin of SourceRecord, with optional colon ":" delimited namespace
             - e.g. "mit", "ogm:stanford"
+        identifier: unique identifier determined for the record
+            - for MIT records, this comes from the base name of the zip file
+            - for OGM records, this likely will come from the metadata itself
         metadata_format: literal string of the metadata format
             - "fgdc", "iso19139", "gbl1", "aardvark"
         data: string or bytes of the source file (XML or JSON)
@@ -386,38 +389,63 @@ class SourceRecord:
     def _dct_references_s(self) -> str:
         """Shared field method: dct_references_s
 
-        Builds http URLs for the data zip file (if MIT harvest), source and normalized
-        metadata files, in the S3 CDN bucket.
+        Builds a JSON string payload of links for the record.  Work is offloaded to
+        methods specific to MIT and OGM harvests.
         """
-        # determine CDN public or restricted folder
-        cdn_folder = {True: "restricted", False: "public"}[self.is_restricted]
+        if self.origin == "ogm":
+            urls_dict = self._dct_references_s_ogm()
+        elif self.origin == "mit":
+            urls_dict = self._dct_references_s_mit()
+        else:
+            message = f"Source not recognized: {self.origin}"
+            raise ValueError(message)
+        return json.dumps(urls_dict)
 
-        # build URLs payload
+    def _dct_references_s_mit(self) -> dict:
+        """Create dct_references_s JSON string for MIT harvests.
+
+        For MIT harvests, this includes the data zip file, source and normalized metadata
+        records in CDN, and a link to the TIMDEX item page.
+        """
+        cdn_folder = {True: "restricted", False: "public"}[self.is_restricted]
         cdn_root = CONFIG.http_cdn_root
         download_urls = [
             {
                 "label": "Source Metadata",
-                "protocol": "Download",
                 "url": f"{cdn_root}/public/{self.source_metadata_filename}",
             },
             {
-                "label": "Normalized Metadata",
-                "protocol": "Download",
+                "label": "Aardvark Metadata",
                 "url": f"{cdn_root}/public/{self.normalized_metadata_filename}",
             },
+            {
+                "label": "Data",
+                "url": f"{cdn_root}/{cdn_folder}/{self.identifier}.zip",
+            },
         ]
-        # add data zip file URL if MIT harvest
-        if self.origin == "mit":
-            download_urls.append(
-                {
-                    "label": "Data Zipfile",
-                    "protocol": "Download",
-                    "url": f"{cdn_root}/{cdn_folder}/{self.identifier}.zip",
-                }
-            )
-        urls_payload = {"https://schema.org/downloadUrl": download_urls}
+        website_urls = [
+            {
+                "label": "Website",
+                "url": (
+                    "https://search.libraries.mit.edu/record/"
+                    f"gismit:{self.identifier.removeprefix('mit:')}"
+                ),
+            }
+        ]
+        return {
+            "http://schema.org/downloadUrl": download_urls,
+            "http://schema.org/url": website_urls,
+        }
 
-        return json.dumps(urls_payload)
+    def _dct_references_s_ogm(self) -> dict:
+        """Create dct_references_s JSON string for MIT harvests.
+
+        For OGM harvests, this will be a single external URL, extracted from the source
+        metadata, that points to the external institution's record page.
+        """
+        # WIP: during OGM work, determine how to extract meaningful external URLs
+        message = "Field dct_references_s handling not yet implemented for OGM"
+        raise NotImplementedError(message)
 
     def _schema_provider_s(self) -> str:
         """Shared field method: schema_provider_s

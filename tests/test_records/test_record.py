@@ -158,26 +158,30 @@ def test_record_shared_field_method_dct_references_s_success(
     fgdc_source_record_from_zip,
 ):
     references = {
-        "https://schema.org/downloadUrl": [
+        "http://schema.org/downloadUrl": [
             {
                 "label": "Source Metadata",
-                "protocol": "Download",
                 "url": "https://cdn.dev1.mitlibrary.net/geo/public"
                 "/SDE_DATA_AE_A8GNS_2003.source.fgdc.xml",
             },
             {
-                "label": "Normalized Metadata",
-                "protocol": "Download",
+                "label": "Aardvark Metadata",
                 "url": "https://cdn.dev1.mitlibrary.net/geo/public"
                 "/SDE_DATA_AE_A8GNS_2003.normalized.aardvark.json",
             },
             {
-                "label": "Data Zipfile",
-                "protocol": "Download",
+                "label": "Data",
                 "url": "https://cdn.dev1.mitlibrary.net/geo/public"
                 "/SDE_DATA_AE_A8GNS_2003.zip",
             },
-        ]
+        ],
+        "http://schema.org/url": [
+            {
+                "label": "Website",
+                "url": "https://search.libraries.mit.edu/record/"
+                "gismit:SDE_DATA_AE_A8GNS_2003",
+            },
+        ],
     }
     assert fgdc_source_record_from_zip._dct_references_s() == json.dumps(references)
 

@@ -10,7 +10,7 @@ from dateutil.parser import ParserError
 from lxml import etree
 
 from harvester.records.record import XMLSourceRecord
-from harvester.utils import convert_lang_code, date_parser
+from harvester.utils import convert_lang_code, date_parser, dedupe_list_of_values
 
 logger = logging.getLogger(__name__)
 
@@ -129,8 +129,12 @@ class FGDC(XMLSourceRecord):
     # Optional Field Methods
     ##########################
     def _dct_identifier_sm(self) -> list[str]:
-        # <sdtsterm> identifiers
         identifiers = []
+
+        # include TIMDEX pipeline identifier
+        identifiers.append(self.identifier)
+
+        # <sdtsterm> identifiers
         xpath_expr = """
         //spdoinfo
             /ptvctinf
@@ -160,7 +164,7 @@ class FGDC(XMLSourceRecord):
         """
         identifiers.extend(self.string_list_from_xpath(xpath_expr))
 
-        return identifiers
+        return dedupe_list_of_values(identifiers)
 
     def _dct_subject_sm(self) -> list[str]:
         xpath_expr = """
