@@ -125,6 +125,8 @@ Options:
                              empty for 'full' harvest.
   --preserve-sqs-messages    If set, SQS messages will remain in the queue
                              after incremental harvest.
+  --skip-eventbridge-events  If set, will skip sending EventBridge events to
+                             manage files in CDN.
   -h, --help                 Show this message and exit.
 ```
 

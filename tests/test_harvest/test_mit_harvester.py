@@ -311,3 +311,17 @@ def test_mit_harvester_delete_sqs_messages_success(
         mocked_delete.assert_called_with(
             valid_sqs_message_created_instance.receipt_handle
         )
+
+
+def test_mit_harvester_skip_send_eventbridge_event(caplog, records_for_mit_steps):
+    harvester = MITHarvester(
+        harvest_type="full",
+        input_files="tests/fixtures/s3_cdn_restricted_legacy_single",
+        skip_sqs_check=True,
+        skip_eventbridge_events=True,
+    )
+    with mock.patch(
+        "harvester.harvest.mit.MITHarvester._prepare_payload_and_send_event"
+    ) as mocked_send_event:
+        _results = list(harvester.send_eventbridge_event(records_for_mit_steps))
+        mocked_send_event.assert_not_called()
