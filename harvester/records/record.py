@@ -1,4 +1,5 @@
 """harvester.harvest.records.record"""
+
 # ruff: noqa: N802, N815; allows camelCase for aardvark fields
 
 import datetime
@@ -63,7 +64,7 @@ class MITAardvark:
     gbl_mdModified_dt: str
     gbl_mdVersion_s: str
     gbl_resourceClass_sm: list
-    id: str  # noqa: A003
+    id: str
 
     # additional MIT required fields
     dcat_bbox: str

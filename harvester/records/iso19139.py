@@ -1,4 +1,5 @@
 """harvester.harvest.records.iso19139"""
+
 # ruff: noqa: N802, N815; allows camelCase for aardvark fields
 # ruff: noqa: PERF401; preferring more explicit, non list comprehensions
 
