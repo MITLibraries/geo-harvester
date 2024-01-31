@@ -1,7 +1,6 @@
 # ruff: noqa: PLR2004, SLF001, D205, D212
 
 import os
-import shutil
 from unittest import mock
 
 import git
@@ -17,26 +16,18 @@ CONFIG = Config()
 
 
 @pytest.fixture(autouse=True)
-def teardown_test_ogm_repos():
-    """This fixture is automatically used and applied to all tests in this file.
-
-    This fixture checks if one of the test repositories was cloned during the test, but
-    not removed, and removes if so.
-    """
-    yield None
-    for repo_dir in [
-        f"{CONFIG.ogm_clone_root_dir}/edu.earth",
-        f"{CONFIG.ogm_clone_root_dir}/edu.venus",
-        f"{CONFIG.ogm_clone_root_dir}/edu.pluto",
-    ]:
-        if os.path.exists(repo_dir):
-            shutil.rmtree(repo_dir)
+def _create_ogm_git_projects(init_ogm_git_project_repos):
+    """Ensures simulated OGM repositories are available for cloning for all tests."""
+    return
 
 
 def test_ogm_repository_properties(ogm_repository_earth):
     assert ogm_repository_earth.metadata_format == "gbl1"
-    assert ogm_repository_earth.clone_root_directory == "output/ogm"
-    assert ogm_repository_earth.local_repository_directory == "output/ogm/edu.earth"
+    assert ogm_repository_earth.clone_root_directory == os.getenv("OGM_CLONE_ROOT_DIR")
+    assert (
+        ogm_repository_earth.local_repository_directory
+        == f"{os.getenv('OGM_CLONE_ROOT_DIR')}/edu.earth"
+    )
 
 
 def test_ogm_repository_clone_success(caplog, ogm_repository_earth):
@@ -104,16 +95,14 @@ def test_ogm_repository_acknowledge_epoch_limit_to_from_date(ogm_repository_eart
 
 def test_ogm_repository_early_date_gets_first_commit(ogm_repository_earth):
     commit = ogm_repository_earth._get_commit_before_date("1980-01-01")
-    assert commit.hexsha == "b3c278aa8fbe5e97775ec6ec8e0f51893a151b16"
-    assert commit.message == "first commit\n"
+    assert commit.message == "Initial commit"
 
 
 def test_ogm_repository_date_after_first_record_gets_first_record_commit(
     ogm_repository_earth,
 ):
     commit = ogm_repository_earth._get_commit_before_date("2005-01-01")
-    assert commit.hexsha == "e17c899b753d0fa17a90bc56f6cb1367b23b5f62"
-    assert commit.message == "First file commit\n"
+    assert commit.message == "First file commit"
 
 
 def test_ogm_repository_date_after_all_commits_returns_none(caplog, ogm_repository_earth):
@@ -192,7 +181,10 @@ def test_ogm_record_read_from_file(ogm_record_from_disk):
 def test_ogm_record_read_from_git_history(ogm_record_from_git_history):
     """This test confirms that a deleted file can still be read from git history."""
     assert ogm_record_from_git_history.harvest_event == "deleted"
-    assert ogm_record_from_git_history.filename == "output/ogm/edu.pluto/fgdc/record2.xml"
+    assert (
+        ogm_record_from_git_history.filename
+        == f"{os.getenv('OGM_CLONE_ROOT_DIR')}/edu.pluto/fgdc/record2.xml"
+    )
     assert not os.path.exists(ogm_record_from_git_history.filename)
     assert ogm_record_from_git_history.read().startswith(
         b'<?xml version="1.0" encoding="utf-8" ?><!DOCTYPE metadata SYSTEM '

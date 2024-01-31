@@ -1,12 +1,18 @@
-# ruff: noqa: N802, S301, SLF001
+# ruff: noqa: N802, S301, SLF001, D202
 
+import datetime
 import json
+import os
+import shutil
+import tempfile
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import boto3
 import pytest
 from click.testing import CliRunner
 from freezegun import freeze_time
+from git import Actor, Repo
 from moto import mock_aws
 
 from harvester.aws.sqs import SQSClient, ZipFileEventMessage
@@ -475,3 +481,121 @@ def ogm_full_record_set():
         "edu.pluto:83509b6d7e03",
         "edu.pluto:83fd37f6a879",
     }
+
+
+def create_tz_date(year):
+    return datetime.datetime(year=year, month=1, day=1, tzinfo=datetime.UTC)
+
+
+def make_commit(repo, author, message, year):
+    repo.index.commit(
+        message,
+        author=author,
+        committer=author,
+        author_date=create_tz_date(year),
+        commit_date=create_tz_date(year),
+    )
+
+
+@pytest.fixture(scope="session")
+def temp_dir():
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        yield Path(tmpdirname)
+
+
+@pytest.fixture
+def init_ogm_git_project_repos(
+    monkeypatch,
+    temp_dir,
+    ogm_repository_earth,
+    ogm_repository_venus,
+    ogm_repository_pluto,
+):
+    """Fixture to build three git projects that simulate cloned OGM repositories.
+
+    This avoids a complex situation where the git projects are created in advance in the
+    main GeoHarvester project, but are difficult to git commit to the main project as they
+    are themselves git projects with .git folders.  Looked into submodules and subtrees,
+    but both would require additional work for installing the project and Github actions.
+
+    Building these repositories as fixtures will also allow adding edge cases in the
+    future if they crop up without manually modifying files and writing git commits
+    in the simulated repositories.
+
+    These repositories are built once to a temporary directory, and all subsequent calls
+    to this fixture reuse them.  Looked into scope="session", but this did not play nicely
+    with other fixtures used.
+    """
+
+    # set OGM clone root URL as the temp directory for this pytest session
+    monkeypatch.setenv("OGM_CLONE_ROOT_URL", str(temp_dir))
+
+    # define repo names
+    repo_names = ["edu.earth", "edu.venus", "edu.pluto"]
+
+    # if OGM repositories already created, yield to use
+    if all(os.path.exists(temp_dir / repo_name) for repo_name in repo_names):
+        yield None
+
+    # else, build OGM repositories
+    else:
+        author = Actor("Fake Person", "fakeperson@example.com")
+
+        repos: dict[str, tuple[Repo, Path]] = {}
+
+        # build
+        for repo_name in repo_names:
+            repo_dir = temp_dir / repo_name
+            repo_dir.mkdir()
+            repos[repo_name] = (Repo.init(path=str(repo_dir)), repo_dir)
+
+        # create initial commit for all repos
+        for repo, _repo_dir in repos.values():
+            make_commit(repo, author, "Initial commit", 1990)
+
+        # build edu.earth
+        repo, repo_dir = repos["edu.earth"]
+        files_dir = repo_dir / "gbl1"
+        files_dir.mkdir()
+
+        shutil.copy("tests/fixtures/ogm/files/edu.earth/record1.json", files_dir)
+        repo.index.add(["gbl1/record1.json"])
+        make_commit(repo, author, "First file commit", 2000)
+
+        shutil.copy("tests/fixtures/ogm/files/edu.earth/record2.json", files_dir)
+        repo.index.add(["gbl1/record2.json"])
+        make_commit(repo, author, "Second file commit", 2010)
+
+        # build edu.venus
+        repo, repo_dir = repos["edu.venus"]
+        files_dir = repo_dir / "aardvark"
+        files_dir.mkdir()
+
+        shutil.copy("tests/fixtures/ogm/files/edu.venus/record1.json", files_dir)
+        repo.index.add(["aardvark/record1.json"])
+        make_commit(repo, author, "First file commit", 2000)
+
+        shutil.copy("tests/fixtures/ogm/files/edu.venus/record2.json", files_dir)
+        repo.index.add(["aardvark/record2.json"])
+        make_commit(repo, author, "Second file commit", 2010)
+
+        # build edu.pluto
+        repo, repo_dir = repos["edu.pluto"]
+        files_dir = repo_dir / "fgdc"
+        files_dir.mkdir()
+
+        shutil.copy("tests/fixtures/ogm/files/edu.pluto/record1.xml", files_dir)
+        repo.index.add(["fgdc/record1.xml"])
+        make_commit(repo, author, "First file commit", 2000)
+
+        shutil.copy("tests/fixtures/ogm/files/edu.pluto/record2.xml", files_dir)
+        repo.index.add(["fgdc/record2.xml"])
+        make_commit(repo, author, "Second file commit", 2010)
+
+        os.remove(f"{files_dir}/record2.xml")
+        repo.index.remove("fgdc/record2.xml")
+        shutil.copy("tests/fixtures/ogm/files/edu.pluto/record3.xml", files_dir)
+        repo.index.add(["fgdc/record3.xml"])
+        make_commit(repo, author, "Removed second file and add third", 2020)
+
+        yield None
