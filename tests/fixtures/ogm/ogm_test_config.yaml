@@ -1,0 +1,14 @@
+edu.earth:
+  name: "Earth"
+  metadata_format: gbl1
+  filename_regex: |
+    .+?/gbl1/.+?\.json
+edu.venus:
+  name: "Venus"
+  metadata_format: aardvark
+  file_directory: aardvark
+edu.pluto:
+  name: "Pluto"
+  metadata_format: fgdc
+  filename_regex: |
+    .+?/fgdc/.+?\.xml

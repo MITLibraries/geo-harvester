@@ -13,6 +13,7 @@ from harvester.aws.sqs import SQSClient, ZipFileEventMessage
 from harvester.config import Config
 from harvester.harvest import Harvester
 from harvester.harvest.mit import MITHarvester
+from harvester.harvest.ogm import OGMHarvester, OGMRepository
 from harvester.records import FGDC, ISO19139, MITAardvark, Record, XMLSourceRecord
 
 
@@ -23,6 +24,9 @@ def _test_env(monkeypatch):
     monkeypatch.setenv("S3_RESTRICTED_CDN_ROOT", "s3://aws-account/cdn/geo/restricted/")
     monkeypatch.setenv("S3_PUBLIC_CDN_ROOT", "s3://aws-account/cdn/geo/public/")
     monkeypatch.setenv("GEOHARVESTER_SQS_TOPIC_NAME", "mocked-geo-harvester-input")
+    monkeypatch.setenv("OGM_CONFIG_FILEPATH", "tests/fixtures/ogm/ogm_test_config.yaml")
+    monkeypatch.setenv("OGM_CLONE_ROOT_URL", "tests/fixtures/ogm/repositories")
+    monkeypatch.setenv("OGM_CLONE_ROOT_DIR", "output/ogm")
 
 
 @pytest.fixture
@@ -407,3 +411,67 @@ def records_for_mit_steps(records_for_writing):
 def mock_eventbridge_client(mock_boto3_sqs_client):
     with patch("harvester.aws.eventbridge.boto3.client") as mock_client:
         yield mock_client.return_value
+
+
+@pytest.fixture
+def ogm_config():
+    return OGMRepository.load_repositories_config()
+
+
+@pytest.fixture
+def ogm_repository_earth(ogm_config):
+    return OGMRepository(
+        "edu.earth",
+        ogm_config["edu.earth"],
+    )
+
+
+@pytest.fixture
+def ogm_repository_venus(ogm_config):
+    return OGMRepository(
+        "edu.venus",
+        ogm_config["edu.venus"],
+    )
+
+
+@pytest.fixture
+def ogm_repository_pluto(ogm_config):
+    return OGMRepository(
+        "edu.pluto",
+        ogm_config["edu.pluto"],
+    )
+
+
+@pytest.fixture
+def ogm_record_from_disk(ogm_repository_earth):
+    return next(ogm_repository_earth.get_current_records())
+
+
+@pytest.fixture
+def ogm_record_from_git_history(ogm_repository_pluto):
+    for record in ogm_repository_pluto.get_modified_records("2015-01-01"):
+        if record.harvest_event == "deleted":
+            return record
+    return None
+
+
+@pytest.fixture
+def ogm_full_harvester():
+    return OGMHarvester(harvest_type="full")
+
+
+@pytest.fixture
+def ogm_incremental_harvester():
+    return OGMHarvester(harvest_type="incremental")
+
+
+@pytest.fixture
+def ogm_full_record_set():
+    return {
+        "edu.earth:5f5ac295b365",
+        "edu.earth:3072f18cdeb5",
+        "edu.venus:996864ca615e",
+        "edu.venus:7fe1e637995f",
+        "edu.pluto:83509b6d7e03",
+        "edu.pluto:83fd37f6a879",
+    }
