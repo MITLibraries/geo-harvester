@@ -45,21 +45,15 @@ sequenceDiagram
     ogm_config_yaml-->>geo_harv: Detailed list of repositories, paths, <br> and formats
     
     loop GitHub Repository
+        geo_harv->>ogm_repo: Clone repo
         geo_harv->>ogm_repo: Get list of commits after X date
         ogm_repo-->>geo_harv: Git commits
         geo_harv->>geo_harv: Parse commits and determine metadata <br> files that were modified or deleted
         geo_harv->>geo_harv: Filter to list of files based on <br> supported metadata formats from config
         
-        loop Modified files
-            geo_harv->>ogm_repo: Request metadata file
-            ogm_repo-->>geo_harv: Metadata file
+        loop Modified files            
             Note right of geo_harv: Need to still normalize to aardvark <br> to get meaningful identifier
-            geo_harv->>geo_harv: Normalize source metadata to Aardvark
-            alt Action: Created or Modified
-                geo_harv->>s3_cdn_pub: WRITE source and aardvark metadata (may overwrite)
-            else Action: Deleted
-                geo_harv->>s3_cdn_pub: DELETE source and aardvark metadata
-            end
+            geo_harv->>geo_harv: Normalize source metadata to Aardvark            
         end
         
         geo_harv->>s3_timdex: Write MIT aardvark
