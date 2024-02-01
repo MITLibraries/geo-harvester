@@ -4,6 +4,22 @@ import traceback
 from jsonschema.exceptions import ValidationError
 
 
+class DataValidationWarning(Warning):
+    """Warning to raise from MITAardvark data validation method"""
+
+    def __init__(self, validation_errors: list):
+        self.validation_errors = validation_errors
+
+    def __str__(self) -> str:
+        """Get string representation of data validation issues"""
+        return "\n".join(
+            [
+                "Found data quality issue(s) in the normalized record:",
+                *self.validation_errors,
+            ]
+        )
+
+
 class FieldMethodError(Exception):
     """Exception to raise from normalize() method"""
 
@@ -18,13 +34,13 @@ class FieldMethodError(Exception):
 
 
 class JSONSchemaValidationError(ValidationError):
-    """Exception to raise from MITAardvark.validate() method"""
+    """Exception to raise from MITAardvark structure validation method"""
 
     def __init__(self, validation_errors: list):
         self.validation_errors = validation_errors
-        super().__init__(message=self.get_formatted_message())
+        super().__init__(message=self.__str__())
 
-    def get_formatted_message(self) -> str:
+    def __str__(self) -> str:
         """Get string representation of the compiled errors from JSON schema validation.
 
         The default error messages from jsonschema.exceptions.ValidationError does not
@@ -54,5 +70,8 @@ class JSONSchemaValidationError(ValidationError):
             error_messages.append(f"field: {field}, {error.message}")
 
         return "\n".join(
-            ["The normalized MITAardvark record is invalid:", *error_messages]
+            [
+                "Found structure validation error(s) in the normalized record:",
+                *error_messages,
+            ]
         )
