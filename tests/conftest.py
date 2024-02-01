@@ -450,7 +450,7 @@ def ogm_repository_pluto(ogm_config):
 
 @pytest.fixture
 def ogm_record_from_disk(ogm_repository_earth):
-    return next(ogm_repository_earth.get_current_records())
+    return next(ogm_repository_earth.get_all_records())
 
 
 @pytest.fixture

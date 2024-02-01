@@ -64,15 +64,15 @@ class OGMHarvester(Harvester):
 
     def full_harvest_get_source_records(self) -> Iterator[Record]:
         """Method to provide records for a full harvest."""
-        return self._harvest_get_source_records(OGMRepository.get_current_records)
+        return self._get_source_records(OGMRepository.get_all_records)
 
     def incremental_harvest_get_source_records(self) -> Iterator[Record]:
         """Method to provide records for an incremental harvest."""
-        return self._harvest_get_source_records(
+        return self._get_source_records(
             OGMRepository.get_modified_records, self.from_date
         )
 
-    def _harvest_get_source_records(
+    def _get_source_records(
         self,
         retrieve_records_func: (
             Callable[["OGMRepository"], Iterator["OGMRecord"]]
@@ -92,7 +92,7 @@ class OGMHarvester(Harvester):
                 - get_modified_records()
             args: for incremental harvests, included in args should be a from date string
         """
-        repo_configs = self.get_harvest_repositories()
+        repo_configs = self.get_repositories()
 
         for repo_name, repo_config in repo_configs.items():
             repo = OGMRepository(name=repo_name, config=repo_config)
@@ -110,9 +110,9 @@ class OGMHarvester(Harvester):
                 )
 
             if self.remove_local_repos:
-                repo.delete_local_clone()
+                repo.delete_local_cloned_repository()
 
-    def get_harvest_repositories(self) -> dict[str, dict]:
+    def get_repositories(self) -> dict[str, dict]:
         """Read OGM configuration YAML and filter repositories for harvest."""
         repo_configs = OGMRepository.load_repositories_config()
 
@@ -199,7 +199,7 @@ class OGMRepository:
             logger.info(message)
         return local_repo
 
-    def delete_local_clone(self) -> None:
+    def delete_local_cloned_repository(self) -> None:
         """Remove locally cloned repository.
 
         This is called between repository clones and file parsing, to keep memory
@@ -209,7 +209,7 @@ class OGMRepository:
         logger.debug(message)
         shutil.rmtree(self.local_repository_directory)
 
-    def get_current_records(self) -> Iterator["OGMRecord"]:
+    def get_all_records(self) -> Iterator["OGMRecord"]:
         """Get all records from current state of the repository."""
         self.clone_repository()
         for root, _dirs, files in os.walk(self.local_repository_directory):
@@ -293,15 +293,39 @@ class OGMRepository:
         return [change.split("\t") for change in output.split("\n") if change != ""]
 
     def filter_records(self, records: Iterator["OGMRecord"]) -> Iterator["OGMRecord"]:
-        """Filter files based on repository config."""
-        if "filename_regex" in self.config:
-            filter_regex = re.compile(self.config["filename_regex"].removesuffix("\n"))
-        elif "file_directory" in self.config:
-            filter_regex = re.compile(rf".+?/{self.config['file_directory']}/.+?\.json")
-        else:
-            message = "File filtering method not found in repository config."
-            raise OGMFilenameFilterMethodError(message)
+        """Filter files to include in harvest based on strategy in repository config."""
+        filter_regex = self._get_filter_regex()
         yield from [record for record in records if filter_regex.match(record.filename)]
+
+    def _get_filter_regex(self) -> re.Pattern:
+        """Identify file filter strategy for repository and provide regex expression.
+
+        Each OGM configuration must include a strategy to filter what files from the
+        repository are included in the harvest.  This method looks for particular keys
+        in the configuration that are used as strategies.  The two currently supported
+        are:
+            - "filename_regex": apply a regular expression to all filepaths
+            - "file_directory": recursively include all files under a given directory
+
+        If none of these strategies are defined for the repository, throw an error as we
+        cannot know which files to include (i.e. many repos contain the same record in
+        multiple formats, or files that are not metadata records at all).
+        """
+        if "filename_regex" in self.config and "file_directory" in self.config:
+            message = (
+                "Both 'filename_regex' and 'file_directory' defined, only one "
+                "file filter strategy allowed."
+            )
+            raise OGMFilenameFilterMethodError(message)
+
+        if "filename_regex" in self.config:
+            return re.compile(self.config["filename_regex"].removesuffix("\n"))
+
+        if "file_directory" in self.config:
+            return re.compile(rf".+?/{self.config['file_directory']}/.+?\.json")
+
+        message = "File filtering method not found in repository config."
+        raise OGMFilenameFilterMethodError(message)
 
     def create_identifier_from_filename(self, filename: str) -> str:
         """Generate TIMDEX identifier from OGM record filepath.

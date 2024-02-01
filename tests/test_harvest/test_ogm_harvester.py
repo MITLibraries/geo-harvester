@@ -42,7 +42,7 @@ def test_ogm_repository_clone_success(caplog, ogm_repository_earth):
 
 def test_ogm_repository_clone_remove_success(ogm_repository_earth):
     ogm_repository_earth.clone_repository()
-    ogm_repository_earth.delete_local_clone()
+    ogm_repository_earth.delete_local_cloned_repository()
     assert not os.path.exists(ogm_repository_earth.local_repository_directory)
 
 
@@ -57,7 +57,7 @@ def test_ogm_repository_get_current_records(ogm_repository_earth):
         "edu.earth:5f5ac295b365",  # record1.json
         "edu.earth:3072f18cdeb5",  # record2.json
     ]
-    records = list(ogm_repository_earth.get_current_records())
+    records = list(ogm_repository_earth.get_all_records())
     assert len(records) > 2
     assert (
         len([record for record in records if record.identifier in expected_identifiers])
@@ -66,21 +66,34 @@ def test_ogm_repository_get_current_records(ogm_repository_earth):
 
 
 def test_ogm_repository_filter_records_regex_success(ogm_repository_earth):
-    records_iterator = ogm_repository_earth.get_current_records()
+    records_iterator = ogm_repository_earth.get_all_records()
     filtered_records = list(ogm_repository_earth.filter_records(records_iterator))
     assert len(filtered_records) == 2
 
 
 def test_ogm_repository_filter_records_directory_success(ogm_repository_venus):
-    records_iterator = ogm_repository_venus.get_current_records()
+    records_iterator = ogm_repository_venus.get_all_records()
     filtered_records = list(ogm_repository_venus.filter_records(records_iterator))
     assert len(filtered_records) == 2
+
+
+def test_ogm_repository_multiple_filter_methods_error(ogm_repository_earth):
+    ogm_repository_earth.config["file_directory"] = "files/are/here"
+    records_iterator = ogm_repository_earth.get_all_records()
+    with pytest.raises(
+        OGMFilenameFilterMethodError,
+        match=(
+            "Both 'filename_regex' and 'file_directory' defined, only one "
+            "file filter strategy allowed."
+        ),
+    ):
+        list(ogm_repository_earth.filter_records(records_iterator))
 
 
 def test_ogm_repository_filter_records_bad_method_error(ogm_repository_earth):
     ogm_repository_earth.config.pop("filename_regex")
     ogm_repository_earth.config["filename_rabbit_out_of_hat"] = "rabbit.json"
-    records_iterator = ogm_repository_earth.get_current_records()
+    records_iterator = ogm_repository_earth.get_all_records()
     with pytest.raises(
         OGMFilenameFilterMethodError,
         match="File filtering method not found in repository config.",
