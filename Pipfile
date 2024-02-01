@@ -14,6 +14,7 @@ smart-open = "*"
 lxml = "*"
 jsonlines = "*"
 pycountry = "*"
+shapely = "*"
 
 [dev-packages]
 black = "*"
