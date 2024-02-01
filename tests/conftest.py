@@ -7,7 +7,7 @@ import boto3
 import pytest
 from click.testing import CliRunner
 from freezegun import freeze_time
-from moto import mock_s3
+from moto import mock_aws
 
 from harvester.aws.sqs import SQSClient, ZipFileEventMessage
 from harvester.config import Config
@@ -51,7 +51,7 @@ def generic_harvester_class():
 @pytest.fixture
 def mocked_restricted_bucket():
     bucket_name = "mocked_cdn_restricted"
-    with mock_s3():
+    with mock_aws():
         s3 = boto3.client("s3")
         s3.create_bucket(Bucket=bucket_name)
         yield bucket_name
@@ -263,6 +263,12 @@ def invalid_mitaardvark_data_required_fields():
         "id": 1,
         "dct_references_s": "value here",
     }
+
+
+@pytest.fixture
+def invalid_mitaardvark_data_optional_fields(invalid_mitaardvark_data_required_fields):
+    invalid_mitaardvark_data_required_fields.update({"dcat_centroid": 1})
+    return invalid_mitaardvark_data_required_fields
 
 
 @pytest.fixture

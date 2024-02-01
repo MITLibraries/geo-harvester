@@ -1,4 +1,4 @@
-# ruff: noqa: SLF001, PLR2004, N802, FLY002
+# ruff: noqa: SLF001, PLR2004, N802, FLY002, PT012
 
 import json
 from unittest.mock import patch
@@ -8,7 +8,10 @@ from freezegun import freeze_time
 from lxml import etree
 
 from harvester.records import MITAardvark
-from harvester.records.exceptions import FieldMethodError, JSONSchemaValidationError
+from harvester.records.exceptions import (
+    FieldMethodError,
+    JSONSchemaValidationError,
+)
 
 
 def test_source_record_data_bytes(valid_generic_xml_source_record):
@@ -232,7 +235,7 @@ def test_xml_source_record_single_string_from_xpath_multiple_raise_error(
         valid_generic_xml_source_record.single_string_from_xpath("//plants:description")
 
 
-def test_mitaardvark_record_required_fields_jsonschema_validation_success(
+def test_mitaardvark_record_required_fields_structure_validation_success(
     caplog, valid_mitaardvark_data_required_fields
 ):
     caplog.set_level("DEBUG")
@@ -240,7 +243,7 @@ def test_mitaardvark_record_required_fields_jsonschema_validation_success(
     assert "The normalized MITAardvark record is valid" in caplog.text
 
 
-def test_mitaardvark_record_required_fields_jsonschema_validation_raise_compiled_error(
+def test_mitaardvark_record_required_fields_structure_validation_raise_error(
     caplog, invalid_mitaardvark_data_required_fields
 ):
     """This test shows the compiled validation errors from JSON schema validation.
@@ -257,11 +260,13 @@ def test_mitaardvark_record_required_fields_jsonschema_validation_raise_compiled
     """
     caplog.set_level("DEBUG")
     assert invalid_mitaardvark_data_required_fields["dct_accessRights_s"] is None
-    with pytest.raises(JSONSchemaValidationError):
+    with pytest.raises(ExceptionGroup) as exception_group:
         MITAardvark(**invalid_mitaardvark_data_required_fields)
-    validation_error_messages = "\n".join(
+        assert exception_group.group_contains(JSONSchemaValidationError)
+
+    structure_validation_error_messages = "\n".join(
         [
-            "The normalized MITAardvark record is invalid:",
+            "Found structure validation error(s) in the normalized record:",
             "field: gbl_mdModified_dt, '2023-12-13' is not a 'date-time'",
             "field: gbl_mdVersion_s, 'Aardvark' was expected",
             (
@@ -272,12 +277,58 @@ def test_mitaardvark_record_required_fields_jsonschema_validation_raise_compiled
             "field: id, 1 is not of type 'string'",
         ]
     )
-    assert validation_error_messages in caplog.text
+    assert structure_validation_error_messages in caplog.text
 
 
-def test_mitaardvark_record_optional_fields_jsonschema_validation_success(
+def test_mitaardvark_record_optional_fields_structure_validation_success(
     caplog, valid_mitaardvark_data_optional_fields
 ):
     caplog.set_level("DEBUG")
     MITAardvark(**valid_mitaardvark_data_optional_fields)
     assert "The normalized MITAardvark record is valid" in caplog.text
+
+
+def test_mitaardvark_record_optional_fields_data_validation_issue_warning(
+    caplog, valid_mitaardvark_data_required_fields
+):
+    caplog.set_level("DEBUG")
+    valid_mitaardvark_data_required_fields.update({"dcat_bbox": "ENVELOPE"})
+    MITAardvark(**valid_mitaardvark_data_required_fields)
+    assert (
+        "The normalized MITAardvark record is valid but may have some data issues"
+        in caplog.text
+    )
+    assert (
+        "\n".join(
+            [
+                "Found data quality issue(s) in the normalized record:",
+                "field: dcat_bbox, unable to parse geodata string: 'ENVELOPE'",
+            ]
+        )
+        in caplog.text
+    )
+
+
+def test_mitaardvark_record_optional_fields_structure_validation_raise_error(
+    caplog, invalid_mitaardvark_data_optional_fields
+):
+    caplog.set_level("DEBUG")
+    with pytest.raises(ExceptionGroup) as exception_group:
+        MITAardvark(**invalid_mitaardvark_data_optional_fields)
+        assert exception_group.group_contains(JSONSchemaValidationError)
+
+    structure_validation_error_messages = "\n".join(
+        [
+            "Found structure validation error(s) in the normalized record:",
+            "field: gbl_mdModified_dt, '2023-12-13' is not a 'date-time'",
+            "field: gbl_mdVersion_s, 'Aardvark' was expected",
+            (
+                "field: gbl_resourceClass_sm[0], 'Invalid' is not one of ['Datasets', "
+                "'Maps', 'Imagery', 'Collections', 'Websites', 'Web services', 'Other']"
+            ),
+            "field: dct_accessRights_s, 'dct_accessRights_s' is a required property",
+            "field: dcat_centroid, 1 is not of type 'string'",
+            "field: id, 1 is not of type 'string'",
+        ]
+    )
+    assert structure_validation_error_messages in caplog.text
