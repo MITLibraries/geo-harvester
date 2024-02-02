@@ -28,6 +28,9 @@ S3_PUBLIC_CDN_ROOT=### S3 bucket + prefix for CDN public, e.g. 's3://<bucket>/pa
 ### Optional
 ```shell
 GEOHARVESTER_SQS_TOPIC_NAME=### default value for CLI argument --sqs-topic-name
+OGM_CONFIG_FILEPATH=### optional location for OGM configuration YAML
+OGM_CLONE_ROOT_URL=### optional base URL or filepath for where to clone OGM repositories from
+OGM_CLONE_ROOT_DIR=### optional location for where cloned repositories are saved locally
 ```
 
 ## CLI Commands
@@ -132,15 +135,4 @@ Options:
 
 ### `harvester harvest ogm`
 
-```text
-Usage: -c harvest ogm [OPTIONS]
-
-  Harvest and normalize OpenGeoMetadata (OGM) geospatial metadata records.
-
-  NOTE: relies on 'harvest' command group arguments
-
-Options:
-  --config-yaml-file TEXT  Filepath of config YAML that defines how to harvest
-                           from OGM.  [required]
-  -h, --help               Show this message and exit.
-```
+_Work in progress, OGM harvests not yet supported from CLI..._

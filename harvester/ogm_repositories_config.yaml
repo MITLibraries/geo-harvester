@@ -1,0 +1,121 @@
+# aardvark
+edu.wisc:
+  name: "University of Wisconsin-Madison"
+  metadata_format: gbl1
+  filename_regex: |
+    .+?/HeldBy_.+?/.+?\.json
+edu.uwm:
+  name: "University of Wisconsin-Milwaukee"
+  metadata_format: aardvark
+  file_directory: "metadata-aardvark"
+edu.umn:
+  name: "University of Minnesota"
+  metadata_format: aardvark
+  file_directory: "metadata-aardvark"
+edu.uiowa:
+  name: "University of Iowa"
+  metadata_format: aardvark
+  file_directory: "metadata-aardvark"
+edu.psu:
+  name: "Pennsylvania State University"
+  metadata_format: aardvark
+  file_directory: "metadata-aardvark"
+edu.illinois:
+  name: "University of Illinois"
+  metadata_format: aardvark
+  file_directory: "metadata-aardvark"
+edu.uchicago:
+  name: "University of Chicago"
+  metadata_format: aardvark
+  file_directory: "metadata-aardvark"
+edu.osu:
+  name: "Ohio State Unviversity"
+  metadata_format: aardvark
+  file_directory: "metadata-aardvark"
+edu.umich:
+  name: "University of Michigan"
+  metadata_format: aardvark
+  file_directory: "metadata-aardvark"
+edu.msu:
+  name: "Michigan State University"
+  metadata_format: aardvark
+  file_directory: "metadata-aardvark"
+edu.indiana:
+  name: "Indiana University"
+  metadata_format: aardvark
+  file_directory: "metadata-aardvark"
+edu.rutgers:
+  name: "Rutgers University"
+  metadata_format: aardvark
+  file_directory: "metadata-aardvark"
+edu.umd:
+  name: "University of Maryland"
+  metadata_format: aardvark
+  file_directory: "metadata-aardvark"
+edu.purdue:
+  name: "Purdue University"
+  metadata_format: aardvark
+  file_directory: "metadata-aardvark"
+edu.gmu:
+  name: "George Mason University"
+  metadata_format: aardvark
+  file_directory: "metadata-aardvark"
+
+# gbl1
+edu.stanford.purl:
+  name: "Stanford"
+  metadata_format: gbl1
+  filename_regex: |
+    .+?/geoblacklight\.json
+edu.berkeley:
+  name: "UC Berkeley Library"
+  metadata_format: gbl1
+  filename_regex: |
+    .+?/geoblacklight\.json
+edu.cornell:
+  name: "CUGIR, Cornell University"
+  metadata_format: gbl1
+  filename_regex: |
+    .+?/geoblacklight\.json
+edu.nyu:
+  name: "NYU Libraries"
+  metadata_format: gbl1
+  filename_regex: |
+    .+?/geoblacklight\.json
+edu.princeton.arks:
+  name: "Princeton"
+  metadata_format: gbl1
+  filename_regex: |
+    .+?/geoblacklight\.json
+edu.columbia:
+  name: "Columbia"
+  metadata_format: gbl1
+  filename_regex: |
+    .+?/geoblacklight\.json
+edu.uarizona:
+  name: "University of Arizona"
+  metadata_format: gbl1
+  filename_regex: |
+    .+?/geoblacklight\.json
+edu.lclark:
+  name: "Lewis and Clark"
+  metadata_format: gbl1
+  filename_regex: |
+    .+?/geoblacklight\.json
+edu.virginia:
+  name: "Virginia"
+  metadata_format: gbl1
+  filename_regex: |
+    .+?/geoblacklight\.json
+edu.harvard:
+  name: "Harvard"
+  metadata_format: gbl1
+  filename_regex: |
+    .+?/HGL4/.+?\.json
+
+# FGDC
+edu.tufts:
+  name: "Tufts"
+  metadata_format: fgdc
+  filename_regex: |
+    .+?/fgdc\.xml
