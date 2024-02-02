@@ -10,7 +10,7 @@ A full harvest from OGM would include retrieving metadata from ALL repositories,
 sequenceDiagram
     autonumber
     participant ogm_config_yaml as OGM Config YAML
-    participant geo_harv as GIS Harvester
+    participant geo_harv as GeoHarvester
     participant ogm_repo as OGM Institution Repository
     participant s3_cdn_pub as S3:CDN:Public
     participant s3_timdex as S3:TIMDEX
@@ -36,7 +36,7 @@ A daily (incremental) will rely on git commits to pickup changes to repositories
 sequenceDiagram
     autonumber
     participant ogm_config_yaml as OGM Config YAML
-    participant geo_harv as GIS Harvester
+    participant geo_harv as GeoHarvester
     participant ogm_repo as OGM Institution Repository
     participant s3_cdn_pub as S3: CDN:Public/OGM
     participant s3_timdex as S3: TIMDEX
@@ -50,12 +50,6 @@ sequenceDiagram
         ogm_repo-->>geo_harv: Git commits
         geo_harv->>geo_harv: Parse commits and determine metadata <br> files that were modified or deleted
         geo_harv->>geo_harv: Filter to list of files based on <br> supported metadata formats from config
-        
-        loop Modified files            
-            Note right of geo_harv: Need to still normalize to aardvark <br> to get meaningful identifier
-            geo_harv->>geo_harv: Normalize source metadata to Aardvark            
-        end
-        
         geo_harv->>s3_timdex: Write MIT aardvark
     end
 ```
