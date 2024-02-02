@@ -14,7 +14,7 @@ smart-open = "*"
 lxml = "*"
 jsonlines = "*"
 pycountry = "*"
-gitpython = "*"
+pygit2 = "*"
 
 [dev-packages]
 black = "*"

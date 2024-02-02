@@ -1,19 +1,18 @@
 """harvester.harvest.ogm"""
 
+import datetime
 import hashlib
 import logging
 import os
 import re
 import shutil
-import subprocess
 import time
 from collections.abc import Callable, Iterator
 
-import git
+import pygit2  # type: ignore[import-untyped]
 import smart_open  # type: ignore[import-untyped]
 import yaml
 from attrs import define, field
-from git import Commit  # type: ignore[attr-defined]
 
 from harvester.config import Config
 from harvester.harvest import Harvester
@@ -181,18 +180,25 @@ class OGMRepository:
         """Path of cloned repository."""
         return os.path.join(self.clone_root_directory, self.name)
 
-    def clone_repository(self) -> git.Repo:
+    @property
+    def git_repository(self) -> pygit2.Repository:
+        """Return pygit2 repository instance."""
+        return pygit2.Repository(self.local_repository_directory)
+
+    def clone_repository(self) -> pygit2.Repository:
         """Locally clone repository for parsing and file reading."""
         if not os.path.exists(self.local_repository_directory):
             clone_start_time = time.time()
             clone_url = f"{CONFIG.ogm_clone_root_url}/{self.name}"
             message = f"Cloning repository to: {self.local_repository_directory}"
             logger.debug(message)
-            local_repo = git.Repo.clone_from(clone_url, self.local_repository_directory)
+            local_repo = pygit2.clone_repository(
+                clone_url, self.local_repository_directory
+            )
             message = f"Clone successful: {time.time() - clone_start_time}s"
             logger.info(message)
         else:
-            local_repo = git.Repo(self.local_repository_directory)
+            local_repo = pygit2.Repository(self.local_repository_directory)
             message = (
                 f"Repository exists, skipping clone: {self.local_repository_directory}"
             )
@@ -251,46 +257,53 @@ class OGMRepository:
                 target_commit=target_commit,
             )
 
-    def _get_commit_before_date(self, target_date: str) -> Commit | None:
+    def _get_commit_before_date(self, target_date: str) -> pygit2.Commit | None:
         """Identify last commit BEFORE a target date."""
         # raise exception if date is before epoch time of 1979-01-01
         if date_parser(target_date) < date_parser("1979-01-01"):
             raise OGMFromDateExceedsEpochDateError
 
-        from_timestamp = date_parser(target_date).timestamp()
         local_repo = self.clone_repository()
-        commits = list(local_repo.iter_commits(since=from_timestamp))
+
+        from_timestamp = date_parser(target_date).timestamp()
+        commits = [
+            commit
+            for commit in local_repo.walk(local_repo.head.target, pygit2.GIT_SORT_TIME)
+            if commit.commit_time >= from_timestamp
+        ]
         if not commits:
             message = f"Could not find any commits after date: {target_date}"
             logger.info(message)
             return None
+
         earliest_commit = commits[-1]
         if not earliest_commit.parents:
             target_commit = earliest_commit
         else:
             target_commit = commits[-1].parents[0]
+        target_commit_date = datetime.datetime.fromtimestamp(
+            target_commit.commit_time, tz=datetime.UTC
+        ).isoformat()
         message = (
             f"Last commit before date '{target_date}': "
-            f"{target_commit.committed_datetime.isoformat()}, {target_commit.hexsha}"
+            f"{target_commit_date}, {target_commit.hex}"
         )
         logger.debug(message)
         return target_commit
 
-    def _get_modified_files_since_commit(self, target_commit: Commit) -> list[list[str]]:
-        """Get all modified files SINCE a target commit."""
-        app_working_dir = os.getcwd()
-        os.chdir(self.local_repository_directory)
-        cmd_args = [
-            "git",
-            "diff",
-            "--no-renames",
-            "--name-status",
-            f"{target_commit.hexsha}..HEAD",
+    def _get_modified_files_since_commit(
+        self, target_commit: pygit2.Commit
+    ) -> list[tuple[str, str]]:
+        """Get all modified files SINCE a target commit.
+
+        This method returns a list of tuples indicating the git diff status character and
+        filepath, e.g.: [("A", "files/file1.xml"), ("D", "files/file2.xml")], informing
+        that file1.xml was added, and file2.xml was deleted.
+        """
+        deltas = self.git_repository.diff(target_commit.hex, "HEAD").deltas
+        return [
+            (delta.status_char(), delta.new_file.raw_path.decode()) for delta in deltas
         ]
-        logger.debug(cmd_args)
-        output = subprocess.check_output(cmd_args).decode()  # noqa: S603
-        os.chdir(app_working_dir)
-        return [change.split("\t") for change in output.split("\n") if change != ""]
 
     def filter_records(self, records: Iterator["OGMRecord"]) -> Iterator["OGMRecord"]:
         """Filter files to include in harvest based on strategy in repository config."""
@@ -353,7 +366,7 @@ class OGMRecord:
     relative_filename: str = field(default=None)
     harvest_event: str = field(default=None)
     git_change_type: str = field(default=None)
-    target_commit: Commit = field(default=None)
+    target_commit: pygit2.Commit = field(default=None)
 
     _raw: bytes = field(default=None)
 
@@ -372,4 +385,4 @@ class OGMRecord:
             return f.read()
 
     def _read_deleted_file_from_commit(self) -> bytes:
-        return self.target_commit.tree[self.relative_filename].data_stream.read()
+        return self.target_commit.tree[self.relative_filename].read_raw()
