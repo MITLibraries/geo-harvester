@@ -497,7 +497,7 @@ def make_commit(repo, message, year):
     )
     # create commit
     repo.create_commit(
-        "refs/heads/master" if repo.head_is_unborn else repo.head.name,
+        "refs/heads/main" if repo.head_is_unborn else repo.head.name,
         person,  # author
         person,  # committer
         message,
@@ -555,7 +555,9 @@ def init_ogm_git_project_repos(
             repo_dir = temp_dir / repo_name
             repo_dir.mkdir()
             repos[repo_name] = (
-                pygit2.init_repository(str(repo_dir), bare=False),
+                pygit2.init_repository(
+                    str(repo_dir), bare=False, initial_head="refs/heads/main"
+                ),
                 repo_dir,
             )
 
