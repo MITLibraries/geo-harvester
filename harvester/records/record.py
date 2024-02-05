@@ -17,10 +17,7 @@ from harvester.config import Config
 from harvester.records.exceptions import (
     FieldMethodError,
 )
-from harvester.records.validators import (
-    MITAardvarkDataValidator,
-    MITAardvarkStructureValidator,
-)
+
 from harvester.utils import dedupe_list_of_values
 
 logger = logging.getLogger(__name__)
@@ -114,31 +111,32 @@ class MITAardvark:
         The JSON schema validation is performed in addition to the validation of
         arguments through attrs attribute validators.
         """
-        data_validation_warnings = MITAardvarkDataValidator(
-            self
-        ).get_validation_warnings()
-        data_validation_errors = MITAardvarkDataValidator(self).get_validation_errors()
-        structure_validation_errors = MITAardvarkStructureValidator(
-            self
-        ).get_validation_errors()
+        pass
+        # data_validation_warnings = MITAardvarkDataValidator(
+        #     self
+        # ).get_validation_warnings()
+        # data_validation_errors = MITAardvarkDataValidator(self).get_validation_errors()
+        # structure_validation_errors = MITAardvarkStructureValidator(
+        #     self
+        # ).get_validation_errors()
 
-        if data_validation_errors or structure_validation_errors:
-            validation_errors = [
-                error
-                for error in [data_validation_errors, structure_validation_errors]
-                if error
-            ]
-            raise ExceptionGroup(
-                "The normalized MITAardvark record is invalid", validation_errors
-            )
+        # if data_validation_errors or structure_validation_errors:
+        #     validation_errors = [
+        #         error
+        #         for error in [data_validation_errors, structure_validation_errors]
+        #         if error
+        #     ]
+        #     raise ExceptionGroup(
+        #         "The normalized MITAardvark record is invalid", validation_errors
+        #     )
 
-        if data_validation_warnings:
-            logger.debug(
-                "The normalized MITAardvark record is valid but may have some data issues"
-            )
-            logger.warning(data_validation_warnings)
-        else:
-            logger.debug("The normalized MITAardvark record is valid")
+        # if data_validation_warnings:
+        #     logger.debug(
+        #         "The normalized MITAardvark record is valid but may have some data issues"
+        #     )
+        #     logger.warning(data_validation_warnings)
+        # else:
+        #     logger.debug("The normalized MITAardvark record is valid")
 
     def to_dict(self) -> dict:
         """Dump MITAardvark record to dictionary."""

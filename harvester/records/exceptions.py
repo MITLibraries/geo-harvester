@@ -4,20 +4,8 @@ import traceback
 from jsonschema.exceptions import ValidationError
 
 
-class DataValidationWarning(Warning):
-    """Warning to raise from MITAardvark data validation method"""
-
-    def __init__(self, validation_errors: list):
-        self.validation_errors = validation_errors
-
-    def __str__(self) -> str:
-        """Get string representation of data validation issues"""
-        return "\n".join(
-            [
-                "Found data quality issue(s) in the normalized record:",
-                *self.validation_errors,
-            ]
-        )
+class FieldInvalidValueWarning(Warning):
+    """Warning"""
 
 
 class FieldMethodError(Exception):
