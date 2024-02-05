@@ -15,6 +15,7 @@ lxml = "*"
 jsonlines = "*"
 pycountry = "*"
 pygit2 = "*"
+shapely = "*"
 
 [dev-packages]
 black = "*"
