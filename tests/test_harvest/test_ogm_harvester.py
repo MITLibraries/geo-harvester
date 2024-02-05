@@ -3,7 +3,7 @@
 import os
 from unittest import mock
 
-import git
+import pygit2
 import pytest
 
 from harvester.config import Config
@@ -33,7 +33,7 @@ def test_ogm_repository_properties(ogm_repository_earth):
 def test_ogm_repository_clone_success(caplog, ogm_repository_earth):
     caplog.set_level("DEBUG")
     local_repo = ogm_repository_earth.clone_repository()
-    assert isinstance(local_repo, git.repo.base.Repo)
+    assert isinstance(local_repo, pygit2.Repository)
     assert os.path.exists(ogm_repository_earth.local_repository_directory)
 
     ogm_repository_earth.clone_repository()
@@ -126,7 +126,7 @@ def test_ogm_repository_date_after_all_commits_returns_none(caplog, ogm_reposito
 def test_ogm_repository_get_two_added_files_since_root_commit(ogm_repository_earth):
     root_commit = ogm_repository_earth._get_commit_before_date("1980-01-01")
     file_list = ogm_repository_earth._get_modified_files_since_commit(root_commit)
-    assert file_list == [["A", "gbl1/record1.json"], ["A", "gbl1/record2.json"]]
+    assert file_list == [("A", "gbl1/record1.json"), ("A", "gbl1/record2.json")]
 
 
 def test_ogm_repository_get_deleted_and_added_file(ogm_repository_pluto):
@@ -143,7 +143,7 @@ def test_ogm_repository_get_deleted_and_added_file(ogm_repository_pluto):
     """
     root_commit = ogm_repository_pluto._get_commit_before_date("2015-01-01")
     file_list = ogm_repository_pluto._get_modified_files_since_commit(root_commit)
-    assert file_list == [["D", "fgdc/record2.xml"], ["A", "fgdc/record3.xml"]]
+    assert file_list == [("D", "fgdc/record2.xml"), ("A", "fgdc/record3.xml")]
 
 
 def test_ogm_repository_date_before_all_records_gets_all_records(ogm_repository_earth):
@@ -173,8 +173,8 @@ def test_ogm_repository_unhandled_git_file_action_logged_and_skipped(
         "harvester.harvest.ogm.OGMRepository._get_modified_files_since_commit"
     ) as mock_files_since_commit:
         mock_files_since_commit.return_value = [
-            ["X", "gbl1/record1.json"],
-            ["A", "gbl1/record2.json"],
+            ("X", "gbl1/record1.json"),
+            ("A", "gbl1/record2.json"),
         ]
         records = list(ogm_repository_earth.get_modified_records("1999-01-01"))
     assert len(records) == 1

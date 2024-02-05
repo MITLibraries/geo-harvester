@@ -9,10 +9,10 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import boto3
+import pygit2
 import pytest
 from click.testing import CliRunner
 from freezegun import freeze_time
-from git import Actor, Repo
 from moto import mock_aws
 
 from harvester.aws.sqs import SQSClient, ZipFileEventMessage
@@ -487,13 +487,22 @@ def create_tz_date(year):
     return datetime.datetime(year=year, month=1, day=1, tzinfo=datetime.UTC)
 
 
-def make_commit(repo, author, message, year):
-    repo.index.commit(
+def make_commit(repo, message, year):
+    # create git author/committer
+    person = pygit2.Signature(
+        "Fake Person",
+        "fakeperson@example.com",
+        int(create_tz_date(year).timestamp()),
+        0,
+    )
+    # create commit
+    repo.create_commit(
+        "refs/heads/main" if repo.head_is_unborn else repo.head.name,
+        person,  # author
+        person,  # committer
         message,
-        author=author,
-        committer=author,
-        author_date=create_tz_date(year),
-        commit_date=create_tz_date(year),
+        repo.index.write_tree(),
+        [] if repo.head_is_unborn else [repo.head.target],
     )
 
 
@@ -539,19 +548,22 @@ def init_ogm_git_project_repos(
 
     # else, build OGM repositories
     else:
-        author = Actor("Fake Person", "fakeperson@example.com")
+        repos: dict[str, tuple[pygit2.Repository, Path]] = {}
 
-        repos: dict[str, tuple[Repo, Path]] = {}
-
-        # build
+        # create repository directory and initialize git project
         for repo_name in repo_names:
             repo_dir = temp_dir / repo_name
             repo_dir.mkdir()
-            repos[repo_name] = (Repo.init(path=str(repo_dir)), repo_dir)
+            repos[repo_name] = (
+                pygit2.init_repository(
+                    str(repo_dir), bare=False, initial_head="refs/heads/main"
+                ),
+                repo_dir,
+            )
 
         # create initial commit for all repos
         for repo, _repo_dir in repos.values():
-            make_commit(repo, author, "Initial commit", 1990)
+            make_commit(repo, "Initial commit", 1990)
 
         # build edu.earth
         repo, repo_dir = repos["edu.earth"]
@@ -559,12 +571,12 @@ def init_ogm_git_project_repos(
         files_dir.mkdir()
 
         shutil.copy("tests/fixtures/ogm/files/edu.earth/record1.json", files_dir)
-        repo.index.add(["gbl1/record1.json"])
-        make_commit(repo, author, "First file commit", 2000)
+        repo.index.add("gbl1/record1.json")
+        make_commit(repo, "First file commit", 2000)
 
         shutil.copy("tests/fixtures/ogm/files/edu.earth/record2.json", files_dir)
-        repo.index.add(["gbl1/record2.json"])
-        make_commit(repo, author, "Second file commit", 2010)
+        repo.index.add("gbl1/record2.json")
+        make_commit(repo, "Second file commit", 2010)
 
         # build edu.venus
         repo, repo_dir = repos["edu.venus"]
@@ -572,12 +584,12 @@ def init_ogm_git_project_repos(
         files_dir.mkdir()
 
         shutil.copy("tests/fixtures/ogm/files/edu.venus/record1.json", files_dir)
-        repo.index.add(["aardvark/record1.json"])
-        make_commit(repo, author, "First file commit", 2000)
+        repo.index.add("aardvark/record1.json")
+        make_commit(repo, "First file commit", 2000)
 
         shutil.copy("tests/fixtures/ogm/files/edu.venus/record2.json", files_dir)
-        repo.index.add(["aardvark/record2.json"])
-        make_commit(repo, author, "Second file commit", 2010)
+        repo.index.add("aardvark/record2.json")
+        make_commit(repo, "Second file commit", 2010)
 
         # build edu.pluto
         repo, repo_dir = repos["edu.pluto"]
@@ -585,17 +597,17 @@ def init_ogm_git_project_repos(
         files_dir.mkdir()
 
         shutil.copy("tests/fixtures/ogm/files/edu.pluto/record1.xml", files_dir)
-        repo.index.add(["fgdc/record1.xml"])
-        make_commit(repo, author, "First file commit", 2000)
+        repo.index.add("fgdc/record1.xml")
+        make_commit(repo, "First file commit", 2000)
 
         shutil.copy("tests/fixtures/ogm/files/edu.pluto/record2.xml", files_dir)
-        repo.index.add(["fgdc/record2.xml"])
-        make_commit(repo, author, "Second file commit", 2010)
+        repo.index.add("fgdc/record2.xml")
+        make_commit(repo, "Second file commit", 2010)
 
         os.remove(f"{files_dir}/record2.xml")
         repo.index.remove("fgdc/record2.xml")
         shutil.copy("tests/fixtures/ogm/files/edu.pluto/record3.xml", files_dir)
-        repo.index.add(["fgdc/record3.xml"])
-        make_commit(repo, author, "Removed second file and add third", 2020)
+        repo.index.add("fgdc/record3.xml")
+        make_commit(repo, "Removed second file and add third", 2020)
 
         yield None
