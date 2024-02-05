@@ -248,7 +248,7 @@ class OGMRepository:
         """
         # check if remote repo has ANY commits on or after from date
         if not self._remote_repository_has_new_commits(from_date):
-            message = f"No commits found after date '{from_date}', skipping."
+            message = f"No commits found on or after date '{from_date}', skipping."
             logger.info(message)
             return []
 
