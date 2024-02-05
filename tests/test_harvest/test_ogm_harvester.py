@@ -1,13 +1,16 @@
-# ruff: noqa: PLR2004, SLF001, D205, D212
+# ruff: noqa: PLR2004, SLF001, D205, D212, PT023
 
 import os
 from unittest import mock
 
 import pygit2
 import pytest
+import requests
+import responses
 
 from harvester.config import Config
 from harvester.harvest.exceptions import (
+    GithubApiRateLimitExceededError,
     OGMFilenameFilterMethodError,
     OGMFromDateExceedsEpochDateError,
 )
@@ -233,4 +236,67 @@ def test_ogm_harvester_incremental_single_repo_and_recent_date_get_deleted_and_c
     assert {record.source_record.event for record in records} == {
         "deleted",
         "created",
+    }
+
+
+def test_ogm_harvester_no_modified_records_when_remote_repo_no_commits(
+    ogm_repository_earth,
+):
+    with mock.patch(
+        "harvester.harvest.ogm.OGMRepository._remote_repository_has_new_commits"
+    ) as mocked_method:
+        mocked_method.return_value = False
+        assert list(ogm_repository_earth.get_modified_records("2000-01-01")) == []
+
+
+@pytest.mark.use_github_api
+@pytest.mark.usefixtures("_mock_github_api_response_one_2010_commit")
+@responses.activate
+def test_ogm_repository_check_remote_repo_commits_has_commits_success(
+    ogm_repository_earth,
+):
+    assert ogm_repository_earth._remote_repository_has_new_commits("2005-01-01")
+
+
+@pytest.mark.use_github_api
+@pytest.mark.usefixtures("_mock_github_api_response_zero_commits")
+@responses.activate
+def test_ogm_repository_check_remote_repo_commits_has_no_commits_success(
+    ogm_repository_earth,
+):
+    assert not ogm_repository_earth._remote_repository_has_new_commits("2005-01-01")
+
+
+@pytest.mark.use_github_api
+@pytest.mark.usefixtures("_mock_github_api_response_404_not_found")
+@responses.activate
+def test_ogm_repository_check_remote_repo_unknown_repository_raise_error(
+    ogm_repository_earth,
+):
+    with pytest.raises(requests.HTTPError):
+        ogm_repository_earth._remote_repository_has_new_commits("2005-01-01")
+
+
+@pytest.mark.use_github_api
+@pytest.mark.usefixtures("_mock_github_api_response_403_rate_limit")
+@responses.activate
+def test_ogm_repository_check_remote_repo_api_rate_limit_exceeded_raises_error(
+    ogm_repository_earth,
+):
+    with pytest.raises(GithubApiRateLimitExceededError):
+        ogm_repository_earth._remote_repository_has_new_commits("2005-01-01")
+
+
+@pytest.mark.use_github_api
+@pytest.mark.usefixtures("_mock_github_api_response_one_2010_commit")
+@responses.activate
+def test_ogm_repository_check_remote_repo_github_token_set_as_auth_header_success(
+    monkeypatch, ogm_repository_earth
+):
+    fake_github_token = "abc123"  # noqa: S105
+    monkeypatch.setenv("GITHUB_API_TOKEN", fake_github_token)
+    with mock.patch("requests.get") as mocked_get_request:
+        ogm_repository_earth._remote_repository_has_new_commits("2005-01-01")
+    assert mocked_get_request.call_args[1]["headers"] == {
+        "Authorization": f"token {fake_github_token}"
     }

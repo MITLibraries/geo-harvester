@@ -61,3 +61,13 @@ def test_config_env_var_access_error(config_instance):
 
 def test_config_cdn_root(config_instance):
     assert config_instance.http_cdn_root == "https://cdn.dev1.mitlibrary.net/geo"
+
+
+def test_config_github_api_token_set_from_env_var(monkeypatch, config_instance):
+    fake_token = "abc123"  # noqa: S105
+    monkeypatch.setenv("GITHUB_API_TOKEN", fake_token)
+    assert config_instance.github_api_token == fake_token
+
+
+def test_config_github_api_token_none_from_no_env_var(monkeypatch, config_instance):
+    assert config_instance.github_api_token is None

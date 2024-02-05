@@ -10,6 +10,7 @@ import time
 from collections.abc import Callable, Iterator
 
 import pygit2  # type: ignore[import-untyped]
+import requests
 import smart_open  # type: ignore[import-untyped]
 import yaml
 from attrs import define, field
@@ -17,6 +18,7 @@ from attrs import define, field
 from harvester.config import Config
 from harvester.harvest import Harvester
 from harvester.harvest.exceptions import (
+    GithubApiRateLimitExceededError,
     OGMFilenameFilterMethodError,
     OGMFromDateExceedsEpochDateError,
 )
@@ -33,6 +35,9 @@ from harvester.utils import date_parser
 logger = logging.getLogger(__name__)
 
 CONFIG = Config()
+
+HTTP_NOT_FOUND = 404
+HTTP_FORBIDDEN = 403
 
 
 @define
@@ -94,6 +99,8 @@ class OGMHarvester(Harvester):
         repo_configs = self.get_repositories()
 
         for repo_name, repo_config in repo_configs.items():
+            message = f"Working on repository: {repo_name}"
+            logger.debug(message)
             repo = OGMRepository(name=repo_name, config=repo_config)
             ogm_records_iterator = repo.filter_records(retrieve_records_func(repo, *args))
 
@@ -228,7 +235,23 @@ class OGMRepository:
                 )
 
     def get_modified_records(self, from_date: str) -> Iterator["OGMRecord"]:
-        """Get all modified files since a from date."""
+        """Get all modified files since a "from" date.
+
+        To avoid cloning a full repository only to discover no commits after the target
+        date, this method first makes an HTTP call to the Github API to retrieve a list of
+        recent commits.  If no commits are found after the target date, it returns an
+        empty list immediately.
+
+        If commits are found, the repository is cloned so that the git history can be
+        interrogated locally for modified files that are within the harvesting scope of
+        this repository.
+        """
+        # check if remote repo has ANY commits on or after from date
+        if not self._remote_repository_has_new_commits(from_date):
+            message = f"No commits found on or after date '{from_date}', skipping."
+            logger.info(message)
+            return []
+
         # get last commit BEFORE date
         target_commit = self._get_commit_before_date(from_date)
         if not target_commit:
@@ -256,6 +279,43 @@ class OGMRepository:
                 git_change_type=change_type,
                 target_commit=target_commit,
             )
+
+    def _remote_repository_has_new_commits(self, target_date: str) -> bool:
+        """Return boolean if remote repository has commits on or after "from" date.
+
+        If env var GITHUB_API_TOKEN is not set, perform unauthenticated requests which may
+        result in rate limiting.
+        """
+        headers = {}
+        if CONFIG.github_api_token:
+            headers["Authorization"] = f"token {CONFIG.github_api_token}"
+        else:
+            message = "Github API token not set, may encounter rate limiting."
+            logger.warning(message)
+        response = requests.get(
+            f"{CONFIG.github_api_base_url}/{self.name}/commits",
+            headers=headers,
+            timeout=20,
+        )
+
+        # handle unknown repository
+        if response.status_code == HTTP_NOT_FOUND and response.reason == "Not Found":
+            message = f"Repository not found: OpenGeoMetadata/{self.name}"
+            raise requests.HTTPError(message)
+
+        # handle rate limit
+        if (
+            response.status_code == HTTP_FORBIDDEN
+            and response.reason == "rate limit exceeded"
+        ):
+            message = "Retry later or set env var GITHUB_API_TOKEN."
+            raise GithubApiRateLimitExceededError(message)
+
+        commits = response.json()
+        return any(
+            date_parser(commit["commit"]["committer"]["date"]) >= date_parser(target_date)
+            for commit in commits
+        )
 
     def _get_commit_before_date(self, target_date: str) -> pygit2.Commit | None:
         """Identify last commit BEFORE a target date."""

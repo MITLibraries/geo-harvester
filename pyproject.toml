@@ -12,19 +12,30 @@ exclude = ["tests/", "output/"]
 
 [tool.pytest.ini_options]
 log_level = "INFO"
+markers = [
+    "use_github_api: marker to bypass autoused fixture that bypasses Github api calls"
+]
 
 [tool.ruff]
 target-version = "py311"
+
+# set max line length
+line-length = 90
+
+# enumerate all fixed violations
+show-fixes = true
+
+[tool.ruff.lint]
 select = ["ALL", "PT"]
 
 ignore = [
     # default
-    "ANN101", 
-    "ANN102", 
-    "COM812", 
-    "D107", 
-    "N812", 
-    "PTH", 
+    "ANN101",
+    "ANN102",
+    "COM812",
+    "D107",
+    "N812",
+    "PTH",
 
     # project-specific
     "C90",
@@ -35,28 +46,22 @@ ignore = [
     "D104",
     "D415",
     "PLR0912",
-    "PLR0913", 
+    "PLR0913",
     "PLR0915",
     "S320",
-    "S321", 
+    "S321",
 ]
 
 # allow autofix behavior for specified rules
 fixable = ["E", "F", "I", "Q"]
 
-# set max line length
-line-length = 90
-
-# enumerate all fixed violations
-show-fixes = true
-
-[tool.ruff.flake8-annotations]
+[tool.ruff.lint.flake8-annotations]
 mypy-init-return = true
 
-[tool.ruff.flake8-pytest-style]
+[tool.ruff.lint.flake8-pytest-style]
 fixture-parentheses = false
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "tests/**/*" = [
     "ANN",
     "ARG001",
@@ -66,8 +71,8 @@ fixture-parentheses = false
     "ALL"
 ]
 
-[tool.ruff.pycodestyle]
+[tool.ruff.lint.pycodestyle]
 max-doc-length = 90
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "google"

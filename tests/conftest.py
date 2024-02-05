@@ -11,6 +11,7 @@ from unittest.mock import MagicMock, patch
 import boto3
 import pygit2
 import pytest
+import responses
 from click.testing import CliRunner
 from freezegun import freeze_time
 from moto import mock_aws
@@ -33,6 +34,8 @@ def _test_env(monkeypatch):
     monkeypatch.setenv("OGM_CONFIG_FILEPATH", "tests/fixtures/ogm/ogm_test_config.yaml")
     monkeypatch.setenv("OGM_CLONE_ROOT_URL", "tests/fixtures/ogm/repositories")
     monkeypatch.setenv("OGM_CLONE_ROOT_DIR", "output/ogm")
+    if "GITHUB_API_TOKEN" in os.environ:
+        monkeypatch.delenv("GITHUB_API_TOKEN")
 
 
 @pytest.fixture
@@ -424,28 +427,72 @@ def ogm_config():
     return OGMRepository.load_repositories_config()
 
 
+@pytest.fixture(autouse=True)
+def mock_remote_repository_has_commits(request):
+    if "use_github_api" not in request.keywords:
+        with patch(
+            "harvester.harvest.ogm.OGMRepository._remote_repository_has_new_commits"
+        ) as mocked_method:
+            mocked_method.return_value = True
+            yield mocked_method
+    else:
+        yield
+
+
+@pytest.fixture
+def mocked_github_api_url():
+    return "https://api.github.com/repos/OpenGeoMetadata/edu.earth/commits"
+
+
+@pytest.fixture
+def _mock_github_api_response_one_2010_commit(mocked_github_api_url):
+    response = [
+        {
+            "sha": "94d2c8d2d34b41381fa3c80712f235788f5a1cd8",
+            "commit": {"committer": {"date": "2010-01-01T00:00:00Z"}},
+            "message": "I am a commit.",
+        }
+    ]
+    responses.add(responses.GET, mocked_github_api_url, json=response, status=200)
+
+
+@pytest.fixture
+def _mock_github_api_response_zero_commits(mocked_github_api_url):
+    responses.add(responses.GET, mocked_github_api_url, json=[], status=200)
+
+
+@pytest.fixture
+def _mock_github_api_response_404_not_found(mocked_github_api_url):
+    responses.add(responses.GET, mocked_github_api_url, status=404)
+
+
+@pytest.fixture
+def _mock_github_api_response_403_rate_limit(mocked_github_api_url):
+    """Generic mocked response to set custom .reason attribute on response"""
+
+    class MockResponse:
+        def __init__(self, reason, status_code):
+            self.reason = reason
+            self.status_code = status_code
+
+    with patch("requests.get") as mocked_get:
+        mocked_get.return_value = MockResponse("rate limit exceeded", 403)
+        yield
+
+
 @pytest.fixture
 def ogm_repository_earth(ogm_config):
-    return OGMRepository(
-        "edu.earth",
-        ogm_config["edu.earth"],
-    )
+    return OGMRepository("edu.earth", ogm_config["edu.earth"])
 
 
 @pytest.fixture
 def ogm_repository_venus(ogm_config):
-    return OGMRepository(
-        "edu.venus",
-        ogm_config["edu.venus"],
-    )
+    return OGMRepository("edu.venus", ogm_config["edu.venus"])
 
 
 @pytest.fixture
 def ogm_repository_pluto(ogm_config):
-    return OGMRepository(
-        "edu.pluto",
-        ogm_config["edu.pluto"],
-    )
+    return OGMRepository("edu.pluto", ogm_config["edu.pluto"])
 
 
 @pytest.fixture

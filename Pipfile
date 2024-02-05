@@ -31,6 +31,7 @@ lxml-stubs = "*"
 freezegun = "*"
 types-jsonschema = "*"
 types-pyyaml = "*"
+types-requests = "*"
 
 [requires]
 python_version = "3.11"

@@ -31,6 +31,7 @@ GEOHARVESTER_SQS_TOPIC_NAME=### default value for CLI argument --sqs-topic-name
 OGM_CONFIG_FILEPATH=### optional location for OGM configuration YAML
 OGM_CLONE_ROOT_URL=### optional base URL or filepath for where to clone OGM repositories from
 OGM_CLONE_ROOT_DIR=### optional location for where cloned repositories are saved locally
+GITHUB_API_TOKEN=### optional Github API token to avoid potential rate limiting for OGM incremental harvests
 ```
 
 ## CLI Commands
