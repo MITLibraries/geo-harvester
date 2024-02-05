@@ -1,4 +1,5 @@
 """harvester.harvest.records.fgdc"""
+
 # ruff: noqa: N802, N815; allows camelCase for aardvark fields
 
 import logging
@@ -10,6 +11,7 @@ from dateutil.parser import ParserError
 from lxml import etree
 
 from harvester.records.record import XMLSourceRecord
+from harvester.records.validators import ValidateGeoshapeWKT
 from harvester.utils import convert_lang_code, date_parser, dedupe_list_of_values
 
 logger = logging.getLogger(__name__)
@@ -80,7 +82,8 @@ class FGDC(XMLSourceRecord):
                 mapped_values.append(mapped_value)  # noqa: PERF401
         return mapped_values
 
-    def _dcat_bbox(self) -> str:
+    @ValidateGeoshapeWKT
+    def _dcat_bbox(self) -> str | None:
         """Field method: dcat_bbox.
 
         "bbox" stands for "Bounding Box", and it should be the largest possible rectangle
@@ -118,7 +121,7 @@ class FGDC(XMLSourceRecord):
         )
         return f"ENVELOPE({lat_lon_envelope})"
 
-    def _locn_geometry(self) -> str:
+    def _locn_geometry(self) -> str | None:
         """Field method: locn_geometry
 
         NOTE: at this time, duplicating bounding box content from dcat_bbox
