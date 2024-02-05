@@ -4,6 +4,8 @@ from typing import Any
 
 import sentry_sdk
 
+logger = logging.getLogger(__name__)
+
 
 class Config:
     REQUIRED_ENV_VARS = (
@@ -12,7 +14,11 @@ class Config:
         "S3_RESTRICTED_CDN_ROOT",
         "S3_PUBLIC_CDN_ROOT",
     )
-    OPTIONAL_ENV_VARS = ("GEOHARVESTER_SQS_TOPIC_NAME", "OGM_CLONE_ROOT_URL")
+    OPTIONAL_ENV_VARS = (
+        "GEOHARVESTER_SQS_TOPIC_NAME",
+        "OGM_CLONE_ROOT_URL",
+        "GITHUB_API_TOKEN",
+    )
 
     def check_required_env_vars(self) -> None:
         """Method to raise exception if required env vars not set."""
@@ -50,6 +56,14 @@ class Config:
     @property
     def ogm_clone_root_dir(self) -> str:
         return os.getenv("OGM_CLONE_ROOT_DIR", "output/ogm")
+
+    @property
+    def github_api_base_url(self) -> str:
+        return "https://api.github.com/repos/OpenGeoMetadata"  # pragma: no cover
+
+    @property
+    def github_api_token(self) -> str:
+        return self.GITHUB_API_TOKEN
 
 
 def configure_logger(
