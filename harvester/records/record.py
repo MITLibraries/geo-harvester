@@ -67,11 +67,10 @@ class MITAardvark:
     id: str
 
     # additional MIT required fields
-    dcat_bbox: str
     dct_references_s: str
-    locn_geometry: str
 
     # optional fields
+    dcat_bbox: str = field(default=None)
     dcat_centroid: str = field(default=None)
     dcat_keyword_sm: list = field(default=None)
     dcat_theme_sm: list = field(default=None)
@@ -103,6 +102,7 @@ class MITAardvark:
     gbl_resourceType_sm: list = field(default=None)
     gbl_suppressed_b: bool = field(default=None)
     gbl_wxsIdentifier_s: str = field(default=None)
+    locn_geometry: str = field(default=None)
     pcdm_memberOf_sm: list = field(default=None)
     schema_provider_s: str = field(default=None)
 
@@ -359,14 +359,6 @@ class SourceRecord:
 
     @abstractmethod
     def _gbl_resourceClass_sm(self) -> list[str] | None:
-        pass  # pragma: nocover
-
-    @abstractmethod
-    def _dcat_bbox(self) -> str:
-        pass  # pragma: nocover
-
-    @abstractmethod
-    def _locn_geometry(self) -> str:
         pass  # pragma: nocover
 
     ####################################

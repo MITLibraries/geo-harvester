@@ -229,13 +229,7 @@ def mocked_required_fields_source_record(valid_generic_xml_source_record):
         def _id(self):
             return mocked_value
 
-        def _dcat_bbox(self):
-            return mocked_value
-
         def _dct_references_s(self):
-            return mocked_value
-
-        def _locn_geometry(self):
             return mocked_value
 
     return TestXMLSourceRecord(
@@ -257,9 +251,7 @@ def valid_mitaardvark_data_required_fields():
         "gbl_mdVersion_s": "Aardvark",
         "gbl_resourceClass_sm": ["Datasets"],
         "id": "value here",
-        "dcat_bbox": "value here",
         "dct_references_s": "value here",
-        "locn_geometry": "value here",
     }
 
 
@@ -282,9 +274,7 @@ def invalid_mitaardvark_data_required_fields():
         "gbl_mdVersion_s": "Invalid",
         "gbl_resourceClass_sm": ["Invalid"],
         "id": 1,
-        "dcat_bbox": "value here",
         "dct_references_s": "value here",
-        "locn_geometry": "value here",
     }
 
 
