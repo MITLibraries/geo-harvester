@@ -8,6 +8,7 @@ import click
 
 from harvester.config import Config, configure_logger, configure_sentry
 from harvester.harvest.mit import MITHarvester
+from harvester.harvest.ogm import OGMHarvester
 
 logger = logging.getLogger(__name__)
 
@@ -201,21 +202,46 @@ def harvest_mit(
 
 @harvest.command(name="ogm")
 @click.option(
-    "--config-yaml-file",
-    required=True,
+    "--include-repositories",
+    required=False,
     type=str,
-    help="Filepath of config YAML that defines how to harvest from OGM.",
+    help="If set, limit to only these comma seperated list of repositories for harvest.",
+)
+@click.option(
+    "--exclude-repositories",
+    required=False,
+    type=str,
+    help="If set, exclude these comma seperated list of repositories from harvest.",
 )
 @click.pass_context
 def harvest_ogm(
     ctx: click.Context,
-    config_yaml_file: str,  # noqa: ARG001
+    include_repositories: str,
+    exclude_repositories: str,
 ) -> None:  # pragma: no cover
     """Harvest and normalize OpenGeoMetadata (OGM) geospatial metadata records."""
+    include_list = exclude_list = None
+    if include_repositories:
+        include_list = [repo.strip() for repo in include_repositories.split(",")]
+    if exclude_repositories:
+        exclude_list = [repo.strip() for repo in exclude_repositories.split(",")]
+
+    harvester = OGMHarvester(
+        harvest_type=ctx.obj["HARVEST_TYPE"],
+        from_date=ctx.obj["FROM_DATE"],
+        include_repositories=include_list,
+        exclude_repositories=exclude_list,
+        output_source_directory=ctx.obj["OUTPUT_SOURCE_DIRECTORY"],
+        output_normalized_directory=ctx.obj["OUTPUT_NORMALIZED_DIRECTORY"],
+        output_file=ctx.obj["OUTPUT_FILE"],
+    )
+
+    results = harvester.harvest()
+    logger.info(results)
+
     logger.info(  # pragma: no cover
         "Total elapsed: %s",
         str(
             timedelta(seconds=perf_counter() - ctx.obj["START_TIME"]),
         ),
     )
-    raise NotImplementedError

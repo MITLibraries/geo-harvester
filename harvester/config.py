@@ -16,7 +16,9 @@ class Config:
     )
     OPTIONAL_ENV_VARS = (
         "GEOHARVESTER_SQS_TOPIC_NAME",
+        "OGM_CONFIG_FILEPATH",
         "OGM_CLONE_ROOT_URL",
+        "OGM_CLONE_ROOT_DIR",
         "GITHUB_API_TOKEN",
     )
 

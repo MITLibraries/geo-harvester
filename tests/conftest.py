@@ -658,3 +658,9 @@ def init_ogm_git_project_repos(
         make_commit(repo, "Removed second file and add third", 2020)
 
         yield None
+
+
+@pytest.fixture
+def mocked_ogm_harvester():
+    with patch("harvester.cli.OGMHarvester") as mock_harvester:
+        yield mock_harvester
