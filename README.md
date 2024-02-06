@@ -142,9 +142,9 @@ Usage: -c harvest ogm [OPTIONS]
   Harvest and normalize OpenGeoMetadata (OGM) geospatial metadata records.
 
 Options:
-  --include-repositories TEXT  If set, limit to only these comma seperated
+  --include-repositories TEXT  If set, limit to only this comma seperated
                                list of repositories for harvest.
-  --exclude-repositories TEXT  If set, exclude these comma seperated list of
+  --exclude-repositories TEXT  If set, exclude this comma seperated list of
                                repositories from harvest.
   -h, --help                   Show this message and exit.
 ```
