@@ -68,7 +68,7 @@ def test_cli_harvest_mit_full_legacy_single_success(
     assert result.exit_code == 0
 
 
-def test_cli_harvest_ogm_no_options_okay_success(runner, mocked_ogm_harvester):
+def test_cli_harvest_ogm_no_options_success(runner, mocked_ogm_harvester):
     result = runner.invoke(
         main, ["--verbose", "harvest", "ogm"], obj={"START_TIME": perf_counter()}
     )
