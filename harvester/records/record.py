@@ -5,20 +5,17 @@
 import datetime
 import json
 import logging
-import os
 from abc import abstractmethod
 from typing import Any, Literal
 
 from attrs import asdict, define, field, fields
 from attrs.validators import in_, instance_of
-from jsonschema import FormatChecker
-from jsonschema.validators import Draft202012Validator
 from lxml import etree  # type: ignore[import-untyped]
-from referencing import Registry, Resource
 
 from harvester.aws.sqs import ZipFileEventMessage
 from harvester.config import Config
-from harvester.records.exceptions import FieldMethodError, JSONSchemaValidationError
+from harvester.records.exceptions import FieldMethodError
+from harvester.records.validators import MITAardvarkFormatValidator
 from harvester.utils import dedupe_list_of_values
 
 logger = logging.getLogger(__name__)
@@ -112,83 +109,7 @@ class MITAardvark:
         The JSON schema validation is performed in addition to the validation of
         arguments through attrs attribute validators.
         """
-        self.validate()
-
-    @property
-    def json_schemas(self) -> dict:
-        """Load JSON schemas for validating MITAardvark records.
-
-        To validate MITAardvark records, the validator relies on two schemas:
-           * MITAardvark schema;
-           * OpenGeoMetadata's (OGM) Geoblacklight Aardvark schema.
-
-        The MITAardvark schema will comprise of majority of OGM's Aardvark schema,
-        with several updates for MIT's purposes. The schemas are read from
-        harvester/records/schemas directory and later added to a referencing.Registry.
-        Once in the registry, the validator can use the schemas to validate data.
-
-        Returns:
-            dict: JSON schemas for validating MITAardvark records.
-        """
-        schemas = {}
-        schema_dir = os.path.join(os.path.dirname(__file__), "schemas")
-        with open(schema_dir + "/mit-schema-aardvark.json") as f:
-            schemas["mit-schema-aardvark"] = json.loads(f.read())
-        with open(schema_dir + "/geoblacklight-schema-aardvark.json") as f:
-            schemas["geoblacklight-schema-aardvark"] = json.loads(f.read())
-        return schemas
-
-    @property
-    def validator(self) -> Draft202012Validator:
-        """Create a validator with JSON schemas for evaluating MITAardvark records.
-
-        An instance referencing.Registry is created with the required schema added as
-        resources. When the validator is created, the registry is included as an argument.
-        This enables the validator to use the schemas for validation.
-
-        Note: For more information on
-            * registries: https://python-jsonschema.readthedocs.io/en/stable/referencing
-            * validators: https://python-jsonschema.readthedocs.io/en/stable/validate/#the-validator-protocol
-
-        Returns:
-            Draft202012Validator: JSON schema validator with MITAardvark and OGM Aardvark
-                schemas.
-        """
-        registry: Registry = Registry().with_resources(
-            [
-                (
-                    "mit-schema-aardvark",
-                    Resource.from_contents(self.json_schemas["mit-schema-aardvark"]),
-                ),
-                (
-                    "geoblacklight-schema-aardvark",
-                    Resource.from_contents(
-                        self.json_schemas["geoblacklight-schema-aardvark"]
-                    ),
-                ),
-            ]
-        )
-        return Draft202012Validator(
-            schema=self.json_schemas["mit-schema-aardvark"],
-            registry=registry,
-            format_checker=FormatChecker(),
-        )
-
-    def validate(self) -> None:
-        """Validate that Aardvark is compliant for MIT purposes.
-
-        The validator is retrieved in order to use .iter_errors() to iterate through
-        each of the validation errors in the normalized record. If there are any errors,
-        they are compiled into a single error message that appears in a
-        JSONSchemaValidationError exception.
-        """
-        validation_errors = sorted(self.validator.iter_errors(self.to_dict()), key=str)
-
-        if validation_errors:
-            exc = JSONSchemaValidationError(validation_errors)
-            logger.debug(exc.message)
-            raise exc
-        logger.debug("The normalized MITAardvark record is valid")
+        MITAardvarkFormatValidator(self.to_dict()).validate()
 
     def to_dict(self) -> dict:
         """Dump MITAardvark record to dictionary."""
