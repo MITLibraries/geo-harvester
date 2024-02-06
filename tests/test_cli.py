@@ -66,3 +66,40 @@ def test_cli_harvest_mit_full_legacy_single_success(
         obj={"START_TIME": perf_counter()},
     )
     assert result.exit_code == 0
+
+
+def test_cli_harvest_ogm_no_options_success(runner, mocked_ogm_harvester):
+    result = runner.invoke(
+        main, ["--verbose", "harvest", "ogm"], obj={"START_TIME": perf_counter()}
+    )
+    assert result.exit_code == 0
+
+
+def test_cli_harvest_ogm_include_repositories_success(runner, mocked_ogm_harvester):
+    _result = runner.invoke(
+        main,
+        [
+            "--verbose",
+            "harvest",
+            "ogm",
+            "--include-repositories",
+            "repo1,repo2,  repo3",  # testing whitespace stripping
+        ],
+    )
+    args, kwargs = mocked_ogm_harvester.call_args
+    assert kwargs["include_repositories"] == ["repo1", "repo2", "repo3"]
+
+
+def test_cli_harvest_ogm_exclude_repositories_success(runner, mocked_ogm_harvester):
+    _result = runner.invoke(
+        main,
+        [
+            "--verbose",
+            "harvest",
+            "ogm",
+            "--exclude-repositories",
+            "  repo1,repo2   ,repo3",  # testing whitespace stripping
+        ],
+    )
+    args, kwargs = mocked_ogm_harvester.call_args
+    assert kwargs["exclude_repositories"] == ["repo1", "repo2", "repo3"]

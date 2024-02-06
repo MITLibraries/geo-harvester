@@ -220,7 +220,8 @@ class OGMRepository:
         """
         message = f"Removing local clone: {self.local_repository_directory}"
         logger.debug(message)
-        shutil.rmtree(self.local_repository_directory)
+        if os.path.exists(self.local_repository_directory):
+            shutil.rmtree(self.local_repository_directory)
 
     def get_all_records(self) -> Iterator["OGMRecord"]:
         """Get all records from current state of the repository."""
