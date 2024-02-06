@@ -62,23 +62,16 @@ def test_iso19139_record_required_gbl_resourceClass_sm_unhandled_value_return_no
     assert iso19139_source_record_required_fields._gbl_resourceClass_sm() == []
 
 
-def test_iso19139_record_required_dcat_bbox(iso19139_source_record_required_fields):
-    assert (
-        iso19139_source_record_required_fields._dcat_bbox()
-        == "ENVELOPE(88, 138, 25.833333, -16.5)"
-    )
-
-
-def test_iso19139_record_required_locn_geometry(iso19139_source_record_required_fields):
-    assert (
-        iso19139_source_record_required_fields._locn_geometry()
-        == "ENVELOPE(88, 138, 25.833333, -16.5)"
-    )
-
-
 #################################
 # Optional Fields
 #################################
+
+
+def test_iso19139_record_required_dcat_bbox(iso19139_source_record_all_fields):
+    assert (
+        iso19139_source_record_all_fields._dcat_bbox()
+        == "ENVELOPE(88, 138, 25.833333, -16.5)"
+    )
 
 
 def test_iso19139_optional_dcat_keyword_sm(iso19139_source_record_all_fields):
@@ -262,6 +255,13 @@ def test_iso19139_optional_gbl_indexYear_im_date_parse_log_continue(
 
 def test_iso19139_optional_gbl_resourceType_sm(iso19139_source_record_all_fields):
     assert iso19139_source_record_all_fields._gbl_resourceType_sm() == ["polygon"]
+
+
+def test_iso19139_record_required_locn_geometry(iso19139_source_record_all_fields):
+    assert (
+        iso19139_source_record_all_fields._locn_geometry()
+        == "ENVELOPE(88, 138, 25.833333, -16.5)"
+    )
 
 
 def test_iso19139_get_temporal_extents_instant_and_periods_success(
