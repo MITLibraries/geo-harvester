@@ -149,12 +149,6 @@ main.add_command(harvest)
     " env var GEOHARVESTER_SQS_TOPIC_NAME if not set.",
 )
 @click.option(
-    "--skip-sqs-check",
-    required=False,
-    is_flag=True,
-    help="If set, will skip confirming that the SQS is empty for 'full' harvest.",
-)
-@click.option(
     "--preserve-sqs-messages",
     required=False,
     is_flag=True,
@@ -171,7 +165,6 @@ def harvest_mit(
     ctx: click.Context,
     input_files: str,
     sqs_topic_name: str,
-    skip_sqs_check: bool,
     preserve_sqs_messages: bool,
     skip_eventbridge_events: bool,
 ) -> None:
@@ -182,7 +175,6 @@ def harvest_mit(
         until_date=ctx.obj["UNTIL_DATE"],
         input_files=input_files,
         sqs_topic_name=sqs_topic_name,
-        skip_sqs_check=skip_sqs_check,
         preserve_sqs_messages=preserve_sqs_messages,
         skip_eventbridge_events=skip_eventbridge_events,
         output_source_directory=ctx.obj["OUTPUT_SOURCE_DIRECTORY"],

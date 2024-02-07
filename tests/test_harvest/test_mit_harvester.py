@@ -43,23 +43,6 @@ def test_mit_harvester_list_s3_files_date_filter_equals_zero(
     assert len(zip_files) == 0
 
 
-def test_mit_harvester_full_harvest_non_empty_sqs_queue_raise_error(
-    mocked_sqs_topic_name, sqs_client_message_count_ten
-):
-    harvester = MITHarvester(
-        harvest_type="full",
-        input_files="/local/does/not/matter",
-        sqs_topic_name=mocked_sqs_topic_name,
-    )
-    assert not harvester.skip_sqs_check
-    assert not harvester._sqs_queue_is_empty()
-    with pytest.raises(
-        RuntimeError,
-        match="Cannot perform full harvest when SQS queue has unprocessed messages",
-    ):
-        list(harvester.full_harvest_get_source_records())
-
-
 def test_mit_harvester_full_harvest_bad_input_files_path_local_raise_error(
     mocked_restricted_bucket_empty, mocked_sqs_topic_name, sqs_client_message_count_zero
 ):
@@ -151,7 +134,6 @@ def test_mit_harvester_source_record_has_expected_values(caplog):
     harvester = MITHarvester(
         harvest_type="full",
         input_files="tests/fixtures/s3_cdn_restricted_legacy_single",
-        skip_sqs_check=True,
     )
     records = harvester.full_harvest_get_source_records()
     record = next(records)
@@ -169,7 +151,6 @@ def test_mit_harvester_find_metadata_file_missing_file_error():
     harvester = MITHarvester(
         harvest_type="full",
         input_files="tests/fixtures/s3_cdn_restricted_legacy_single",
-        skip_sqs_check=True,
     )
     with mock.patch("harvester.harvest.mit.zipfile.ZipFile.namelist") as mocked_namelist:
         mocked_namelist.return_value = ["abc123.shp"]
@@ -207,7 +188,6 @@ def test_mit_harvester_harvester_specific_steps_success(records_for_mit_steps):
     harvester = MockMITHarvester(
         harvest_type="incremental",
         input_files="tests/fixtures/s3_cdn_restricted_legacy_single",
-        skip_sqs_check=True,
     )
     output_records = list(harvester.harvester_specific_steps(records_for_mit_steps))
     assert output_records == records_for_mit_steps
@@ -223,7 +203,6 @@ def test_mit_harvester_send_eventbridge_event_success(caplog, records_for_mit_st
     harvester = MockMITHarvester(
         harvest_type="full",
         input_files="tests/fixtures/s3_cdn_restricted_legacy_single",
-        skip_sqs_check=True,
     )
     output_record = next(harvester.send_eventbridge_event(records_for_mit_steps))
     assert "sending EventBridge event" in caplog.text
@@ -242,7 +221,6 @@ def test_mit_harvester_send_eventbridge_event_error_log_and_yield(
     harvester = MockMITHarvester(
         harvest_type="full",
         input_files="tests/fixtures/s3_cdn_restricted_legacy_single",
-        skip_sqs_check=True,
     )
     output_record = next(harvester.send_eventbridge_event(records_for_mit_steps))
     assert "sending EventBridge event" in caplog.text
@@ -255,7 +233,6 @@ def test_mit_harvester_prepare_payload_and_send_event_success(records_for_mit_st
     harvester = MITHarvester(
         harvest_type="full",
         input_files="tests/fixtures/s3_cdn_restricted_legacy_single",
-        skip_sqs_check=True,
     )
     with mock.patch(
         "harvester.harvest.mit.EventBridgeClient.send_event"
@@ -286,7 +263,6 @@ def test_mit_harvester_delete_sqs_messages_preserve_flag_skip_step(
     harvester = MITHarvester(
         harvest_type="full",
         input_files="tests/fixtures/s3_cdn_restricted_legacy_single",
-        skip_sqs_check=True,
         preserve_sqs_messages=True,
     )
     _output_records = list(harvester.delete_sqs_messages(records_for_mit_steps))
@@ -303,7 +279,6 @@ def test_mit_harvester_delete_sqs_messages_success(
     harvester = MITHarvester(
         harvest_type="incremental",
         input_files="tests/fixtures/s3_cdn_restricted_legacy_single",
-        skip_sqs_check=True,
     )
     with mock.patch.object(harvester.sqs_client, "delete_message") as mocked_delete:
         _output_records = list(harvester.delete_sqs_messages(records_for_mit_steps))
@@ -317,7 +292,6 @@ def test_mit_harvester_skip_send_eventbridge_event(caplog, records_for_mit_steps
     harvester = MITHarvester(
         harvest_type="full",
         input_files="tests/fixtures/s3_cdn_restricted_legacy_single",
-        skip_sqs_check=True,
         skip_eventbridge_events=True,
     )
     with mock.patch(
