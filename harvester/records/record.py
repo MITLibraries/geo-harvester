@@ -424,18 +424,13 @@ class SourceRecord:
                 "url": f"{cdn_root}/{cdn_folder}/{self.identifier}.zip",
             },
         ]
-        website_urls = [
-            {
-                "label": "Website",
-                "url": (
-                    "https://search.libraries.mit.edu/record/"
-                    f"gismit:{self.identifier.removeprefix('mit:')}"
-                ),
-            }
-        ]
+        website_url = (
+            "https://geodata.libraries.mit.edu/record/"
+            f"gismit:{self.identifier.removeprefix('mit:')}"
+        )
         return {
             "http://schema.org/downloadUrl": download_urls,
-            "http://schema.org/url": website_urls,
+            "http://schema.org/url": website_url,
         }
 
     def _dct_references_s_ogm(self) -> dict:

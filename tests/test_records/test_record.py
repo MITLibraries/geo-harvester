@@ -175,13 +175,9 @@ def test_record_shared_field_method_dct_references_s_success(
                 "/SDE_DATA_AE_A8GNS_2003.zip",
             },
         ],
-        "http://schema.org/url": [
-            {
-                "label": "Website",
-                "url": "https://search.libraries.mit.edu/record/"
-                "gismit:SDE_DATA_AE_A8GNS_2003",
-            },
-        ],
+        "http://schema.org/url": (
+            "https://geodata.libraries.mit.edu/record/gismit:SDE_DATA_AE_A8GNS_2003"
+        ),
     }
     assert fgdc_source_record_from_zip._dct_references_s() == json.dumps(references)
 
