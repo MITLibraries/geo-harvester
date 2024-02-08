@@ -125,8 +125,6 @@ Options:
                              modifications. Defaults to env var
                              GEOHARVESTER_SQS_TOPIC_NAME if not set.
                              [required]
-  --skip-sqs-check           If set, will skip confirming that the SQS is
-                             empty for 'full' harvest.
   --preserve-sqs-messages    If set, SQS messages will remain in the queue
                              after incremental harvest.
   --skip-eventbridge-events  If set, will skip sending EventBridge events to

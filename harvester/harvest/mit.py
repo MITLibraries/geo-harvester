@@ -36,7 +36,6 @@ class MITHarvester(Harvester):
 
     input_files: str = field(default=None)
     sqs_topic_name: str = field(default=None)
-    skip_sqs_check: bool = field(default=False)
     preserve_sqs_messages: bool = field(default=False)
     skip_eventbridge_events: bool = field(default=False)
     _sqs_client: SQSClient = field(default=None)
@@ -48,11 +47,6 @@ class MITHarvester(Harvester):
         empty.
         """
         CONFIG.check_required_env_vars()
-        if not self.skip_sqs_check and not self._sqs_queue_is_empty():
-            message = (
-                "Cannot perform full harvest when SQS queue has unprocessed messages"
-            )
-            raise RuntimeError(message)
 
         for zip_file in self._list_zip_files():
             identifier = os.path.splitext(zip_file)[0].split("/")[-1]
@@ -184,10 +178,6 @@ class MITHarvester(Harvester):
                     record.source_record.sqs_message.receipt_handle
                 )
             yield record
-
-    def _sqs_queue_is_empty(self) -> bool:
-        """Check if SQS with file modifications is empty."""
-        return self.sqs_client.get_message_count() == 0
 
     def _list_zip_files(self) -> list[str]:
         """Get list of zip files from local or S3, filtering by modified date if set."""
