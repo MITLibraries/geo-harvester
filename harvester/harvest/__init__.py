@@ -3,6 +3,7 @@
 import datetime
 import logging
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from collections.abc import Iterator
 from typing import Literal
 
@@ -56,7 +57,16 @@ class Harvester(ABC):
             "processed_records_count": self.processed_records_count,
             "successful_records": len(self.successful_records),
             "failed_records_count": len(self.failed_records),
+            "failed_step_and_reason_count": self.get_harvest_failure_error_counts,
         }
+
+    @property
+    def get_harvest_failure_error_counts(self) -> dict:
+        """Return dictionary of failure step, reason, and count"""
+        error_counts: dict[str, int] = defaultdict(int)
+        for failure in self.failed_records:
+            error_counts[f"{failure['harvest_step']}: {failure['exception']}"] += 1
+        return error_counts
 
     def harvester_specific_steps(self, records: Iterator[Record]) -> Iterator[Record]:
         """Optional method to run steps specific to harvester type (MIT or OGM)."""
