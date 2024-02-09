@@ -4,6 +4,10 @@ import traceback
 from jsonschema.exceptions import ValidationError
 
 
+class FieldValueInvalidWarning(Warning):
+    """Warning to log when a validator determines field method returns an invalid value"""
+
+
 class FieldMethodError(Exception):
     """Exception to raise from normalize() method"""
 

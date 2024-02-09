@@ -11,6 +11,7 @@ from dateutil.parser import ParserError
 from lxml import etree
 
 from harvester.records.record import XMLSourceRecord
+from harvester.records.validators import ValidateGeoshapeWKT
 from harvester.utils import convert_lang_code, date_parser, dedupe_list_of_values
 
 logger = logging.getLogger(__name__)
@@ -81,6 +82,10 @@ class FGDC(XMLSourceRecord):
                 mapped_values.append(mapped_value)  # noqa: PERF401
         return mapped_values
 
+    ##########################
+    # Optional Field Methods
+    ##########################
+    @ValidateGeoshapeWKT
     def _dcat_bbox(self) -> str:
         """Field method: dcat_bbox.
 
@@ -119,16 +124,6 @@ class FGDC(XMLSourceRecord):
         )
         return f"ENVELOPE({lat_lon_envelope})"
 
-    def _locn_geometry(self) -> str:
-        """Field method: locn_geometry
-
-        NOTE: at this time, duplicating bounding box content from dcat_bbox
-        """
-        return self._dcat_bbox()
-
-    ##########################
-    # Optional Field Methods
-    ##########################
     def _dct_identifier_sm(self) -> list[str]:
         identifiers = []
 
@@ -384,3 +379,10 @@ class FGDC(XMLSourceRecord):
                         /sdtstype
         """
         return self.string_list_from_xpath(xpath_expr)
+
+    def _locn_geometry(self) -> str | None:
+        """Field method: locn_geometry
+
+        NOTE: at this time, duplicating bounding box content from dcat_bbox
+        """
+        return self._dcat_bbox()
