@@ -1,9 +1,3 @@
-# aardvark
-edu.wisc:
-  name: "University of Wisconsin-Madison"
-  metadata_format: gbl1
-  filename_regex: |
-    .+?/HeldBy_.+?/.+?\.json
 edu.uwm:
   name: "University of Wisconsin-Milwaukee"
   metadata_format: aardvark
@@ -60,8 +54,19 @@ edu.gmu:
   name: "George Mason University"
   metadata_format: aardvark
   file_directory: "metadata-aardvark"
-
-# gbl1
+edu.nyu:
+  name: "NYU Libraries"
+  metadata_format: aardvark
+  file_directory: "metadata-aardvark"
+edu.wisc:
+  name: "University of Wisconsin-Madison"
+  metadata_format: gbl1
+  filename_regex: |
+    .+?/HeldBy_.+?/.+?\.json
+  external_url_strategy:
+    name: base_url_and_slug
+    base_url: "https://geodata.wisc.edu/catalog"
+    gbl1_field: layer_slug_s
 edu.stanford.purl:
   name: "Stanford"
   metadata_format: gbl1
@@ -72,38 +77,38 @@ edu.berkeley:
   metadata_format: gbl1
   filename_regex: |
     .+?/geoblacklight\.json
+  external_url_strategy:
+    name: base_url_and_slug
+    base_url: "https://geodata.lib.berkeley.edu/catalog"
+    gbl1_field: layer_slug_s
 edu.cornell:
   name: "CUGIR, Cornell University"
   metadata_format: gbl1
   filename_regex: |
     .+?/geoblacklight\.json
-edu.nyu:
-  name: "NYU Libraries"
-  metadata_format: gbl1
-  filename_regex: |
-    .+?/geoblacklight\.json
+  external_url_strategy:
+    name: field_value
+    gbl1_field: dc_identifier_s
 edu.princeton.arks:
   name: "Princeton"
   metadata_format: gbl1
   filename_regex: |
     .+?/geoblacklight\.json
+  external_url_strategy:
+    name: base_url_and_slug
+    base_url: "https://maps.princeton.edu/catalog"
+    gbl1_field: layer_slug_s
 edu.columbia:
   name: "Columbia"
   metadata_format: gbl1
   filename_regex: |
     .+?/geoblacklight\.json
-edu.uarizona:
-  name: "University of Arizona"
-  metadata_format: gbl1
-  filename_regex: |
-    .+?/geoblacklight\.json
+  external_url_strategy:
+    name: base_url_and_slug
+    base_url: "https://geodata.library.columbia.edu/catalog"
+    gbl1_field: layer_slug_s
 edu.lclark:
   name: "Lewis and Clark"
-  metadata_format: gbl1
-  filename_regex: |
-    .+?/geoblacklight\.json
-edu.virginia:
-  name: "Virginia"
   metadata_format: gbl1
   filename_regex: |
     .+?/geoblacklight\.json
@@ -112,10 +117,6 @@ edu.harvard:
   metadata_format: gbl1
   filename_regex: |
     .+?/HGL4/.+?\.json
-
-# FGDC
-edu.tufts:
-  name: "Tufts"
-  metadata_format: fgdc
-  filename_regex: |
-    .+?/fgdc\.xml
+  external_url_strategy:
+    name: field_value
+    gbl1_field: dc_identifier_s
