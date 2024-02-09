@@ -24,37 +24,22 @@ logger = logging.getLogger(__name__)
 # Data Validators
 ###################
 class ValidateGeoshapeWKT:
-    """Decorator class for validating geoshape string values.
+    """Decorator class for validating WKT values.
 
-    The validator should be applied to any field methods that retrieve geoshape
-    string values. If the field method retrieves a string value, the validator
-    will determine if shapely can parse the string as WKT.
+    The validator should be applied to any field methods return WKT values.
+    A WKT value is considered valid if shapely can create a shapely.Geometry
+    object from the WKT value.
 
-    Warning messages will be logged for the following scenarios:
+    The validator will only call shapely methods if the value retrieved by
+    the field method is actually an instance of the string type.
 
-    1. Invalid WKT: Field method retrieves string value but shapely was unable to
-       parse string as WKT. Validator returns None.
-
-    2. Invalid None: Field method retrieves NoneType value. Validator returns None.
-
-    3. Invalid Type: Field method retrieves value that is neither of NoneType or a string
-       value. Validator returns None.
-
-    The validator will return the original value only if shapely was able to successfully
-    create a geometry object from the string value retrieved by the field method.
+    If the validation fails OR the value is not a string, the validator will
+    return None. If the validation is successful, the validator will return
+    the original value.
     """
 
     invalid_wkt_warning_message: str = (
-        "field: {field_name}, shapely was unable to parse string as WKT: '{value}'; "
-        "setting value to None"
-    )
-    invalid_none_warning_message: str = (
-        "field: {field_name}, value of type NoneType was provided; "
-        "returning original value of None"
-    )
-    invalid_type_warning_message: str = (
-        "field: {field_name}, value of type {type} was provided: {value}; "
-        "setting value to None"
+        "field: {field_name}, unable to parse WKT from value: {value}; returning None"
     )
 
     def __init__(self, field_method: Callable):
@@ -63,25 +48,15 @@ class ValidateGeoshapeWKT:
         self.field_name = field_method.__name__.removeprefix("_")
 
     def __call__(self, obj: object) -> str | None:
-        """Validate string values retrieved by field method."""
+        """Validate WKT values retrieved by field method."""
         value = self.field_method(obj)
 
         if isinstance(value, str):
             return self.validate(value)
 
-        if value is None:
-            logger.warning(
-                FieldValueInvalidWarning(
-                    self.invalid_none_warning_message.format(
-                        field_name=self.field_name, value=value
-                    )
-                )
-            )
-            return None
-
         logger.warning(
             FieldValueInvalidWarning(
-                self.invalid_type_warning_message.format(
+                self.invalid_wkt_warning_message.format(
                     field_name=self.field_name, type=type(value), value=value
                 )
             )
@@ -93,10 +68,10 @@ class ValidateGeoshapeWKT:
         return partial(self.__call__, obj)
 
     def validate(self, value: str) -> str | None:
-        """Validate geoshape WKT string value with shapely.
+        """Validate WKT string with shapely.
 
-        The geoshape WKT string value is considered valid if shapely can
-        successfully create a geometry object.
+        A WKT string is considered valid if shapely can successfully create a
+        a shapely.Geometry object from the WKT string.
         """
         try:
             self.create_geoshape(value)
@@ -113,12 +88,17 @@ class ValidateGeoshapeWKT:
 
     @staticmethod
     def create_geoshape(wkt: str) -> shapely.Geometry:
-        """Run shapely to determine whether geoshape WKT value is valid.
+        """Run shapely to determine whether WKT value is valid.
 
-        Note: shapely does not currently support WKT values for bounding box regions or
-        envelopes. The method uses regex to retrieving the vertices for a geoshape WKT
-        value with the format: "ENVELOPE(<vertices>)". The regex retrieves the vertices
-        inside the parentheses and passes the vertices as arguments to shapely.box().
+        Note: shapely does not currently support WKT strings for bounding box regions or
+        envelopes. A regular expression is used to check for the presence of "ENVELOPE"
+        in the WKT string (i.e., value is formatted as "ENVELOPE(<vertices>)").
+
+        If found, the regex retrieves the vertices from the WKT by matching all the
+        characters inside the parentheses, which are evaluated as a tuple of
+        float values. The float values are then passed as arguments to shapely.box().
+
+        Otherwise, the WKT string is directly passed into shapely.from_wkt().
         """
         if geoshape_string := re.compile(r"^ENVELOPE\s?(.*)").match(wkt):
             xmin, xmax, ymax, ymin = literal_eval(geoshape_string.group(1))
