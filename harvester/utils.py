@@ -33,6 +33,15 @@ def dedupe_list_of_values(list_of_values: list) -> list:
     if not list_of_values:
         return list_of_values
 
+    # handle edge case where OGM repositories set a single value as a list
+    # when it should be a single, scalar value
+    if (
+        isinstance(list_of_values, list)
+        and len(list_of_values) == 1
+        and isinstance(list_of_values[0], list)
+    ):
+        list_of_values = list_of_values[0]
+
     temp_dict = {}
 
     for item in list_of_values:

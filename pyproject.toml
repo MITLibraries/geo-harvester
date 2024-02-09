@@ -50,6 +50,8 @@ ignore = [
     "PLR0915",
     "S320",
     "S321",
+    "TD002",
+    "TD003"
 ]
 
 # allow autofix behavior for specified rules

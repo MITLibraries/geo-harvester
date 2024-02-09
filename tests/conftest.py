@@ -21,7 +21,15 @@ from harvester.config import Config
 from harvester.harvest import Harvester
 from harvester.harvest.mit import MITHarvester
 from harvester.harvest.ogm import OGMHarvester, OGMRepository
-from harvester.records import FGDC, ISO19139, MITAardvark, Record, XMLSourceRecord
+from harvester.records import (
+    FGDC,
+    GBL1,
+    ISO19139,
+    Aardvark,
+    MITAardvark,
+    Record,
+    XMLSourceRecord,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -664,3 +672,33 @@ def init_ogm_git_project_repos(
 def mocked_ogm_harvester():
     with patch("harvester.cli.OGMHarvester") as mock_harvester:
         yield mock_harvester
+
+
+@pytest.fixture
+def gbl1_all_fields():
+    with open("tests/fixtures/records/gbl1/gbl1_all_fields.json", "rb") as f:
+        return GBL1(
+            origin="ogm",
+            identifier="abc123",
+            data=f.read(),
+            event="created",
+            ogm_config={
+                "name": "Earth",
+                "metadata_format": "gbl1",
+            },
+        )
+
+
+@pytest.fixture
+def aardvark_all_fields():
+    with open("tests/fixtures/records/aardvark/aardvark_all_fields.json", "rb") as f:
+        return Aardvark(
+            origin="ogm",
+            identifier="abc123",
+            data=f.read(),
+            event="created",
+            ogm_config={
+                "name": "Earth",
+                "metadata_format": "aardvark",
+            },
+        )
