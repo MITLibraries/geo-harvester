@@ -22,6 +22,7 @@ from harvester.harvest import Harvester
 from harvester.harvest.mit import MITHarvester
 from harvester.harvest.ogm import OGMHarvester, OGMRepository
 from harvester.records import FGDC, ISO19139, MITAardvark, Record, XMLSourceRecord
+from harvester.records.validators import ValidateGeoshapeWKT
 
 
 @pytest.fixture(autouse=True)
@@ -240,6 +241,21 @@ def mocked_required_fields_source_record(valid_generic_xml_source_record):
         event=valid_generic_xml_source_record.event,
         nsmap=valid_generic_xml_source_record.nsmap,
     )
+
+
+@pytest.fixture
+def mocked_validated_fields_source_record():
+    class TestValidatedSourceRecord:
+        mocked_value = ""
+
+        @ValidateGeoshapeWKT
+        def _dcat_bbox(self):
+            return self.mocked_value
+
+        def _locn_geometry(self):
+            return self._dcat_bbox()
+
+    return TestValidatedSourceRecord
 
 
 @pytest.fixture

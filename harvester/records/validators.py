@@ -24,50 +24,96 @@ logger = logging.getLogger(__name__)
 # Data Validators
 ###################
 class ValidateGeoshapeWKT:
-    """Decorator class for validating geoshape WKT values.
+    """Decorator class for validating geoshape string values.
 
     The validator should be applied to any field methods that retrieve geoshape
-    WKT values. The validator logs a warning if the WKT value cannot be parsed
-    using the shapely module. If the WKT value cannot be parsed, the validator
-    resets the value to None.
+    string values. If the field method retrieves a string value, the validator
+    will determine if shapely can parse the string as WKT.
+
+    Warning messages will be logged for the following scenarios:
+
+    1. Invalid WKT: Field method retrieves string value but shapely was unable to
+       parse string as WKT. Validator returns None.
+
+    2. Invalid None: Field method retrieves NoneType value. Validator returns None.
+
+    3. Invalid Type: Field method retrieves value that is neither of NoneType or a string
+       value. Validator returns None.
+
+    The validator will return the original value only if shapely was able to successfully
+    create a geometry object from the string value retrieved by the field method.
     """
 
     invalid_wkt_warning_message: str = (
-        "field: {field_name}, shapely was unable to parse WKT: '{value}'; "
+        "field: {field_name}, shapely was unable to parse string as WKT: '{value}'; "
+        "setting value to None"
+    )
+    invalid_none_warning_message: str = (
+        "field: {field_name}, value of type NoneType was provided; "
+        "returning original value of None"
+    )
+    invalid_type_warning_message: str = (
+        "field: {field_name}, value of type {type} was provided: {value}; "
         "setting value to None"
     )
 
     def __init__(self, field_method: Callable):
         update_wrapper(self, field_method)
         self.field_method = field_method
+        self.field_name = field_method.__name__.removeprefix("_")
 
     def __call__(self, obj: object) -> str | None:
-        field_name = self.field_method.__name__.removeprefix("_")
+        """Validate string values retrieved by field method."""
         value = self.field_method(obj)
 
+        if isinstance(value, str):
+            return self.validate(value)
+
+        if value is None:
+            logger.warning(
+                FieldValueInvalidWarning(
+                    self.invalid_none_warning_message.format(
+                        field_name=self.field_name, value=value
+                    )
+                )
+            )
+            return None
+
+        logger.warning(
+            FieldValueInvalidWarning(
+                self.invalid_type_warning_message.format(
+                    field_name=self.field_name, type=type(value), value=value
+                )
+            )
+        )
+        return None
+
+    def __get__(self, obj: object, _: type) -> partial[str | None]:
+        """Required by decorator to access SourceRecord instance"""
+        return partial(self.__call__, obj)
+
+    def validate(self, value: str) -> str | None:
+        """Validate geoshape WKT string value with shapely.
+
+        The geoshape WKT string value is considered valid if shapely can
+        successfully create a geometry object.
+        """
         try:
             self.create_geoshape(value)
         except Exception:  # noqa: BLE001
             logger.warning(
                 FieldValueInvalidWarning(
                     self.invalid_wkt_warning_message.format(
-                        field_name=field_name, value=value
+                        field_name=self.field_name, value=value
                     )
                 )
             )
             return None
         return value
 
-    def __get__(self, obj: object, _: type) -> partial[str | None]:
-        """Required by decorator to access SourceRecord instance"""
-        return partial(self.__call__, obj)
-
     @staticmethod
     def create_geoshape(wkt: str) -> shapely.Geometry:
         """Run shapely to determine whether geoshape WKT value is valid.
-
-        If the geoshape WKT value is valid, shapely can successfully create a
-        geometry object.
 
         Note: shapely does not currently support WKT values for bounding box regions or
         envelopes. The method uses regex to retrieving the vertices for a geoshape WKT

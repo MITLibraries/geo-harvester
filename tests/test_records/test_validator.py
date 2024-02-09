@@ -1,98 +1,116 @@
-from harvester.records.validators import ValidateGeoshapeWKT
-
-
-def test_validator_envelope_returns_original_value_success(
-    caplog,
+def test_validator_envelope_none_nonetype_skips_validation_logs_warning_returns_none(
+    caplog, mocked_validated_fields_source_record
 ):
     caplog.set_level("DEBUG")
+    mocked_validated_fields_source_record.mocked_value = None
+    value = mocked_validated_fields_source_record()._dcat_bbox()  # noqa: SLF001
+    invalid_none_warning_message = (
+        "field: dcat_bbox, value of type NoneType was provided; "
+        "returning original value of None"
+    )
+    assert value is None
+    assert invalid_none_warning_message in caplog.text
 
-    class TestValidatedXMLSourceRecord:
-        @ValidateGeoshapeWKT
-        def _dcat_bbox(self):
-            return "ENVELOPE(71.0589, 74.0060, 42.3601, 40.7128)"
 
-    value = TestValidatedXMLSourceRecord()._dcat_bbox()  # noqa: SLF001
-    assert value == "ENVELOPE(71.0589, 74.0060, 42.3601, 40.7128)"
-
-
-def test_validator_envelope_missing_vertices_logs_warning_and_sets_value_to_none(
-    caplog,
+def test_validator_envelope_none_string_skips_validation_logs_warning_returns_none(
+    caplog, mocked_validated_fields_source_record
 ):
     caplog.set_level("DEBUG")
-
-    class TestValidatedXMLSourceRecord:
-        @ValidateGeoshapeWKT
-        def _dcat_bbox(self):
-            return "ENVELOPE()"
-
-    value = TestValidatedXMLSourceRecord()._dcat_bbox()  # noqa: SLF001
-    invalid_value_warning_message = (
-        "field: dcat_bbox, shapely was unable to parse WKT: 'ENVELOPE()'; "
+    mocked_validated_fields_source_record.mocked_value = "None"
+    value = mocked_validated_fields_source_record()._dcat_bbox()  # noqa: SLF001
+    invalid_wkt_warning_message = (
+        "field: dcat_bbox, shapely was unable to parse string as WKT: 'None'; "
         "setting value to None"
     )
     assert value is None
-    assert invalid_value_warning_message in caplog.text
+    assert invalid_wkt_warning_message in caplog.text
 
 
-def test_validator_envelope_insufficient_vertices_logs_warning_and_sets_value_to_none(
-    caplog,
+def test_validator_envelope_nonstring_skips_validation_logs_warning_returns_none(
+    caplog, mocked_validated_fields_source_record
 ):
     caplog.set_level("DEBUG")
+    mocked_validated_fields_source_record.mocked_value = 999
+    value = mocked_validated_fields_source_record()._dcat_bbox()  # noqa: SLF001
+    invalid_type_warning_message = (
+        "field: dcat_bbox, value of type <class 'int'> was provided: 999; "
+        "setting value to None"
+    )
+    assert value is None
+    assert invalid_type_warning_message in caplog.text
 
-    class TestValidatedXMLSourceRecord:
-        @ValidateGeoshapeWKT
-        def _dcat_bbox(self):
-            return "ENVELOPE(71.0589, 74.0060, 42.3601)"
 
-    value = TestValidatedXMLSourceRecord()._dcat_bbox()  # noqa: SLF001
-    invalid_value_warning_message = (
-        "field: dcat_bbox, shapely was unable to parse WKT: "
+def test_validator_envelope_returns_original_value_success(
+    caplog, mocked_validated_fields_source_record
+):
+    caplog.set_level("DEBUG")
+    mocked_validated_fields_source_record.mocked_value = (
+        "ENVELOPE(71.0589, 74.0060, 42.3601, 40.7128)"
+    )
+    value = mocked_validated_fields_source_record()._dcat_bbox()  # noqa: SLF001
+    assert value == "ENVELOPE(71.0589, 74.0060, 42.3601, 40.7128)"
+
+
+def test_validator_envelope_missing_vertices_logs_warning_sets_value_to_none(
+    caplog, mocked_validated_fields_source_record
+):
+    caplog.set_level("DEBUG")
+    mocked_validated_fields_source_record.mocked_value = "ENVELOPE()"
+    value = mocked_validated_fields_source_record()._dcat_bbox()  # noqa: SLF001
+    invalid_wkt_warning_message = (
+        "field: dcat_bbox, shapely was unable to parse string as WKT: 'ENVELOPE()'; "
+        "setting value to None"
+    )
+    assert value is None
+    assert invalid_wkt_warning_message in caplog.text
+
+
+def test_validator_envelope_insufficient_vertices_logs_warning_sets_value_to_none(
+    caplog, mocked_validated_fields_source_record
+):
+    caplog.set_level("DEBUG")
+    mocked_validated_fields_source_record.mocked_value = (
+        "ENVELOPE(71.0589, 74.0060, 42.3601)"
+    )
+    value = mocked_validated_fields_source_record()._dcat_bbox()  # noqa: SLF001
+    invalid_wkt_warning_message = (
+        "field: dcat_bbox, shapely was unable to parse string as WKT: "
         "'ENVELOPE(71.0589, 74.0060, 42.3601)'; "
         "setting value to None"
     )
     assert value is None
-    assert invalid_value_warning_message in caplog.text
+    assert invalid_wkt_warning_message in caplog.text
 
 
 def test_validator_polygon_returns_original_value_success(
-    caplog,
+    caplog, mocked_validated_fields_source_record
 ):
     caplog.set_level("DEBUG")
     polygon_wkt = (
         "POLYGON ((74.0060 40.7128, 71.0589 42.3601, "
         "73.7562 42.6526, 74.0060 40.7128))"
     )
-
-    class TestValidatedXMLSourceRecord:
-        @ValidateGeoshapeWKT
-        def _locn_geometry(self):
-            return polygon_wkt
-
-    value = TestValidatedXMLSourceRecord()._locn_geometry()  # noqa: SLF001
+    mocked_validated_fields_source_record.mocked_value = polygon_wkt
+    value = mocked_validated_fields_source_record()._locn_geometry()  # noqa: SLF001
     assert value == polygon_wkt
 
 
-def test_validator_polygon_missing_vertices_logs_warning_and_sets_value_to_none(
-    caplog,
+def test_validator_polygon_missing_vertices_logs_warning_sets_value_to_none(
+    caplog, mocked_validated_fields_source_record
 ):
     caplog.set_level("DEBUG")
-
-    class TestValidatedXMLSourceRecord:
-        @ValidateGeoshapeWKT
-        def _locn_geometry(self):
-            return "POLYGON (())"
-
-    value = TestValidatedXMLSourceRecord()._locn_geometry()  # noqa: SLF001
-    invalid_value_warning_message = (
-        "field: locn_geometry, shapely was unable to parse WKT: 'POLYGON (())'; "
+    mocked_validated_fields_source_record.mocked_value = "POLYGON (())"
+    value = mocked_validated_fields_source_record()._locn_geometry()  # noqa: SLF001
+    invalid_wkt_warning_message = (
+        "field: dcat_bbox, shapely was unable to parse string as WKT: 'POLYGON (())'; "
         "setting value to None"
     )
     assert value is None
-    assert invalid_value_warning_message in caplog.text
+    assert invalid_wkt_warning_message in caplog.text
 
 
 def test_validator_multipolygon_returns_original_value_success(
-    caplog,
+    caplog, mocked_validated_fields_source_record
 ):
     caplog.set_level("DEBUG")
     multipolygon_wkt = (
@@ -101,31 +119,21 @@ def test_validator_multipolygon_returns_original_value_success(
         "41.7658 72.6734)), ((73.9776 40.7614, 73.9554 40.7827, 73.9631 40.7812, "
         "73.9776 40.7614)))"
     )
-
-    class TestValidatedXMLSourceRecord:
-        @ValidateGeoshapeWKT
-        def _locn_geometry(self):
-            return multipolygon_wkt
-
-    value = TestValidatedXMLSourceRecord()._locn_geometry()  # noqa: SLF001
+    mocked_validated_fields_source_record.mocked_value = multipolygon_wkt
+    value = mocked_validated_fields_source_record()._locn_geometry()  # noqa: SLF001
     assert value == multipolygon_wkt
 
 
-def test_validator_multipolygon_missing_vertices_logs_warning_and_sets_value_to_none(
-    caplog,
+def test_validator_multipolygon_missing_vertices_logs_warning_sets_value_to_none(
+    caplog, mocked_validated_fields_source_record
 ):
     caplog.set_level("DEBUG")
-
-    class TestValidatedXMLSourceRecord:
-        @ValidateGeoshapeWKT
-        def _locn_geometry(self):
-            return "MULTIPOLYGON (((), ()), (()))"
-
-    value = TestValidatedXMLSourceRecord()._locn_geometry()  # noqa: SLF001
-    invalid_value_warning_message = (
-        "field: locn_geometry, shapely was unable to parse WKT: "
+    mocked_validated_fields_source_record.mocked_value = "MULTIPOLYGON (((), ()), (()))"
+    value = mocked_validated_fields_source_record()._locn_geometry()  # noqa: SLF001
+    invalid_wkt_warning_message = (
+        "field: dcat_bbox, shapely was unable to parse string as WKT: "
         "'MULTIPOLYGON (((), ()), (()))'; "
         "setting value to None"
     )
     assert value is None
-    assert invalid_value_warning_message in caplog.text
+    assert invalid_wkt_warning_message in caplog.text
