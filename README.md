@@ -21,12 +21,12 @@ At a high level, this is accomplished by:
 ```shell
 SENTRY_DSN=### If set to a valid Sentry DSN, enables Sentry exception monitoring. This is not needed for local development.
 WORKSPACE=### Set to `dev` for local development, this will be set to `stage` and `prod` in those environments by Terraform.
-S3_RESTRICTED_CDN_ROOT=### S3 bucket + prefix for CDN restricted, e.g. 's3://<bucket>/path/to/restricted'
-S3_PUBLIC_CDN_ROOT=### S3 bucket + prefix for CDN public, e.g. 's3://<bucket>/path/to/public'
 ```
 
 ### Optional
 ```shell
+S3_RESTRICTED_CDN_ROOT=### S3 bucket + prefix for CDN restricted, e.g. 's3://<bucket>/path/to/restricted'
+S3_PUBLIC_CDN_ROOT=### S3 bucket + prefix for CDN public, e.g. 's3://<bucket>/path/to/public'
 GEOHARVESTER_SQS_TOPIC_NAME=### default value for CLI argument --sqs-topic-name
 OGM_CONFIG_FILEPATH=### optional location for OGM configuration YAML
 OGM_CLONE_ROOT_URL=### optional base URL or filepath for where to clone OGM repositories from

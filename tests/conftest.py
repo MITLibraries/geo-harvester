@@ -71,6 +71,18 @@ def generic_harvester_class():
 
 
 @pytest.fixture
+def mit_harvester_class():
+    class GenericHarvester(MITHarvester):
+        def full_harvest_get_source_records(self):
+            raise NotImplementedError
+
+        def incremental_harvest_get_source_records(self):
+            raise NotImplementedError
+
+    return GenericHarvester
+
+
+@pytest.fixture
 def mocked_restricted_bucket():
     bucket_name = "mocked_cdn_restricted"
     with mock_aws():
@@ -412,16 +424,16 @@ def records_for_writing(fgdc_source_record_from_zip):
 
 
 @pytest.fixture
-def mocked_source_writer(generic_harvester_class):
+def mocked_source_writer(mit_harvester_class):
     mock_source_writer = MagicMock()
-    generic_harvester_class._write_source_metadata = mock_source_writer
+    mit_harvester_class._write_source_metadata = mock_source_writer
     return mock_source_writer
 
 
 @pytest.fixture
-def mocked_normalized_writer(generic_harvester_class):
+def mocked_normalized_writer(mit_harvester_class):
     mock_normalized_writer = MagicMock()
-    generic_harvester_class._write_normalized_metadata = mock_normalized_writer
+    mit_harvester_class._write_normalized_metadata = mock_normalized_writer
     return mock_normalized_writer
 
 

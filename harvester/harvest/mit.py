@@ -86,13 +86,70 @@ class MITHarvester(Harvester):
         """Harvest steps specific to MITHarvester
 
         Additional steps included:
+            - write source and normalized metadata records to CDN bucket
             - sending EventBridge events
             - managing SQS messages after processing
         """
+        records = self.filter_failed_records(self.write_source_and_normalized(records))
         records = self.filter_failed_records(self.send_eventbridge_event(records))
         if self.harvest_type == "incremental":
             records = self.filter_failed_records(self.delete_sqs_messages(records))
         yield from records
+
+    def write_source_and_normalized(self, records: Iterator[Record]) -> Iterator[Record]:
+        """Write source and normalized metadata as standalone files.
+
+        This step is driven by presence of one or both CLI options:
+            "--output-source-directory": write source records
+            "--output-normalized-directory": write normalized records
+
+        Source and normalized metadata files are most commonly written to the public CDN
+        bucket to facilitate download.
+        """
+        for record in records:
+            # write source
+            if self.output_source_directory:
+                message = f"Record {record.identifier}: writing source metadata"
+                logger.debug(message)
+                try:
+                    self._write_source_metadata(record)
+                except Exception as exc:  # noqa: BLE001
+                    record.exception_stage = "write_metadata.source"
+                    record.exception = exc
+                    yield record
+                    continue  # pragma: nocover
+
+            # write normalized
+            if self.output_normalized_directory:
+                message = f"Record {record.identifier}: writing normalized metadata"
+                logger.debug(message)
+                try:
+                    self._write_normalized_metadata(record)
+                except Exception as exc:  # noqa: BLE001
+                    record.exception_stage = "write_metadata.normalized"
+                    record.exception = exc
+                    yield record
+                    continue  # pragma: nocover
+
+            yield record
+
+    def _write_source_metadata(self, record: Record) -> None:
+        """Write source metadata file."""
+        source_metadata_filepath = (
+            f"{self.output_source_directory.rstrip('/')}/"
+            f"{record.source_record.source_metadata_filename.lstrip('/')}"
+        )
+        with smart_open.open(source_metadata_filepath, "wb") as source_file:
+            source_file.write(record.source_record.data)
+
+    def _write_normalized_metadata(self, record: Record) -> None:
+        """Write normalized metadata file."""
+        normalized_metadata_filepath = (
+            f"{self.output_normalized_directory.rstrip('/')}/"
+            f"{record.source_record.normalized_metadata_filename.lstrip('/')}"
+        )
+        with smart_open.open(normalized_metadata_filepath, "w") as normalized_file:
+            normalized_file.write(record.normalized_record.to_json(pretty=False))
 
     def send_eventbridge_event(self, records: Iterator[Record]) -> Iterator[Record]:
         """Method to send EventBridge event indicating access restrictions.

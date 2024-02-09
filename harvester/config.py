@@ -11,10 +11,10 @@ class Config:
     REQUIRED_ENV_VARS = (
         "WORKSPACE",
         "SENTRY_DSN",
-        "S3_RESTRICTED_CDN_ROOT",
-        "S3_PUBLIC_CDN_ROOT",
     )
     OPTIONAL_ENV_VARS = (
+        "S3_RESTRICTED_CDN_ROOT",
+        "S3_PUBLIC_CDN_ROOT",
         "GEOHARVESTER_SQS_TOPIC_NAME",
         "OGM_CONFIG_FILEPATH",
         "OGM_CLONE_ROOT_URL",

@@ -45,7 +45,7 @@ def test_config_check_required_env_vars_success(config_instance):
 
 
 def test_config_check_required_env_vars_error(monkeypatch, config_instance):
-    monkeypatch.delenv("S3_RESTRICTED_CDN_ROOT")
+    monkeypatch.delenv("WORKSPACE")
     with pytest.raises(OSError, match="Missing required environment variables"):
         config_instance.check_required_env_vars()
 
