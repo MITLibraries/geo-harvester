@@ -13,6 +13,7 @@ from dateutil.parser import parse as date_parser
 from lxml import etree
 
 from harvester.records.record import XMLSourceRecord
+from harvester.records.validators import ValidateGeoshapeWKT
 from harvester.utils import convert_lang_code
 
 logger = logging.getLogger(__name__)
@@ -142,7 +143,11 @@ class ISO19139(XMLSourceRecord):
                 output.append(mapped_value)
         return output
 
-    def _dcat_bbox(self) -> str:
+    ##########################
+    # Optional Field Methods
+    ##########################
+    @ValidateGeoshapeWKT
+    def _dcat_bbox(self) -> str | None:
         """Field method: dcat_bbox.
 
         "bbox" stands for "Bounding Box", and it should be the largest possible rectangle
@@ -187,16 +192,6 @@ class ISO19139(XMLSourceRecord):
 
         return f"ENVELOPE({lat_lon_envelope})"
 
-    def _locn_geometry(self) -> str:
-        """Field method: locn_geometry
-
-        NOTE: at this time, duplicating bounding box content from dcat_bbox
-        """
-        return self._dcat_bbox()
-
-    ##########################
-    # Optional Field Methods
-    ##########################
     def _dct_description_sm(self) -> list[str]:
         xpath_expr = """
         //gmd:MD_Metadata
@@ -465,6 +460,13 @@ class ISO19139(XMLSourceRecord):
                 logger.debug(message)
                 continue
         return years
+
+    def _locn_geometry(self) -> str | None:
+        """Field method: locn_geometry
+
+        NOTE: at this time, duplicating bounding box content from dcat_bbox
+        """
+        return self._dcat_bbox()
 
     ##########################
     # Utility / Helper Methods

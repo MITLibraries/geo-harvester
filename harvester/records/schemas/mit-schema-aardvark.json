@@ -131,14 +131,12 @@
         }
     },
     "required": [
-        "dcat_bbox",
         "dct_accessRights_s",
         "dct_references_s",
         "dct_title_s",
         "gbl_mdModified_dt",
         "gbl_mdVersion_s",
         "gbl_resourceClass_sm",
-        "id",
-        "locn_geometry"
+        "id"
     ]
 }
