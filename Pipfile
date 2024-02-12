@@ -16,6 +16,7 @@ jsonlines = "*"
 pycountry = "*"
 pygit2 = "*"
 shapely = "*"
+requests = "*"
 
 [dev-packages]
 black = "*"
