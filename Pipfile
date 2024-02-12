@@ -17,6 +17,7 @@ pycountry = "*"
 pygit2 = "*"
 shapely = "*"
 requests = "*"
+pyaml = "*"
 
 [dev-packages]
 black = "*"
