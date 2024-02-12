@@ -57,6 +57,9 @@ class GBL1(JSONSourceRecord):
         default.  However, some repositories require alternate strategies which can be
         optionally defined in the OGM config YAML using the "external_url_strategy"
         property.
+
+        If the URI "http://schema.org/downloadUrl" is present, and only a single value,
+        use.  If array, skip, as cannot be sure of a single download link to choose from.
         """
         # extract required external url
         url: None | str
@@ -91,13 +94,14 @@ class GBL1(JSONSourceRecord):
         # extract optional download url
         download_uri = "http://schema.org/downloadUrl"
         refs_dict = json.loads(self.parsed_data["dct_references_s"])
-        if download_url := refs_dict.get(download_uri):
-            urls_dict[download_uri] = [  # type: ignore[assignment]
-                {
-                    "label": "Data",
-                    "url": download_url,
-                }
-            ]
+        if download_value := refs_dict.get(download_uri):  # noqa: SIM102
+            if isinstance(download_value, str):
+                urls_dict[download_uri] = [  # type: ignore[assignment]
+                    {
+                        "label": "Data",
+                        "url": download_value,
+                    }
+                ]
 
         return urls_dict
 

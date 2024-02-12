@@ -50,6 +50,9 @@ class Aardvark(JSONSourceRecord):
         For OGM repositories that provide Aardvark metadata, the most reliable location
         to find an external URL is the 'http://schema.org/url' key in the dct_references_s
         JSON payload.
+
+        If the URI "http://schema.org/downloadUrl" is present, and only a single value,
+        use.  If array, skip, as cannot be sure of a single download link to choose from.
         """
         refs_dict = json.loads(self.parsed_data["dct_references_s"])
 
