@@ -141,7 +141,7 @@ class OGMHarvester(Harvester):
         identifier: str,
         change_type: str,
         data: str | bytes,
-        ogm_config: dict,
+        ogm_repo_config: dict,
     ) -> SourceRecord:
         """Create source record."""
         source_record_class = {
@@ -155,7 +155,7 @@ class OGMHarvester(Harvester):
             data=data,
             event=change_type,
             origin="ogm",
-            ogm_config=ogm_config,
+            ogm_repo_config=ogm_repo_config,
         )
 
 

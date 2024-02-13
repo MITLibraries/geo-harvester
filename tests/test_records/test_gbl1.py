@@ -158,7 +158,7 @@ def test_gbl1_required_gbl_indexYear_im_missing_value_return_list(gbl1_all_field
 
 
 def test_gbl1_alternate_url_strategy_base_url_and_slug(gbl1_all_fields):
-    gbl1_all_fields.ogm_config["external_url_strategy"] = {
+    gbl1_all_fields.ogm_repo_config["external_url_strategy"] = {
         "name": "base_url_and_slug",
         "base_url": "http://example.com",
         "gbl1_field": "layer_slug_s",
@@ -170,7 +170,7 @@ def test_gbl1_alternate_url_strategy_base_url_and_slug(gbl1_all_fields):
 
 
 def test_gbl1_alternate_url_strategy_field_value(gbl1_all_fields):
-    gbl1_all_fields.ogm_config["external_url_strategy"] = {
+    gbl1_all_fields.ogm_repo_config["external_url_strategy"] = {
         "name": "field_value",
         "gbl1_field": "dc_identifier_s",
     }
@@ -179,7 +179,7 @@ def test_gbl1_alternate_url_strategy_field_value(gbl1_all_fields):
 
 
 def test_gbl1_alternate_url_strategy_field_value_non_url_return_none(gbl1_all_fields):
-    gbl1_all_fields.ogm_config["external_url_strategy"] = {
+    gbl1_all_fields.ogm_repo_config["external_url_strategy"] = {
         "name": "field_value",
         "gbl1_field": "layer_slug_s",
     }
@@ -190,7 +190,9 @@ def test_gbl1_alternate_url_strategy_field_value_non_url_return_none(gbl1_all_fi
 
 
 def test_gbl1_alternate_url_strategy_not_recognized_raise_error(gbl1_all_fields):
-    gbl1_all_fields.ogm_config["external_url_strategy"] = {"name": "bad_strategy_here"}
+    gbl1_all_fields.ogm_repo_config["external_url_strategy"] = {
+        "name": "bad_strategy_here"
+    }
     with pytest.raises(
         ValueError, match="Alternate URL strategy not recognized: bad_strategy_here"
     ):

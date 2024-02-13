@@ -64,7 +64,7 @@ class GBL1(JSONSourceRecord):
         # extract required external url
         url: None | str
 
-        alternate_strategy = self.ogm_config.get("external_url_strategy")
+        alternate_strategy = self.ogm_repo_config.get("external_url_strategy")
         if alternate_strategy:
             strategy_name = alternate_strategy["name"]
             if strategy_name == "base_url_and_slug":

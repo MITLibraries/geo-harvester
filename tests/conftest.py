@@ -688,7 +688,7 @@ def gbl1_all_fields():
             identifier="abc123",
             data=f.read(),
             event="created",
-            ogm_config={
+            ogm_repo_config={
                 "name": "Earth",
                 "metadata_format": "gbl1",
             },
@@ -703,7 +703,7 @@ def aardvark_all_fields():
             identifier="abc123",
             data=f.read(),
             event="created",
-            ogm_config={
+            ogm_repo_config={
                 "name": "Earth",
                 "metadata_format": "aardvark",
             },

@@ -152,7 +152,7 @@ class SourceRecord:
             - present only for MIT harvests
             - by affixing to SourceRecord during record retrieval, it allows for use
             after the record has been processed to manage the message in the queue
-        ogm_config: config dictionary of OGM repository from configuration YAML
+        ogm_repo_config: config dictionary of OGM repository from configuration YAML
     """
 
     origin: Literal["mit", "ogm"] = field(validator=in_(["mit", "ogm"]))
@@ -166,7 +166,7 @@ class SourceRecord:
         default=None, validator=in_(["created", "deleted"])
     )
     sqs_message: ZipFileEventMessage = field(default=None)
-    ogm_config: dict = field(default=None)
+    ogm_repo_config: dict = field(default=None)
 
     @property
     def output_filename_extension(self) -> str:
@@ -373,7 +373,7 @@ class SourceRecord:
             case "mit":
                 return "GIS Lab, MIT Libraries"
             case "ogm":
-                return self.ogm_config["name"]
+                return self.ogm_repo_config["name"]
 
     def _dcat_theme_sm(self) -> list[str]:
         """Shared field method: dcat_theme_sm
