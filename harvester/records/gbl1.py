@@ -58,34 +58,17 @@ class GBL1(JSONSourceRecord):
         optionally defined in the OGM config YAML using the "external_url_strategy"
         property.
 
-        If the URI "http://schema.org/downloadUrl" is present, and only a single value,
-        use.  If array, skip, as cannot be sure of a single download link to choose from.
+        Additionally, if the URI "http://schema.org/downloadUrl" is present, and only a
+        single value, use.  If value is array, skip, as we cannot be sure of a single
+        download link to choose from.
         """
         # extract required external url
         url: None | str
-
-        alternate_strategy = self.ogm_repo_config.get("external_url_strategy")
-        if alternate_strategy:
-            strategy_name = alternate_strategy["name"]
-            if strategy_name == "base_url_and_slug":
-                url = "/".join(
-                    [
-                        alternate_strategy["base_url"],
-                        self.parsed_data[alternate_strategy["gbl1_field"]],
-                    ]
-                )
-            elif strategy_name == "field_value":
-                url = self.parsed_data.get(alternate_strategy["gbl1_field"])
-                if url and not url.startswith("http"):
-                    url = None
-            else:
-                error_message = f"Alternate URL strategy not recognized: {strategy_name}"
-                raise ValueError(error_message)
-
+        if external_url_strategy := self.ogm_repo_config.get("external_url_strategy"):
+            url = self._use_external_url_strategy(external_url_strategy)
         else:
             refs_dict = json.loads(self.parsed_data["dct_references_s"])
             url = refs_dict.get("http://schema.org/url")
-
         if not url:
             error_message = "Could not determine external URL from source metadata"
             raise ValueError(error_message)
@@ -104,6 +87,35 @@ class GBL1(JSONSourceRecord):
                 ]
 
         return urls_dict
+
+    def _use_external_url_strategy(self, alternate_strategy: dict) -> str:
+        """Apply alternative strategy for extracting external URL from source record.
+
+        OGM repositories may include an optional "external_url_strategy" property where
+        a sub-property "name" defines the strategy to use.  Currently supported:
+
+            - "base_url_and_slug": a pre-defined base URL is combined with the value from
+            a defined field to construct a URL
+
+            - "field_value": a single field contains a full URL
+        """
+        url: None | str
+        strategy_name = alternate_strategy["name"]
+        if strategy_name == "base_url_and_slug":
+            url = "/".join(
+                [
+                    alternate_strategy["base_url"],
+                    self.parsed_data[alternate_strategy["gbl1_field"]],
+                ]
+            )
+        elif strategy_name == "field_value":
+            url = self.parsed_data.get(alternate_strategy["gbl1_field"])
+            if url and not url.startswith("http"):
+                url = None
+        else:
+            error_message = f"Alternate URL strategy not recognized: {strategy_name}"
+            raise ValueError(error_message)
+        return url
 
     ##########################
     # Optional Field Methods
