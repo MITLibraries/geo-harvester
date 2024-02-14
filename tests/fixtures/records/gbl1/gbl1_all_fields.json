@@ -1,0 +1,33 @@
+{
+  "geoblacklight_version": "1.0",
+  "dc_identifier_s": "http://example.com/IAmUniqueId123",
+  "dc_title_s": "United Arab Emirates (Geographic Feature Names, 2003)",
+  "dc_description_s": "Geographic feature names for United Arab Emirates.",
+  "dc_rights_s": "Public",
+  "dct_provenance_s": "MIT",
+  "layer_id_s": "urn:SDE_DATA.AE_A8GNS_2003",
+  "layer_slug_s": "MIT-SDE_DATA.AE_A8GNS_2003",
+  "layer_modified_dt": "2009-01-26",
+  "dc_creator_sm": [
+    "National Imagery and Mapping Agency"
+  ],
+  "dc_publisher_s": "U.S. National Imagery and Mapping Agency (NIMA)",
+  "dc_format_s": "Shapefile",
+  "dc_language_s": "English",
+  "dc_type_s": "Dataset",
+  "dc_subject_sm": [
+    "locations",
+    "Names, Geographical"
+  ],
+  "dct_spatial_sm": [
+    "United Arab Emirates"
+  ],
+  "dct_issued_s": "2003-10-01",
+  "dct_temporal_sm": [
+    "2003"
+  ],
+  "solr_geom": "ENVELOPE(45, 59.25, 26.133333, 22.166667)",
+  "solr_year_i": 2003,
+  "dct_references_s": "{\"http://schema.org/url\":\"https://geodata.libraries.mit.edu/record/abc123\",\"http://schema.org/downloadUrl\":\"https://geodata.libraries.mit.edu/record/abc123.zip\"}",
+  "layer_geom_type_s": "Polygon"
+}

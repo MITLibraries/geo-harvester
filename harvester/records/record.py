@@ -152,6 +152,7 @@ class SourceRecord:
             - present only for MIT harvests
             - by affixing to SourceRecord during record retrieval, it allows for use
             after the record has been processed to manage the message in the queue
+        ogm_repo_config: config dictionary of OGM repository from configuration YAML
     """
 
     origin: Literal["mit", "ogm"] = field(validator=in_(["mit", "ogm"]))
@@ -165,6 +166,7 @@ class SourceRecord:
         default=None, validator=in_(["created", "deleted"])
     )
     sqs_message: ZipFileEventMessage = field(default=None)
+    ogm_repo_config: dict = field(default=None)
 
     @property
     def output_filename_extension(self) -> str:
@@ -304,15 +306,14 @@ class SourceRecord:
         """Shared field method: dct_references_s
 
         Builds a JSON string payload of links for the record.  Work is offloaded to
-        methods specific to MIT and OGM harvests.
+        methods specific to MIT (self._dct_references_s_mit) and OGM harvests
+        (self._dct_references_s_ogm).
         """
-        if self.origin == "ogm":
-            urls_dict = self._dct_references_s_ogm()
-        elif self.origin == "mit":
-            urls_dict = self._dct_references_s_mit()
-        else:
-            message = f"Source not recognized: {self.origin}"
-            raise ValueError(message)
+        match self.origin:
+            case "ogm":
+                urls_dict = self._dct_references_s_ogm()
+            case "mit":
+                urls_dict = self._dct_references_s_mit()
         return json.dumps(urls_dict)
 
     def _dct_references_s_mit(self) -> dict:
@@ -347,29 +348,32 @@ class SourceRecord:
         }
 
     def _dct_references_s_ogm(self) -> dict:
-        """Create dct_references_s JSON string for MIT harvests.
+        """Create dct_references_s JSON string for OGM harvests.
 
-        For OGM harvests, this will be a single external URL, extracted from the source
-        metadata, that points to the external institution's record page.
+        For OGM harvests, a single external URL is REQUIRED that points to an item page
+        hosted by the external institution, and an OPTIONAL URL that provides a direct
+        download.
+
+        While not required for all source classes (e.g. FGDC and ISO), this should be
+        overridden by GBL1 and Aardvark which are used for OGM harvests.
         """
-        # WIP: during OGM work, determine how to extract meaningful external URLs
-        message = "Field dct_references_s handling not yet implemented for OGM"
+        message = (
+            "Field method 'dct_references_s' must be overridden by format "
+            "specific classes for OGM harvests."
+        )
         raise NotImplementedError(message)
 
     def _schema_provider_s(self) -> str:
         """Shared field method: schema_provider_s
 
         For MIT harvests, provider is "GIS Lab, MIT Libraries".
-        For OGM harvests, provider will come from OGM harvest configuration.
+        For OGM harvests, provider will come from named defined in OGM configuration YAML.
         """
-        if self.origin == "mit":
-            return "GIS Lab, MIT Libraries"
-        if self.origin == "ogm":
-            # WIP: will be sorted out during OGM harvest work
-            message = "OGM harvests not yet implemented"
-            raise NotImplementedError(message)
-        message = f"Harvest origin {self.origin} not recognized."
-        raise ValueError(message)
+        match self.origin:
+            case "mit":
+                return "GIS Lab, MIT Libraries"
+            case "ogm":
+                return self.ogm_repo_config["name"]
 
     def _dcat_theme_sm(self) -> list[str]:
         """Shared field method: dcat_theme_sm
@@ -388,6 +392,8 @@ class SourceRecord:
             return []
 
         subjects = self._dct_subject_sm()
+        if not subjects:
+            return []
         theme_list = [
             "agriculture",
             "biology",
@@ -435,6 +441,8 @@ class SourceRecord:
 
 @define
 class XMLSourceRecord(SourceRecord):
+    """Shared parent class for XML based FGDC and ISO19139 source record classes."""
+
     nsmap: dict = field(default={})
     _root: etree._Element = field(default=None, repr=False)
 
@@ -498,4 +506,54 @@ class XMLSourceRecord(SourceRecord):
 
 @define
 class JSONSourceRecord(SourceRecord):
-    """WIP: until OGM records are harvested and then normalized."""
+    """Shared parent class for JSON based GBL1 and Aardvark source record classes."""
+
+    _parsed_data: dict = field(default=None)
+
+    @property
+    def parsed_data(self) -> dict:
+        """Parse raw JSON string/bytes data and cache to self for future use.
+
+        This property method includes a 'while' loop to handle JSON string data that is
+        double encoded, which is the case for some OGM repositories.
+        """
+        if not self._parsed_data:
+            data = self.data
+            if isinstance(data, bytes):
+                data = data.decode()
+            while not isinstance(data, dict):
+                data = json.loads(data)
+            self._parsed_data = data
+        return self._parsed_data
+
+    @property
+    def gbl_resource_class_value_map(self) -> dict:
+        """Maps values to controlled gbl_resourceClass_sm values for GBL1 and Aardvark.
+
+        https://opengeometadata.org/ogm-aardvark/#resource-class-values
+        """
+        return {
+            "attribute": None,
+            "attributeType": None,
+            "collectionHardware": None,
+            "collectionSession": None,
+            "collections": "Collections",
+            "dataset": "Datasets",
+            "datasets": "Datasets",
+            "dimensionGroup": None,
+            "feature": None,
+            "featureType": None,
+            "fieldSession": None,
+            "imagery": "Imagery",
+            "maps": "Maps",
+            "model": None,
+            "nonGeographicDataset": None,
+            "other": "Other",
+            "property": None,
+            "series": None,
+            "service": None,
+            "software": None,
+            "tile": None,
+            "web services": "Web services",
+            "websites": "Websites",
+        }

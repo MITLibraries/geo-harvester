@@ -7,7 +7,7 @@ import pytest
 from freezegun import freeze_time
 from lxml import etree
 
-from harvester.records import MITAardvark
+from harvester.records import JSONSourceRecord, MITAardvark, SourceRecord
 from harvester.records.exceptions import FieldMethodError, JSONSchemaValidationError
 
 
@@ -277,3 +277,48 @@ def test_mitaardvark_record_optional_fields_jsonschema_validation_success(
     caplog.set_level("DEBUG")
     MITAardvark(**valid_mitaardvark_data_optional_fields)
     assert "The normalized MITAardvark record is valid" in caplog.text
+
+
+def test_source_record_is_deleted_property_reads_event(fgdc_source_record_all_fields):
+    fgdc_source_record_all_fields.event = "deleted"
+    assert fgdc_source_record_all_fields.is_deleted
+
+
+def test_ogm_record_not_defined_dct_references_s_ogm_raise_error():
+    record = SourceRecord(
+        data=b"Hello World",
+        identifier="abc123",
+        origin="ogm",
+        event="created",
+        metadata_format="gbl1",
+    )
+    with pytest.raises(
+        NotImplementedError,
+        match="Field method 'dct_references_s' must be overridden by format specific "
+        "classes for OGM harvests.",
+    ):
+        record._dct_references_s_ogm()
+
+
+def test_record_shared_field_method_schema_provider_s_ogm_success(
+    gbl1_all_fields,
+):
+    assert gbl1_all_fields._schema_provider_s() == "Earth"
+
+
+def test_record_shared_field_dcat_theme_sm_no_subjects_return_empty_list(gbl1_all_fields):
+    gbl1_all_fields._parsed_data = {"nothing": "to see here"}
+    assert gbl1_all_fields._dcat_theme_sm() == []
+
+
+def test_record_decode_doubled_encoded_source_json_data_success():
+    with open("tests/fixtures/records/double_encoded_json_string_record.json", "rb") as f:
+        record = JSONSourceRecord(
+            data=f.read(),
+            identifier="abc123",
+            origin="ogm",
+            event="created",
+            metadata_format="gbl1",
+        )
+    assert isinstance(record.parsed_data, dict)
+    assert record.parsed_data["dc_title_s"] == "Burundi Administrative Boundaries"
