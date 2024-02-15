@@ -12,7 +12,6 @@ sequenceDiagram
     participant ogm_config_yaml as OGM Config YAML
     participant geo_harv as GeoHarvester
     participant ogm_repo as OGM Institution Repository
-    participant s3_cdn_pub as S3:CDN:Public
     participant s3_timdex as S3:TIMDEX
     
     geo_harv->>ogm_config_yaml: Load OGM harvest config YAML
@@ -22,8 +21,7 @@ sequenceDiagram
         geo_harv->>ogm_repo: Clone repo
         ogm_repo-->>geo_harv: Repo files
         geo_harv->>geo_harv: Filter to list of files based on <br> supported metadata formats from config
-        geo_harv->>geo_harv: Normalize source metadata to Aardvark
-        geo_harv->>s3_cdn_pub: Write source and MIT aardvark metadata
+        geo_harv->>geo_harv: Normalize source metadata to Aardvark        
         geo_harv->>s3_timdex: Write MIT aardvark
     end
 ```
@@ -38,7 +36,6 @@ sequenceDiagram
     participant ogm_config_yaml as OGM Config YAML
     participant geo_harv as GeoHarvester
     participant ogm_repo as OGM Institution Repository
-    participant s3_cdn_pub as S3: CDN:Public/OGM
     participant s3_timdex as S3: TIMDEX
     
     geo_harv->>ogm_config_yaml: Load OGM harvest config YAML
