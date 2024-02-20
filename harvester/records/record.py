@@ -14,6 +14,10 @@ from lxml import etree  # type: ignore[import-untyped]
 
 from harvester.aws.sqs import ZipFileEventMessage
 from harvester.config import Config
+from harvester.records.controlled_terms import (
+    DCT_FORMAT_S_OGM_TERMS,
+    GBL_RESOURCETYPE_SM_TERMS,
+)
 from harvester.records.exceptions import FieldMethodError
 from harvester.records.validators import MITAardvarkFormatValidator
 from harvester.utils import dedupe_list_of_values
@@ -227,6 +231,78 @@ class SourceRecord:
         if self.event == "deleted":
             return True
         return False
+
+    def get_controlled_dct_format_s_term(self, value: str | None) -> str | None:
+        """Get single of controlled term for dct_format_s from original value."""
+        if not value:
+            return None
+
+        value = value.lower().strip()
+
+        # allow for some variants and similar matches
+        # note: order is important; more specific should be first
+        if (
+            "shapefile" in value
+            or value == "shp"
+            or value == "avshp"
+            or "shp," in value
+            or "esri" in value
+            or "geodatabase" in value
+        ):
+            value = "shapefile"
+        elif "geotiff" in value:
+            value = "geotiff"
+        elif "jpeg2000" in value:
+            value = "jpeg2000"
+        elif "tiff/jpeg" in value or "multiple" in value:
+            value = "mixed"
+        elif "tiff" in value:
+            value = "tiff"
+        elif "jpeg" in value or "jpg" in value:
+            value = "jpeg"
+        elif "tabular" in value:
+            value = "tabular"
+
+        return {term.lower(): term for term in DCT_FORMAT_S_OGM_TERMS}.get(value)
+
+    def get_controlled_gbl_resourceType_sm_terms(
+        self, values: list[str] | None
+    ) -> list[str]:
+        """Get list of controlled terms for gbl_resourceType_sm from original values."""
+        if not values:
+            return []
+
+        controlled_values = []
+
+        # add allowed controlled terms not defined by Aardvark spec
+        controlled_terms = GBL_RESOURCETYPE_SM_TERMS
+        controlled_terms.update(["Image data", "Vector data", "Mixed"])
+
+        for value in values:
+            processed_value = value.strip().lower()
+
+            # allow for some variants and similar matches
+            # note: order is important; more specific should be first
+            if "polygon" in processed_value:
+                processed_value = "polygon data"
+            elif "raster" in processed_value:
+                processed_value = "raster data"
+            elif "point" in processed_value:
+                processed_value = "point data"
+            elif "line" in processed_value or "string" in processed_value:
+                processed_value = "line data"
+            elif "image" in processed_value:
+                processed_value = "image data"
+            elif "vector" in processed_value:
+                processed_value = "vector data"
+            elif "mixed" in processed_value or "composite" in processed_value:
+                processed_value = "mixed"
+
+            if controlled_value := {
+                term.lower(): term for term in GBL_RESOURCETYPE_SM_TERMS
+            }.get(processed_value):
+                controlled_values.append(controlled_value)
+        return dedupe_list_of_values(controlled_values)
 
     def normalize(self) -> MITAardvark:
         """Method to normalize a SourceRecord to an MIT Aardvark MITAardvark instance.

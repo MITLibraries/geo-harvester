@@ -2863,6 +2863,7 @@ http://www.nyc.gov/html/doitt/html/open/local_law_11_2012.shtml</accconst>
     <stdorder>
       <digform>
         <digtinfo>
+          <formname>Shapefile</formname>
           <transize Sync="TRUE">40.844</transize>
           <dssize Sync="TRUE">40.844</dssize>
         </digtinfo>

@@ -264,7 +264,9 @@ class ISO19139(XMLSourceRecord):
                             /gmd:name
                                 /gco:CharacterString
         """
-        return self.single_string_from_xpath(xpath_expr)
+        return self.get_controlled_dct_format_s_term(
+            self.single_string_from_xpath(xpath_expr)
+        )
 
     def _dct_issued_s(self) -> str | None:
         xpath_expr = """
@@ -430,7 +432,9 @@ class ISO19139(XMLSourceRecord):
                     /gmd:keyword
                         /gco:CharacterString
         """
-        return self.string_list_from_xpath(xpath_expr)
+        return self.get_controlled_gbl_resourceType_sm_terms(
+            self.string_list_from_xpath(xpath_expr)
+        )
 
     def _gbl_indexYear_im(self) -> list[int]:
         """Field method: gbl_indexYear_im

@@ -19,7 +19,7 @@
   "dct_description_sm": [
     "This layer is a georeferenced raster image of a paper map entitled Cairo (H-36-63, 75). The original scanned image with the legend and other information regarding the source is available in Dome. See the online linkage."
   ],
-  "dct_format_s": "Raster",
+  "dct_format_s": "Shapefile",
   "dct_identifier_sm": [
     "EG_CAIRO_A25TOPO_1972",
     "http://hdl.handle.net/1721.3/172443",
