@@ -137,7 +137,7 @@ def test_gbl1_required_gbl_dateRange_drsim(gbl1_all_fields):
 
 
 def test_gbl1_required_gbl_resourceType_sm(gbl1_all_fields):
-    assert gbl1_all_fields._gbl_resourceType_sm() == ["Polygon"]
+    assert gbl1_all_fields._gbl_resourceType_sm() == ["Polygon data"]
 
 
 def test_gbl1_required_gbl_indexYear_im(gbl1_all_fields):

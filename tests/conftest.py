@@ -28,6 +28,7 @@ from harvester.records import (
     Aardvark,
     MITAardvark,
     Record,
+    SourceRecord,
     XMLSourceRecord,
 )
 from harvester.records.validators import ValidateGeoshapeWKT
@@ -396,6 +397,22 @@ def iso19139_source_record_all_fields():
             event="created",
             data=f.read(),
         )
+
+
+@pytest.fixture
+def generic_source_record():
+    class GenericSourceRecord(SourceRecord):
+
+        def _gbl_resourceType_sm(self):
+            return []
+
+    return GenericSourceRecord(
+        origin="mit",
+        identifier="abc123",
+        metadata_format="fgdc",
+        data=b"Nothing to see here.",
+        event="created",
+    )
 
 
 @pytest.fixture

@@ -168,7 +168,7 @@ def test_fgdc_optional_dct_creator_sm(fgdc_source_record_all_fields):
 
 
 def test_fgdc_optional_dct_format_s(fgdc_source_record_all_fields):
-    assert fgdc_source_record_all_fields._dct_format_s() == "Vector"
+    assert fgdc_source_record_all_fields._dct_format_s() == "Shapefile"
 
 
 def test_fgdc_dct_format_s_missing_element_default_restricted(
@@ -241,7 +241,7 @@ def test_fgdc_optional_gbl_indexYear_im_date_parse_log_continue(
 
 
 def test_fgdc_optional_gbl_resourceType_sm(fgdc_source_record_all_fields):
-    assert fgdc_source_record_all_fields._gbl_resourceType_sm() == ["G-polygon"]
+    assert fgdc_source_record_all_fields._gbl_resourceType_sm() == ["Polygon data"]
 
 
 def test_fgdc_record_required_locn_geometry(fgdc_source_record_all_fields):

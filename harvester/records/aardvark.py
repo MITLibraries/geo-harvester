@@ -93,7 +93,7 @@ class Aardvark(JSONSourceRecord):
         return self.parsed_data.get("dct_creator_sm", [])
 
     def _dct_format_s(self) -> str | None:
-        return self.parsed_data.get("dct_format_s")
+        return self.get_controlled_dct_format_s_term(self.parsed_data.get("dct_format_s"))
 
     def _dct_issued_s(self) -> str | None:
         return self.parsed_data.get("dct_issued_s")
@@ -126,7 +126,9 @@ class Aardvark(JSONSourceRecord):
         return value
 
     def _gbl_resourceType_sm(self) -> list[str]:
-        return self.parsed_data.get("gbl_resourceType_sm", [])
+        return self.get_controlled_gbl_resourceType_sm_terms(
+            self.parsed_data.get("gbl_resourceType_sm", [])
+        )
 
     def _gbl_indexYear_im(self) -> list[int]:
         date_values = self.parsed_data.get("gbl_indexYear_im", [])

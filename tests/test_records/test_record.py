@@ -1,4 +1,4 @@
-# ruff: noqa: SLF001, PLR2004, N802, FLY002
+# ruff: noqa: SLF001, PLR2004, N802, FLY002, D212, D205
 
 import json
 from unittest.mock import patch
@@ -322,3 +322,105 @@ def test_record_decode_doubled_encoded_source_json_data_success():
         )
     assert isinstance(record.parsed_data, dict)
     assert record.parsed_data["dc_title_s"] == "Burundi Administrative Boundaries"
+
+
+def test_controlled_format_value_direct_match(generic_source_record):
+    assert generic_source_record.get_controlled_dct_format_s_term("GeoTIFF") == "GeoTIFF"
+
+
+def test_controlled_format_value_miss(generic_source_record):
+    assert generic_source_record.get_controlled_dct_format_s_term("watermleon") is None
+
+
+@pytest.mark.parametrize(
+    ("raw_value", "controlled_value"),
+    [
+        ("shp", "Shapefile"),
+        ("geotiff", "GeoTIFF"),
+        ("tiff", "TIFF"),
+        ("jpeg2000", "JPEG2000"),
+        ("jpg", "JPEG"),
+        ("tiff/jpeg", "Mixed"),
+        ("multiple", "Mixed"),
+        ("tabular", "Tabular"),
+    ],
+)
+def test_controlled_format_variant_matches(
+    generic_source_record, raw_value, controlled_value
+):
+    assert (
+        generic_source_record.get_controlled_dct_format_s_term(raw_value)
+        == controlled_value
+    )
+
+
+def test_controlled_format_utilize_gbl_resourceType_sm_for_help_success(
+    generic_source_record,
+):
+    """
+    This tests that when SourceRecord._dct_format_s() returns no value, or an unmapped
+    value, the method get_controlled_dct_format_s_term() fallsback on values from
+    gbl_resourceType_sm() to suggest what the filetype is.
+    """
+    with patch.object(generic_source_record, "_gbl_resourceType_sm") as x:
+        x.return_value = ["Polygon data"]
+        assert (
+            generic_source_record.get_controlled_dct_format_s_term("watermleon")
+            == "Shapefile"
+        )
+
+
+def test_controlled_format_utilize_gbl_resourceType_sm_for_help_miss_return_none(
+    generic_source_record,
+):
+    with patch.object(generic_source_record, "_gbl_resourceType_sm") as x:
+        x.return_value = ["I still cannot help"]
+        assert (
+            generic_source_record.get_controlled_dct_format_s_term("watermleon") is None
+        )
+
+
+def test_controlled_resource_type_value_direct_match(generic_source_record):
+    direct_match_terms = ["Cadastral maps", "Raster data", "Multi-spectral data"]
+    assert (
+        generic_source_record.get_controlled_gbl_resourceType_sm_terms(direct_match_terms)
+        == direct_match_terms
+    )
+
+
+def test_controlled_resource_type_value_case_insensitive_and_some_dropped(
+    generic_source_record,
+):
+    assert generic_source_record.get_controlled_gbl_resourceType_sm_terms(
+        ["CADASTRAL MAPS", "watermelon"]
+    ) == ["Cadastral maps"]
+
+
+def test_controlled_resource_type_value_miss(generic_source_record):
+    assert (
+        generic_source_record.get_controlled_gbl_resourceType_sm_terms(
+            ["watermelon", "pickles"]
+        )
+        == []
+    )
+
+
+@pytest.mark.parametrize(
+    ("raw_values", "controlled_values"),
+    [
+        (["G-polygon"], ["Polygon data"]),
+        (["Raster"], ["Raster data"]),
+        (["point"], ["Point data"]),
+        (["line"], ["Line data"]),
+        (["Image"], ["Image data"]),
+        (["Vector"], ["Vector data"]),
+        (["Mixed", "Composite"], ["Mixed"]),  # note: de-duped
+    ],
+)
+def test_controlled_resource_type_variant_matches(
+    generic_source_record, raw_values, controlled_values
+):
+    assert (
+        generic_source_record.get_controlled_gbl_resourceType_sm_terms(raw_values)
+        == controlled_values
+    )

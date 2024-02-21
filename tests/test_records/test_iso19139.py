@@ -254,7 +254,7 @@ def test_iso19139_optional_gbl_indexYear_im_date_parse_log_continue(
 
 
 def test_iso19139_optional_gbl_resourceType_sm(iso19139_source_record_all_fields):
-    assert iso19139_source_record_all_fields._gbl_resourceType_sm() == ["polygon"]
+    assert iso19139_source_record_all_fields._gbl_resourceType_sm() == ["Polygon data"]
 
 
 def test_iso19139_record_required_locn_geometry(iso19139_source_record_all_fields):

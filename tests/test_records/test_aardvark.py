@@ -103,7 +103,7 @@ def test_aardvark_dct_creator_sm(aardvark_all_fields):
 
 
 def test_aardvark_dct_format_s(aardvark_all_fields):
-    assert aardvark_all_fields._dct_format_s() == "Raster"
+    assert aardvark_all_fields._dct_format_s() == "Shapefile"
 
 
 def test_aardvark_dct_issued_s(aardvark_all_fields):

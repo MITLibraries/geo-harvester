@@ -136,7 +136,7 @@ class GBL1(JSONSourceRecord):
         return self.parsed_data.get("dc_creator_sm")
 
     def _dct_format_s(self) -> str | None:
-        return self.parsed_data.get("dc_format_s")
+        return self.get_controlled_dct_format_s_term(self.parsed_data.get("dc_format_s"))
 
     def _dct_issued_s(self) -> str | None:
         return self.parsed_data.get("dct_issued_s")
@@ -172,7 +172,9 @@ class GBL1(JSONSourceRecord):
         return []
 
     def _gbl_resourceType_sm(self) -> list[str]:
-        return self._convert_scalar_to_array("layer_geom_type_s")
+        return self.get_controlled_gbl_resourceType_sm_terms(
+            self._convert_scalar_to_array("layer_geom_type_s")
+        )
 
     def _gbl_indexYear_im(self) -> list[int]:
         if value := self.parsed_data.get("solr_year_i"):
