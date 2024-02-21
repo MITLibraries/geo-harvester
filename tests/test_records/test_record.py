@@ -1,4 +1,4 @@
-# ruff: noqa: SLF001, PLR2004, N802, FLY002
+# ruff: noqa: SLF001, PLR2004, N802, FLY002, D212, D205
 
 import json
 from unittest.mock import patch
@@ -352,6 +352,32 @@ def test_controlled_format_variant_matches(
         generic_source_record.get_controlled_dct_format_s_term(raw_value)
         == controlled_value
     )
+
+
+def test_controlled_format_utilize_gbl_resourceType_sm_for_help_success(
+    generic_source_record,
+):
+    """
+    This tests that when SourceRecord._dct_format_s() returns no value, or an unmapped
+    value, the method get_controlled_dct_format_s_term() fallsback on values from
+    gbl_resourceType_sm() to suggest what the filetype is.
+    """
+    with patch.object(generic_source_record, "_gbl_resourceType_sm") as x:
+        x.return_value = ["Polygon data"]
+        assert (
+            generic_source_record.get_controlled_dct_format_s_term("watermleon")
+            == "Shapefile"
+        )
+
+
+def test_controlled_format_utilize_gbl_resourceType_sm_for_help_miss_return_none(
+    generic_source_record,
+):
+    with patch.object(generic_source_record, "_gbl_resourceType_sm") as x:
+        x.return_value = ["I still cannot help"]
+        assert (
+            generic_source_record.get_controlled_dct_format_s_term("watermleon") is None
+        )
 
 
 def test_controlled_resource_type_value_direct_match(generic_source_record):

@@ -401,7 +401,12 @@ def iso19139_source_record_all_fields():
 
 @pytest.fixture
 def generic_source_record():
-    return SourceRecord(
+    class GenericSourceRecord(SourceRecord):
+
+        def _gbl_resourceType_sm(self):
+            return []
+
+    return GenericSourceRecord(
         origin="mit",
         identifier="abc123",
         metadata_format="fgdc",

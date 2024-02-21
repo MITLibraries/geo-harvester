@@ -233,37 +233,62 @@ class SourceRecord:
         return False
 
     def get_controlled_dct_format_s_term(self, value: str | None) -> str | None:
-        """Get single of controlled term for dct_format_s from original value."""
-        if not value:
-            return None
+        """Get a single controlled term for dct_format_s from original value.
 
-        value = value.lower().strip()
+        If a value is not provided, or does not match a controlled term, this method falls
+        back on looking at controlled values from the gbl_resourceType_sm field which may
+        indicate the file type (e.g. Vector or Polygon data indicates it is likely a
+        Shapefile).
+        """
+        controlled_value = None
 
-        # allow for some variants and similar matches
-        # note: order is important; more specific should be first
-        if (
-            "shapefile" in value
-            or value == "shp"
-            or value == "avshp"
-            or "shp," in value
-            or "esri" in value
-            or "geodatabase" in value
-        ):
-            value = "shapefile"
-        elif "geotiff" in value:
-            value = "geotiff"
-        elif "jpeg2000" in value:
-            value = "jpeg2000"
-        elif "tiff/jpeg" in value or "multiple" in value:
-            value = "mixed"
-        elif "tiff" in value:
-            value = "tiff"
-        elif "jpeg" in value or "jpg" in value:
-            value = "jpeg"
-        elif "tabular" in value:
-            value = "tabular"
+        if value:
+            value = value.lower().strip()
 
-        return {term.lower(): term for term in DCT_FORMAT_S_OGM_TERMS}.get(value)
+            # allow for some variants and similar matches
+            # note: order is important; more specific should be first
+            if (
+                "shapefile" in value
+                or value == "shp"
+                or value == "avshp"
+                or "shp," in value
+                or "esri" in value
+                or "geodatabase" in value
+            ):
+                value = "shapefile"
+            elif "geotiff" in value:
+                value = "geotiff"
+            elif "jpeg2000" in value:
+                value = "jpeg2000"
+            elif "tiff/jpeg" in value or "multiple" in value:
+                value = "mixed"
+            elif "tiff" in value:
+                value = "tiff"
+            elif "jpeg" in value or "jpg" in value:
+                value = "jpeg"
+            elif "tabular" in value:
+                value = "tabular"
+
+            controlled_value = {
+                term.lower(): term for term in DCT_FORMAT_S_OGM_TERMS
+            }.get(value)
+
+        # if still no controlled format value determined, fallback on looking at
+        # controlled resource types that may indicate file format type
+        if not controlled_value:
+            resource_type_to_format_map = {
+                "Polygon data": "Shapefile",
+                "Point data": "Shapefile",
+                "Line data": "Shapefile",
+                "Vector data": "Shapefile",
+            }
+            for (
+                resource_type
+            ) in self._gbl_resourceType_sm():  # type: ignore[attr-defined]
+                if mapped_value := resource_type_to_format_map.get(resource_type):
+                    controlled_value = mapped_value
+
+        return controlled_value
 
     def get_controlled_gbl_resourceType_sm_terms(
         self, values: list[str] | None
@@ -302,6 +327,7 @@ class SourceRecord:
                 term.lower(): term for term in GBL_RESOURCETYPE_SM_TERMS
             }.get(processed_value):
                 controlled_values.append(controlled_value)
+
         return dedupe_list_of_values(controlled_values)
 
     def normalize(self) -> MITAardvark:

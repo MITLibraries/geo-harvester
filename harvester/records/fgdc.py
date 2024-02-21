@@ -288,6 +288,13 @@ class FGDC(XMLSourceRecord):
         return self.string_list_from_xpath(xpath_expr)
 
     def _dct_format_s(self) -> str | None:
+        """Field method: dct_format_s.
+
+        This method prefers an explicit value from //digtinfo/formname, but when that is
+        not present, or does not map to a controlled term, then the shared method
+        get_controlled_dct_format_s_term() checks values from field method
+        gbl_resourceType_sm() for help on determining file type.
+        """
         xpath_expr = """
         //metadata
             /distinfo
