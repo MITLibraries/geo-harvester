@@ -1,0 +1,239 @@
+<record>
+    <leader>02540xem 2200613Ia 4500</leader>
+    <controlfield tag="005">20231211141912.0</controlfield>
+    <controlfield tag="008">800822m19419999enkag a f 1 eng</controlfield>
+    <controlfield tag="001">990019938100106761</controlfield>
+    <datafield tag="010" ind1=" " ind2=" ">
+        <subfield code="a">map47000005</subfield>
+    </datafield>
+    <datafield tag="034" ind1="1" ind2=" ">
+        <subfield code="a">a</subfield>
+        <subfield code="b">50000</subfield>
+    </datafield>
+    <datafield tag="035" ind1=" " ind2=" ">
+        <subfield code="a">(MCM)001993810MIT01</subfield>
+    </datafield>
+    <datafield tag="035" ind1=" " ind2=" ">
+        <subfield code="a">(OCoLC)06644794</subfield>
+    </datafield>
+    <datafield tag="040" ind1=" " ind2=" ">
+        <subfield code="a">DLC</subfield>
+        <subfield code="c">GAT</subfield>
+        <subfield code="d">OCL</subfield>
+        <subfield code="d">OCLCQ</subfield>
+        <subfield code="d">STF</subfield>
+        <subfield code="d">MYG</subfield>
+    </datafield>
+    <datafield tag="043" ind1=" " ind2=" ">
+        <subfield code="a">a-tu---</subfield>
+    </datafield>
+    <datafield tag="049" ind1=" " ind2=" ">
+        <subfield code="a">MYGG</subfield>
+    </datafield>
+    <datafield tag="050" ind1=" " ind2="4">
+        <subfield code="a">G7430 S200</subfield>
+        <subfield code="b">.G72</subfield>
+    </datafield>
+    <datafield tag="052" ind1=" " ind2=" ">
+        <subfield code="a">7430</subfield>
+    </datafield>
+    <datafield tag="090" ind1=" " ind2=" ">
+        <subfield code="a">G7431.C5 s200.G72</subfield>
+    </datafield>
+    <datafield tag="110" ind1="1" ind2=" ">
+        <subfield code="a">Great Britain.</subfield>
+        <subfield code="b">War Office.</subfield>
+        <subfield code="b">General Staff.</subfield>
+        <subfield code="b">Geographical Section.</subfield>
+    </datafield>
+    <datafield tag="245" ind1="1" ind2="0">
+        <subfield code="a">1:200,000 Turkey</subfield>
+        <subfield code="h">[cartographic material].</subfield>
+    </datafield>
+    <datafield tag="255" ind1=" " ind2=" ">
+        <subfield code="a">Scale 1:200,000. 1 inch = 3.16 miles.</subfield>
+    </datafield>
+    <datafield tag="260" ind1=" " ind2=" ">
+        <subfield code="a">[London]</subfield>
+        <subfield code="b">War Office,</subfield>
+        <subfield code="c">1941-</subfield>
+    </datafield>
+    <datafield tag="300" ind1=" " ind2=" ">
+        <subfield code="a">maps :</subfield>
+        <subfield code="b">col. ;</subfield>
+        <subfield code="c">43 x 53 cm.</subfield>
+    </datafield>
+    <datafield tag="336" ind1=" " ind2=" ">
+        <subfield code="a">cartographic image</subfield>
+        <subfield code="b">cri</subfield>
+        <subfield code="2">rdacontent</subfield>
+    </datafield>
+    <datafield tag="337" ind1=" " ind2=" ">
+        <subfield code="a">unmediated</subfield>
+        <subfield code="b">n</subfield>
+        <subfield code="2">rdamedia</subfield>
+    </datafield>
+    <datafield tag="338" ind1=" " ind2=" ">
+        <subfield code="a">sheet</subfield>
+        <subfield code="b">zu</subfield>
+        <subfield code="2">rdacarrier</subfield>
+    </datafield>
+    <datafield tag="490" ind1="1" ind2=" ">
+        <subfield code="a">Its [G.S.G.S.] ;</subfield>
+        <subfield code="v">4193</subfield>
+    </datafield>
+    <datafield tag="500" ind1=" " ind2=" ">
+        <subfield code="a">Relief shown by contours and spot heights.</subfield>
+    </datafield>
+    <datafield tag="500" ind1=" " ind2=" ">
+        <subfield code="a">Set includes various issues of some sheets, some reissued
+            by U.S. Army Map Service. Some are by British Middle East Forces (M.D.R.
+            3) with or without series designation Provisional G.S.G.S. 4193.
+        </subfield>
+    </datafield>
+    <datafield tag="500" ind1=" " ind2=" ">
+        <subfield code="a">"Longitudes are from Istanbul. Greenwich longitude of
+            Istanbul is 28&#8304;59 &#769;east, approximately."
+        </subfield>
+    </datafield>
+    <datafield tag="500" ind1=" " ind2=" ">
+        <subfield code="a">Contours are shown at 25, 50, 100 and 500 meters.
+        </subfield>
+    </datafield>
+    <datafield tag="500" ind1=" " ind2=" ">
+        <subfield code="a">Military grid.</subfield>
+    </datafield>
+    <datafield tag="500" ind1=" " ind2=" ">
+        <subfield code="a">Two classes of railroads, six classes of roads and paths
+            and various types of vegetation shown.
+        </subfield>
+    </datafield>
+    <datafield tag="500" ind1=" " ind2=" ">
+        <subfield code="a">Based on Turkish maps.</subfield>
+    </datafield>
+    <datafield tag="500" ind1=" " ind2=" ">
+        <subfield code="a">Marginal maps on various sheets include index to adjoining
+            sheets, incidence of grid letters, key to grids and index to boundaries.
+        </subfield>
+    </datafield>
+    <datafield tag="505" ind1="1" ind2=" ">
+        <subfield code="a">Sheet A 8. Inebolu</subfield>
+    </datafield>
+    <datafield tag="650" ind1=" " ind2="0">
+        <subfield code="a">Geology</subfield>
+        <subfield code="z">Turkey</subfield>
+        <subfield code="v">Maps.</subfield>
+    </datafield>
+    <datafield tag="650" ind1=" " ind2="7">
+        <subfield code="a">Geology.</subfield>
+        <subfield code="2">fast</subfield>
+    </datafield>
+    <datafield tag="651" ind1=" " ind2="0">
+        <subfield code="a">Turkey</subfield>
+        <subfield code="v">Maps.</subfield>
+    </datafield>
+    <datafield tag="651" ind1=" " ind2="7">
+        <subfield code="a">Turkey.</subfield>
+        <subfield code="2">fast</subfield>
+    </datafield>
+    <datafield tag="655" ind1=" " ind2="7">
+        <subfield code="a">Topographic maps.</subfield>
+        <subfield code="2">lcgft</subfield>
+    </datafield>
+    <datafield tag="655" ind1=" " ind2="7">
+        <subfield code="a">Maps.</subfield>
+        <subfield code="2">lcgft</subfield>
+    </datafield>
+    <datafield tag="655" ind1=" " ind2="7">
+        <subfield code="a">Maps.</subfield>
+        <subfield code="2">fast</subfield>
+    </datafield>
+    <datafield tag="655" ind1=" " ind2="7">
+        <subfield code="a">Topographic maps.</subfield>
+        <subfield code="2">fast</subfield>
+    </datafield>
+    <datafield tag="810" ind1="1" ind2=" ">
+        <subfield code="a">Great Britain.</subfield>
+        <subfield code="b">Army.</subfield>
+        <subfield code="b">Middle East Forces.</subfield>
+        <subfield code="t">M.D.R. ;</subfield>
+        <subfield code="v">3.</subfield>
+    </datafield>
+    <datafield tag="830" ind1=" " ind2="0">
+        <subfield code="a">GSGS (Series) ;</subfield>
+        <subfield code="v">4193.</subfield>
+    </datafield>
+    <datafield tag="910" ind1=" " ind2=" ">
+        <subfield code="a">mjy110824</subfield>
+        <subfield code="b">mod</subfield>
+        <subfield code="c">~</subfield>
+        <subfield code="e">wall</subfield>
+        <subfield code="j">e</subfield>
+        <subfield code="k">m</subfield>
+        <subfield code="l">blank</subfield>
+        <subfield code="m">I</subfield>
+        <subfield code="o">a</subfield>
+        <subfield code="p">DLC</subfield>
+        <subfield code="q">s-map</subfield>
+        <subfield code="r">a</subfield>
+        <subfield code="s">1</subfield>
+        <subfield code="w">~</subfield>
+        <subfield code="x">0</subfield>
+        <subfield code="y">~</subfield>
+        <subfield code="z">~</subfield>
+        <subfield code="i">mjy</subfield>
+        <subfield code="d">110824</subfield>
+    </datafield>
+    <datafield tag="910" ind1=" " ind2=" ">
+        <subfield code="a">MARCIVEAUT</subfield>
+    </datafield>
+    <datafield tag="910" ind1=" " ind2=" ">
+        <subfield code="a">MARCIVEAUT221103</subfield>
+    </datafield>
+    <datafield tag="910" ind1=" " ind2=" ">
+        <subfield code="a">MARCIVEAUT231209</subfield>
+    </datafield>
+    <datafield tag="949" ind1=" " ind2="0">
+        <subfield code="4">IP</subfield>
+        <subfield code="a">s-map</subfield>
+        <subfield code="b">SCI</subfield>
+        <subfield code="c">MAPRM</subfield>
+        <subfield code="k">MAP</subfield>
+        <subfield code="o">0</subfield>
+        <subfield code="p">39080035090411</subfield>
+        <subfield code="v">Sheet A 8 Inebolu</subfield>
+        <subfield code="x">04</subfield>
+        <subfield code="h">G7431.C5 s200.G72</subfield>
+    </datafield>
+    <datafield tag="961" ind1=" " ind2=" ">
+        <subfield code="a">[London] War Office, 9999</subfield>
+        <subfield code="a">1941 9999</subfield>
+        <subfield code="a">enk</subfield>
+    </datafield>
+    <datafield tag="969" ind1=" " ind2=" ">
+        <subfield code="a">G7430 S200</subfield>
+        <subfield code="a">06644794</subfield>
+        <subfield code="a">map47000005</subfield>
+    </datafield>
+    <datafield tag="994" ind1=" " ind2=" ">
+        <subfield code="a">02</subfield>
+        <subfield code="b">MYG</subfield>
+    </datafield>
+    <datafield tag="900" ind1="0" ind2=" ">
+        <subfield code="b">SCI</subfield>
+        <subfield code="d">MAPRM</subfield>
+        <subfield code="f">G7431.C5 s200.G72</subfield>
+        <subfield code="8">22518012960006761</subfield>
+    </datafield>
+    <datafield tag="985" ind1=" " ind2=" ">
+        <subfield code="j">0</subfield>
+        <subfield code="aa">MAPRM</subfield>
+        <subfield code="t">BOOK</subfield>
+        <subfield code="s">39080035090411</subfield>
+        <subfield code="a">23518012940006761</subfield>
+        <subfield code="g">Sheet A 8 Inebolu</subfield>
+        <subfield code="c">04</subfield>
+        <subfield code="bb">MAP G7431.C5 s200.G72</subfield>
+        <subfield code="i">SCI</subfield>
+    </datafield>
+</record>

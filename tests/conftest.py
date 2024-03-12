@@ -1,6 +1,7 @@
 # ruff: noqa: N802, S301, SLF001, D202
 
 import datetime
+import glob
 import json
 import os
 import shutil
@@ -19,6 +20,7 @@ from moto import mock_aws
 from harvester.aws.sqs import SQSClient, ZipFileEventMessage
 from harvester.config import Config
 from harvester.harvest import Harvester
+from harvester.harvest.alma import MITAlmaHarvester
 from harvester.harvest.mit import MITHarvester
 from harvester.harvest.ogm import OGMHarvester, OGMRepository
 from harvester.records import (
@@ -737,3 +739,40 @@ def aardvark_all_fields():
                 "metadata_format": "aardvark",
             },
         )
+
+
+@pytest.fixture
+def mocked_timdex_bucket():
+    bucket_name = "mocked-timdex-bucket"
+    with mock_aws():
+        s3 = boto3.client("s3")
+        s3.create_bucket(Bucket=bucket_name)
+        yield bucket_name
+
+
+@pytest.fixture
+def mocked_timdex_alma_s3_export(mocked_timdex_bucket):
+    for filepath in glob.glob("tests/fixtures/alma/s3_folder/*.*"):
+        filename = filepath.split("/")[-1]
+        with open(
+            filepath,
+            "rb",
+        ) as f:
+            s3 = boto3.client("s3")
+            s3.put_object(
+                Bucket=mocked_timdex_bucket,
+                Key=f"alma/{filename}",
+                Body=f.read(),
+            )
+
+    return mocked_timdex_bucket
+
+
+@pytest.fixture
+def alma_harvester(mocked_timdex_alma_s3_export):
+    return MITAlmaHarvester(
+        input_files="s3://mocked-timdex-bucket/alma",
+        harvest_type="full",
+        from_date="2024-01-01",
+        until_date="2024-01-02",
+    )
