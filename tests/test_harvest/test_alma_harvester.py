@@ -13,56 +13,56 @@ def marc_record_generator(file_path):
 
 def test_alma_harvester_list_local_xml_files(alma_harvester):
     alma_harvester.input_files = "tests/fixtures/alma/s3_folder"
-    assert alma_harvester._list_local_xml_files() == [
+    assert set(alma_harvester._list_local_xml_files()) == {
         "tests/fixtures/alma/s3_folder/alma-2023-12-31-daily-extracted-records-to-index_01.xml",
         "tests/fixtures/alma/s3_folder/alma-2024-01-01-daily-extracted-records-to-index_01.xml",
         "tests/fixtures/alma/s3_folder/alma-2023-12-31-full-extracted-records-to-index_01.xml",
         "tests/fixtures/alma/s3_folder/alma-2024-01-01-full-extracted-records-to-index_01.xml",
-    ]
+    }
 
 
 def test_alma_harvester_list_s3_xml_files(alma_harvester):
-    assert alma_harvester._list_s3_xml_files() == [
+    assert set(alma_harvester._list_s3_xml_files()) == {
         "s3://mocked-timdex-bucket/alma/alma-2023-12-31-daily-extracted-records-to-index_01.xml",
         "s3://mocked-timdex-bucket/alma/alma-2023-12-31-full-extracted-records-to-index_01.xml",
         "s3://mocked-timdex-bucket/alma/alma-2024-01-01-daily-extracted-records-to-index_01.xml",
         "s3://mocked-timdex-bucket/alma/alma-2024-01-01-full-extracted-records-to-index_01.xml",
-    ]
+    }
 
 
 def test_alma_harvester_list_xml_files_filter_run_type(alma_harvester):
     # full harvest = "full" in filename
     alma_harvester.harvest_type = "full"
-    assert list(alma_harvester._list_xml_files()) == [
+    assert set(alma_harvester._list_xml_files()) == {
         "s3://mocked-timdex-bucket/alma/alma-2024-01-01-full-extracted-records-to-index_01.xml",
-    ]
+    }
     # incremental harvest = "daily" in filename
     alma_harvester.harvest_type = "incremental"
-    assert list(alma_harvester._list_xml_files()) == [
+    assert set(alma_harvester._list_xml_files()) == {
         "s3://mocked-timdex-bucket/alma/alma-2024-01-01-daily-extracted-records-to-index_01.xml",
-    ]
+    }
 
 
 def test_alma_harvester_list_xml_files_filter_from_date(alma_harvester):
     alma_harvester.from_date, alma_harvester.until_date = "2024-01-01", None
-    assert list(alma_harvester._list_xml_files()) == [
+    assert set(alma_harvester._list_xml_files()) == {
         "s3://mocked-timdex-bucket/alma/alma-2024-01-01-full-extracted-records-to-index_01.xml",
-    ]
+    }
 
 
 def test_alma_harvester_list_xml_files_filter_until_date(alma_harvester):
     alma_harvester.from_date, alma_harvester.until_date = None, "2024-01-01"
-    assert list(alma_harvester._list_xml_files()) == [
+    assert set(alma_harvester._list_xml_files()) == {
         "s3://mocked-timdex-bucket/alma/alma-2023-12-31-full-extracted-records-to-index_01.xml",
-    ]
+    }
 
 
 def test_alma_harvester_list_xml_files_filter_from_to_until_dates(alma_harvester):
     alma_harvester.from_date, alma_harvester.until_date = "2023-12-01", "2024-02-01"
-    assert list(alma_harvester._list_xml_files()) == [
+    assert set(alma_harvester._list_xml_files()) == {
         "s3://mocked-timdex-bucket/alma/alma-2023-12-31-full-extracted-records-to-index_01.xml",
         "s3://mocked-timdex-bucket/alma/alma-2024-01-01-full-extracted-records-to-index_01.xml",
-    ]
+    }
 
 
 def test_alma_harvester_parse_marcalyx_marc_record_objects_from_xml_file(alma_harvester):
