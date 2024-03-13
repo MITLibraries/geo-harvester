@@ -184,7 +184,7 @@ class MITAlmaHarvester(Harvester):
         )
 
         return identifier, MARC(
-            origin="mit",
+            origin="alma",
             identifier=identifier,
             data=etree.tostring(marc_record.node),
             marc=marc_record,

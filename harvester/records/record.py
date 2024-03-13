@@ -160,7 +160,7 @@ class SourceRecord:
         ogm_repo_config: config dictionary of OGM repository from configuration YAML
     """
 
-    origin: Literal["mit", "ogm"] = field(validator=in_(["mit", "ogm"]))
+    origin: Literal["alma", "mit", "ogm"] = field(validator=in_(["alma", "mit", "ogm"]))
     identifier: str = field(validator=instance_of(str))
     metadata_format: Literal["fgdc", "iso19139", "gbl1", "aardvark", "marc"] = field(
         validator=in_(["fgdc", "iso19139", "gbl1", "aardvark", "marc"])
@@ -474,6 +474,8 @@ class SourceRecord:
         For OGM harvests, provider will come from named defined in OGM configuration YAML.
         """
         match self.origin:
+            case "alma":
+                return "MIT Libraries"
             case "mit":
                 return "GIS Lab, MIT Libraries"
             case "ogm":
