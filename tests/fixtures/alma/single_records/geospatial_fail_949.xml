@@ -1,0 +1,243 @@
+<record>
+    <leader>02642cem 2200637 a 4500</leader>
+    <controlfield tag="005">20231211171314.0</controlfield>
+    <controlfield tag="007">aj canzn</controlfield>
+    <controlfield tag="008">800506s1979 enk a 0 eng</controlfield>
+    <controlfield tag="001">990022897960106761</controlfield>
+    <datafield tag="010" ind1=" " ind2=" ">
+        <subfield code="a">80692167</subfield>
+    </datafield>
+    <datafield tag="020" ind1=" " ind2=" ">
+        <subfield code="a">0906358019</subfield>
+    </datafield>
+    <datafield tag="020" ind1=" " ind2=" ">
+        <subfield code="a">9780906358016</subfield>
+    </datafield>
+    <datafield tag="034" ind1="0" ind2=" ">
+        <subfield code="a">a</subfield>
+        <subfield code="d">E0503300</subfield>
+        <subfield code="e">E0503300</subfield>
+        <subfield code="f">N0260139</subfield>
+        <subfield code="g">N0260139</subfield>
+    </datafield>
+    <datafield tag="035" ind1=" " ind2=" ">
+        <subfield code="a">(MCM)002289796MIT01</subfield>
+    </datafield>
+    <datafield tag="035" ind1=" " ind2=" ">
+        <subfield code="a">(OCoLC)06533196</subfield>
+    </datafield>
+    <datafield tag="040" ind1=" " ind2=" ">
+        <subfield code="a">DLC</subfield>
+        <subfield code="b">eng</subfield>
+        <subfield code="c">DLC</subfield>
+        <subfield code="d">OCL</subfield>
+        <subfield code="d">OCLCQ</subfield>
+        <subfield code="d">OCLCO</subfield>
+        <subfield code="d">OCLCA</subfield>
+        <subfield code="d">OCLCF</subfield>
+        <subfield code="d">MYG</subfield>
+    </datafield>
+    <datafield tag="043" ind1=" " ind2=" ">
+        <subfield code="a">a-ba---</subfield>
+    </datafield>
+    <datafield tag="049" ind1=" " ind2=" ">
+        <subfield code="a">MYGG</subfield>
+    </datafield>
+    <datafield tag="050" ind1="0" ind2="0">
+        <subfield code="a">G7590 1979.F3</subfield>
+    </datafield>
+    <datafield tag="052" ind1=" " ind2=" ">
+        <subfield code="a">7590</subfield>
+    </datafield>
+    <datafield tag="052" ind1=" " ind2=" ">
+        <subfield code="a">7594</subfield>
+        <subfield code="b">M3</subfield>
+    </datafield>
+    <datafield tag="110" ind1="2" ind2=" ">
+        <subfield code="a">Fairey Surveys Ltd.</subfield>
+    </datafield>
+    <datafield tag="245" ind1="1" ind2="0">
+        <subfield code="a">Bahrain</subfield>
+        <subfield code="h">[cartographic material] /</subfield>
+        <subfield code="c">map &amp; town plans produced by Fairey Surveys Limited.
+        </subfield>
+    </datafield>
+    <datafield tag="255" ind1=" " ind2=" ">
+        <subfield code="a">Scales vary</subfield>
+        <subfield code="c">(E 50°33'00ʺ-E 50°33'00ʺ/N 26°01'39ʺ-N 26°01'39ʺ).
+        </subfield>
+    </datafield>
+    <datafield tag="260" ind1=" " ind2=" ">
+        <subfield code="a">Maidenhead, Berkshire :</subfield>
+        <subfield code="b">Fairey,</subfield>
+        <subfield code="c">[1979?]</subfield>
+    </datafield>
+    <datafield tag="300" ind1=" " ind2=" ">
+        <subfield code="a">5 maps :</subfield>
+        <subfield code="b">both sides, col. ;</subfield>
+        <subfield code="c">on sheet 63 x 96 cm. folded to 21 x 12 cm. in cover 22 x 15
+            cm.
+        </subfield>
+    </datafield>
+    <datafield tag="336" ind1=" " ind2=" ">
+        <subfield code="a">cartographic image</subfield>
+        <subfield code="b">cri</subfield>
+        <subfield code="2">rdacontent</subfield>
+    </datafield>
+    <datafield tag="337" ind1=" " ind2=" ">
+        <subfield code="a">unmediated</subfield>
+        <subfield code="b">n</subfield>
+        <subfield code="2">rdamedia</subfield>
+    </datafield>
+    <datafield tag="338" ind1=" " ind2=" ">
+        <subfield code="a">sheet</subfield>
+        <subfield code="b">nb</subfield>
+        <subfield code="2">rdacarrier</subfield>
+    </datafield>
+    <datafield tag="490" ind1="1" ind2=" ">
+        <subfield code="a">Fairey/Falcon map series</subfield>
+    </datafield>
+    <datafield tag="500" ind1=" " ind2=" ">
+        <subfield code="a">Cover title: Bahrain, the businessman's map &amp; guide.
+        </subfield>
+    </datafield>
+    <datafield tag="500" ind1=" " ind2=" ">
+        <subfield code="a">Printed on both sides of sheet.</subfield>
+    </datafield>
+    <datafield tag="500" ind1=" " ind2=" ">
+        <subfield code="a">Includes advertisements, index, and 2 insets.</subfield>
+    </datafield>
+    <datafield tag="500" ind1=" " ind2=" ">
+        <subfield code="a">Accompanied by text booklet: The businessman's guide, a
+            handy reference source for the visitor to Bahrain / designed, edited &amp;
+            published by Falcon Publishing, Manama, Bahrain and Parrish Rogers
+            International Ltd., London, Eng. (40 p. ; 22 cm.).
+        </subfield>
+    </datafield>
+    <datafield tag="505" ind1="0" ind2=" ">
+        <subfield code="a">1. Bahrain Island -- 2. Northern Bahrain -- 3. Al Muharraq
+            -- 4. Al Jufayr -- Al Manamah.
+        </subfield>
+    </datafield>
+    <datafield tag="651" ind1=" " ind2="7">
+        <subfield code="a">Bahrain.</subfield>
+        <subfield code="2">fast</subfield>
+    </datafield>
+    <datafield tag="651" ind1=" " ind2="0">
+        <subfield code="a">Bahrain</subfield>
+        <subfield code="v">Maps.</subfield>
+    </datafield>
+    <datafield tag="651" ind1=" " ind2="0">
+        <subfield code="a">Manama (Bahrain)</subfield>
+        <subfield code="v">Maps.</subfield>
+    </datafield>
+    <datafield tag="655" ind1=" " ind2="7">
+        <subfield code="a">Maps.</subfield>
+        <subfield code="2">lcgft</subfield>
+    </datafield>
+    <datafield tag="655" ind1=" " ind2="7">
+        <subfield code="a">Tourist maps.</subfield>
+        <subfield code="2">lcgft</subfield>
+    </datafield>
+    <datafield tag="655" ind1=" " ind2="7">
+        <subfield code="a">Road maps.</subfield>
+        <subfield code="2">lcgft</subfield>
+    </datafield>
+    <datafield tag="655" ind1=" " ind2="7">
+        <subfield code="a">Road maps.</subfield>
+        <subfield code="2">fast</subfield>
+    </datafield>
+    <datafield tag="655" ind1=" " ind2="7">
+        <subfield code="a">Tourist maps.</subfield>
+        <subfield code="2">fast</subfield>
+    </datafield>
+    <datafield tag="655" ind1=" " ind2="7">
+        <subfield code="a">Maps.</subfield>
+        <subfield code="2">fast</subfield>
+    </datafield>
+    <datafield tag="710" ind1="2" ind2=" ">
+        <subfield code="a">Falcon Publishing.</subfield>
+    </datafield>
+    <datafield tag="710" ind1="2" ind2=" ">
+        <subfield code="a">Parrish Rogers International Ltd.</subfield>
+    </datafield>
+    <datafield tag="830" ind1=" " ind2="0">
+        <subfield code="a">Fairey/Falcon map series.</subfield>
+    </datafield>
+    <datafield tag="910" ind1=" " ind2=" ">
+        <subfield code="a">mjy140828</subfield>
+        <subfield code="b">copy</subfield>
+        <subfield code="c">~</subfield>
+        <subfield code="e">wall</subfield>
+        <subfield code="j">e</subfield>
+        <subfield code="k">m</subfield>
+        <subfield code="l">blank</subfield>
+        <subfield code="m">blank</subfield>
+        <subfield code="o">a</subfield>
+        <subfield code="p">DLC</subfield>
+        <subfield code="q">r-map</subfield>
+        <subfield code="r">a</subfield>
+        <subfield code="s">1</subfield>
+        <subfield code="w">~</subfield>
+        <subfield code="x">0</subfield>
+        <subfield code="y">~</subfield>
+        <subfield code="z">~</subfield>
+        <subfield code="i">mjy</subfield>
+        <subfield code="d">140828</subfield>
+    </datafield>
+    <datafield tag="910" ind1=" " ind2=" ">
+        <subfield code="a">MARCIVEAUT</subfield>
+    </datafield>
+    <datafield tag="910" ind1=" " ind2=" ">
+        <subfield code="a">MARCIVEAUT221103</subfield>
+    </datafield>
+    <datafield tag="910" ind1=" " ind2=" ">
+        <subfield code="a">MARCIVEAUT231209</subfield>
+    </datafield>
+    <datafield tag="949" ind1=" " ind2="0">
+        <subfield code="4">IP</subfield>
+        <subfield code="a">r-map</subfield>
+        <subfield code="b">RTC</subfield>
+        <subfield code="c">MAPRM</subfield>
+        <subfield code="o">0</subfield>
+        <subfield code="p">39080036498050</subfield>
+        <subfield code="x">04</subfield>
+        <subfield code="h">G7590 1979.F3</subfield>
+    </datafield>
+    <datafield tag="961" ind1=" " ind2=" ">
+        <subfield code="a">Maidenhead, Berkshire : Fairey,</subfield>
+        <subfield code="a">1979</subfield>
+        <subfield code="a">enk</subfield>
+    </datafield>
+    <datafield tag="969" ind1=" " ind2=" ">
+        <subfield code="a">G7590 1979.F3</subfield>
+        <subfield code="a">06533196</subfield>
+        <subfield code="a">80692167</subfield>
+        <subfield code="a">0906358019</subfield>
+        <subfield code="a">9780906358016</subfield>
+    </datafield>
+    <datafield tag="990" ind1=" " ind2=" ">
+        <subfield code="a">MIT Rotch Library copy of map without text booklet.
+        </subfield>
+    </datafield>
+    <datafield tag="994" ind1=" " ind2=" ">
+        <subfield code="a">02</subfield>
+        <subfield code="b">MYG</subfield>
+    </datafield>
+    <datafield tag="900" ind1="0" ind2=" ">
+        <subfield code="b">RTC</subfield>
+        <subfield code="d">MAPRM</subfield>
+        <subfield code="f">G7590 1979.F3</subfield>
+        <subfield code="8">22467461200006761</subfield>
+    </datafield>
+    <datafield tag="985" ind1=" " ind2=" ">
+        <subfield code="j">0</subfield>
+        <subfield code="aa">MAPRM</subfield>
+        <subfield code="t">BOOK</subfield>
+        <subfield code="s">39080036498050</subfield>
+        <subfield code="a">23467461190006761</subfield>
+        <subfield code="c">04</subfield>
+        <subfield code="bb">MAP G7590 1979.F3</subfield>
+        <subfield code="i">RTC</subfield>
+    </datafield>
+</record>

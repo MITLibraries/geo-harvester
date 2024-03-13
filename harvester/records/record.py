@@ -11,6 +11,7 @@ from typing import Any, Literal
 from attrs import asdict, define, field, fields
 from attrs.validators import in_, instance_of
 from lxml import etree  # type: ignore[import-untyped]
+from marcalyx import Record as MARCRecord  # type: ignore[import-untyped]
 
 from harvester.aws.sqs import ZipFileEventMessage
 from harvester.config import Config
@@ -159,10 +160,10 @@ class SourceRecord:
         ogm_repo_config: config dictionary of OGM repository from configuration YAML
     """
 
-    origin: Literal["mit", "ogm"] = field(validator=in_(["mit", "ogm"]))
+    origin: Literal["alma", "mit", "ogm"] = field(validator=in_(["alma", "mit", "ogm"]))
     identifier: str = field(validator=instance_of(str))
-    metadata_format: Literal["fgdc", "iso19139", "gbl1", "aardvark"] = field(
-        validator=in_(["fgdc", "iso19139", "gbl1", "aardvark"])
+    metadata_format: Literal["fgdc", "iso19139", "gbl1", "aardvark", "marc"] = field(
+        validator=in_(["fgdc", "iso19139", "gbl1", "aardvark", "marc"])
     )
     data: str | bytes = field(repr=False)
     zip_file_location: str = field(default=None)
@@ -171,6 +172,7 @@ class SourceRecord:
     )
     sqs_message: ZipFileEventMessage = field(default=None)
     ogm_repo_config: dict = field(default=None)
+    marc: MARCRecord = field(default=None)
 
     @property
     def output_filename_extension(self) -> str:
@@ -472,6 +474,8 @@ class SourceRecord:
         For OGM harvests, provider will come from named defined in OGM configuration YAML.
         """
         match self.origin:
+            case "alma":
+                return "MIT Libraries"
             case "mit":
                 return "GIS Lab, MIT Libraries"
             case "ogm":
