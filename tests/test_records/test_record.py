@@ -7,7 +7,7 @@ import pytest
 from freezegun import freeze_time
 from lxml import etree
 
-from harvester.records import JSONSourceRecord, MITAardvark, SourceRecord
+from harvester.records import JSONSourceRecord, MITAardvark
 from harvester.records.exceptions import FieldMethodError, JSONSchemaValidationError
 
 
@@ -282,22 +282,6 @@ def test_mitaardvark_record_optional_fields_jsonschema_validation_success(
 def test_source_record_is_deleted_property_reads_event(fgdc_source_record_all_fields):
     fgdc_source_record_all_fields.event = "deleted"
     assert fgdc_source_record_all_fields.is_deleted
-
-
-def test_ogm_record_not_defined_dct_references_s_ogm_raise_error():
-    record = SourceRecord(
-        data=b"Hello World",
-        identifier="abc123",
-        origin="ogm",
-        event="created",
-        metadata_format="gbl1",
-    )
-    with pytest.raises(
-        NotImplementedError,
-        match="Field method 'dct_references_s' must be overridden by format specific "
-        "classes for OGM harvests.",
-    ):
-        record._dct_references_s_ogm()
 
 
 def test_record_shared_field_method_schema_provider_s_ogm_success(

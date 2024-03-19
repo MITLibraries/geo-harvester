@@ -15,7 +15,8 @@ from marcalyx import Record as MARCRecord  # type: ignore[import-untyped]
 from harvester.aws.s3 import S3Client
 from harvester.config import Config
 from harvester.harvest import Harvester
-from harvester.records import MARC, Record
+from harvester.records import Record
+from harvester.records.sources.alma import AlmaMARC
 from harvester.utils import convert_to_utc
 
 logger = logging.getLogger(__name__)
@@ -182,7 +183,7 @@ class MITAlmaHarvester(Harvester):
 
     def create_source_record_from_marc_record(
         self, marc_record: MARCRecord
-    ) -> tuple[str, MARC]:
+    ) -> tuple[str, AlmaMARC]:
         """Create MARC SourceRecord from parsed MARC record."""
         # derive identifier from ControlField 001
         try:
@@ -205,8 +206,7 @@ class MITAlmaHarvester(Harvester):
             }[marc_record.leader[5]],
         )
 
-        return identifier, MARC(
-            origin="alma",
+        return identifier, AlmaMARC(
             identifier=identifier,
             data=etree.tostring(marc_record.node),
             marc=marc_record,

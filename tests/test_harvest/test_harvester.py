@@ -1,4 +1,4 @@
-# ruff: noqa: SLF001
+# ruff: noqa: SLF001, N818
 
 import datetime
 from unittest.mock import MagicMock, mock_open, patch
@@ -7,8 +7,8 @@ import pytest
 from dateutil.parser import ParserError
 from dateutil.tz import tzutc
 
-from harvester.records import FGDC, MITAardvark, Record
-from harvester.records.exceptions import FieldMethodError
+from harvester.harvest.mit import MITFGDC
+from harvester.records import MITAardvark, Record
 
 
 def test_harvester_bad_harvest_type_raise_error(generic_harvester_class):
@@ -76,7 +76,7 @@ def test_harvester_records_with_error_filtered_out(generic_harvester_class):
     records = [
         Record(
             identifier="abc123",
-            source_record=FGDC(
+            source_record=MITFGDC(
                 origin="mit",
                 identifier="abc123",
                 data=b"",
@@ -86,7 +86,7 @@ def test_harvester_records_with_error_filtered_out(generic_harvester_class):
         ),
         Record(
             identifier="abc123",
-            source_record=FGDC(
+            source_record=MITFGDC(
                 origin="mit",
                 identifier="abc123",
                 data=b"",
@@ -115,7 +115,7 @@ def test_harvester_step_get_source_records(caplog, generic_harvester_class):
         mocked_full_harvest_get_source_records.return_value = records = [
             Record(
                 identifier="abc123",
-                source_record=FGDC(
+                source_record=MITFGDC(
                     origin="mit",
                     identifier="abc123",
                     data=b"",
@@ -151,17 +151,22 @@ def test_harvester_step_normalize_source_records_created_record_normalized_succe
     assert isinstance(record.normalized_record, MITAardvark)
 
 
-def test_harvester_step_normalize_source_records_stores_exception(
+def test_harvester_step_normalize_source_records_stores_exception_stage_and_object(
     caplog, generic_harvester_class, records_for_normalize
 ):
     caplog.set_level("DEBUG")
     harvester = generic_harvester_class(harvest_type="full")
-    records_for_normalize[0].source_record.metadata_format = "bad_format"
-    records = harvester.normalize_source_records(records_for_normalize)
-    record = next(records)
+    with patch("harvester.records.record.SourceRecord.normalize") as mocked_normalize:
+
+        class MyCustomException(Exception):
+            pass
+
+        mocked_normalize.side_effect = MyCustomException("Error during normalization.")
+        records = harvester.normalize_source_records(records_for_normalize)
+        record = next(records)
+
     assert record.exception_stage == "normalize_source_records"
-    assert isinstance(record.exception, FieldMethodError)
-    assert isinstance(record.exception.original_exception, KeyError)
+    assert isinstance(record.exception, MyCustomException)
 
 
 def test_harvester_step_write_combined_normalized_success(

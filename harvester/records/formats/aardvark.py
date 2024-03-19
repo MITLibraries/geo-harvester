@@ -1,8 +1,7 @@
-"""harvester.harvest.records.aardvark"""
+"""harvester.records.formats.aardvark"""
 
 # ruff: noqa: N802
 
-import json
 from typing import Literal
 
 from attrs import define, field
@@ -12,10 +11,7 @@ from harvester.records.record import JSONSourceRecord
 
 @define
 class Aardvark(JSONSourceRecord):
-    """GeoBlacklight4.x (Aardvark) metadata format SourceRecord class.
-
-    NOTE: This source record class is only used for OGM harvests.
-    """
+    """GeoBlacklight4.x (Aardvark) metadata format SourceRecord class."""
 
     metadata_format: Literal["aardvark"] = field(default="aardvark")
 
@@ -43,38 +39,6 @@ class Aardvark(JSONSourceRecord):
 
     def _locn_geometry(self) -> str | None:
         return self.parsed_data.get("locn_geometry", None)
-
-    def _dct_references_s_ogm(self) -> dict:
-        """Field method helper: "dct_references_s"
-
-        For OGM repositories that provide Aardvark metadata, the most reliable location
-        to find an external URL is the 'http://schema.org/url' key in the dct_references_s
-        JSON payload.
-
-        If the URI "http://schema.org/downloadUrl" is present, and only a single value,
-        use.  If array, skip, as cannot be sure of a single download link to choose from.
-        """
-        refs_dict = json.loads(self.parsed_data["dct_references_s"])
-
-        # extract required external URL
-        url = refs_dict.get("http://schema.org/url")
-        if not url:
-            error_message = "Could not determine external URL from source metadata"
-            raise ValueError(error_message)
-        urls_dict = {"http://schema.org/url": url}
-
-        # extract optional download url
-        download_uri = "http://schema.org/downloadUrl"
-        if download_value := refs_dict.get(download_uri):  # noqa: SIM102
-            if isinstance(download_value, str):
-                urls_dict[download_uri] = [
-                    {
-                        "label": "Data",
-                        "url": download_value,
-                    }
-                ]
-
-        return urls_dict
 
     ##########################
     # Optional Field Methods

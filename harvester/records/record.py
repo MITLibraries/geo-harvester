@@ -1,6 +1,6 @@
 """harvester.harvest.records.record"""
 
-# ruff: noqa: N802, N815; allows camelCase for aardvark fields
+# ruff: noqa: N802, N815
 
 import datetime
 import json
@@ -11,9 +11,7 @@ from typing import Any, Literal
 from attrs import asdict, define, field, fields
 from attrs.validators import in_, instance_of
 from lxml import etree  # type: ignore[import-untyped]
-from marcalyx import Record as MARCRecord  # type: ignore[import-untyped]
 
-from harvester.aws.sqs import ZipFileEventMessage
 from harvester.config import Config
 from harvester.records.controlled_terms import (
     DCT_FORMAT_S_OGM_TERMS,
@@ -148,41 +146,24 @@ class SourceRecord:
             - for MIT records, this comes from the base name of the zip file
             - for OGM records, this likely will come from the metadata itself
         metadata_format: literal string of the metadata format
-            - "fgdc", "iso19139", "gbl1", "aardvark"
         data: string or bytes of the source file (XML or JSON)
-        zip_file_location: path string to the zip file
-            - this may be local or S3 URI
         event: literal string of "created" or "deleted"
-        sqs_message: ZipFileEventMessage instance
-            - present only for MIT harvests
-            - by affixing to SourceRecord during record retrieval, it allows for use
-            after the record has been processed to manage the message in the queue
-        ogm_repo_config: config dictionary of OGM repository from configuration YAML
     """
 
     origin: Literal["alma", "mit", "ogm"] = field(validator=in_(["alma", "mit", "ogm"]))
     identifier: str = field(validator=instance_of(str))
-    metadata_format: Literal["fgdc", "iso19139", "gbl1", "aardvark", "marc"] = field(
-        validator=in_(["fgdc", "iso19139", "gbl1", "aardvark", "marc"])
+    metadata_format: Literal["aardvark", "fgdc", "gbl1", "iso19139", "marc"] = field(
+        validator=in_(["aardvark", "fgdc", "gbl1", "iso19139", "marc"])
     )
     data: str | bytes = field(repr=False)
-    zip_file_location: str = field(default=None)
     event: Literal["created", "deleted"] = field(
         default=None, validator=in_(["created", "deleted"])
     )
-    sqs_message: ZipFileEventMessage = field(default=None)
-    ogm_repo_config: dict = field(default=None)
-    marc: MARCRecord = field(default=None)
 
     @property
+    @abstractmethod
     def output_filename_extension(self) -> str:
         """Provide source output filename extension based on metadata format."""
-        return {
-            "fgdc": "xml",
-            "iso19139": "xml",
-            "gbl1": "json",
-            "aardvark": "json",
-        }[self.metadata_format]
 
     @property
     def source_metadata_filename(self) -> str:
@@ -388,6 +369,14 @@ class SourceRecord:
     def _gbl_resourceClass_sm(self) -> list[str] | None:
         pass  # pragma: nocover
 
+    @abstractmethod
+    def _dct_references_s(self) -> str | None:
+        pass  # pragma: nocover
+
+    @abstractmethod
+    def _schema_provider_s(self) -> str | None:
+        pass  # pragma: nocover
+
     ####################################
     # Shared Field Methods
     ####################################
@@ -405,81 +394,6 @@ class SourceRecord:
     def _gbl_mdVersion_s(self) -> str:
         """Shared field method: gbl_mdVersion_s"""
         return "Aardvark"
-
-    def _dct_references_s(self) -> str:
-        """Shared field method: dct_references_s
-
-        Builds a JSON string payload of links for the record.  Work is offloaded to
-        methods specific to MIT (self._dct_references_s_mit) and OGM harvests
-        (self._dct_references_s_ogm).
-        """
-        match self.origin:
-            case "ogm":
-                urls_dict = self._dct_references_s_ogm()
-            case "mit":
-                urls_dict = self._dct_references_s_mit()
-        return json.dumps(urls_dict)
-
-    def _dct_references_s_mit(self) -> dict:
-        """Create dct_references_s JSON string for MIT harvests.
-
-        For MIT harvests, this includes the data zip file, source and normalized metadata
-        records in CDN, and a link to the TIMDEX item page.
-        """
-        cdn_folder = {True: "restricted", False: "public"}[self.is_restricted]
-        cdn_root = CONFIG.http_cdn_root
-        download_urls = [
-            {
-                "label": "Source Metadata",
-                "url": f"{cdn_root}/public/{self.source_metadata_filename}",
-            },
-            {
-                "label": "Aardvark Metadata",
-                "url": f"{cdn_root}/public/{self.normalized_metadata_filename}",
-            },
-            {
-                "label": "Data",
-                "url": f"{cdn_root}/{cdn_folder}/{self.identifier}.zip",
-            },
-        ]
-        website_url = (
-            "https://geodata.libraries.mit.edu/record/"
-            f"gismit:{self.identifier.removeprefix('mit:')}"
-        )
-        return {
-            "http://schema.org/downloadUrl": download_urls,
-            "http://schema.org/url": website_url,
-        }
-
-    def _dct_references_s_ogm(self) -> dict:
-        """Create dct_references_s JSON string for OGM harvests.
-
-        For OGM harvests, a single external URL is REQUIRED that points to an item page
-        hosted by the external institution, and an OPTIONAL URL that provides a direct
-        download.
-
-        While not required for all source classes (e.g. FGDC and ISO), this should be
-        overridden by GBL1 and Aardvark which are used for OGM harvests.
-        """
-        message = (
-            "Field method 'dct_references_s' must be overridden by format "
-            "specific classes for OGM harvests."
-        )
-        raise NotImplementedError(message)
-
-    def _schema_provider_s(self) -> str:
-        """Shared field method: schema_provider_s
-
-        For MIT harvests, provider is "GIS Lab, MIT Libraries".
-        For OGM harvests, provider will come from named defined in OGM configuration YAML.
-        """
-        match self.origin:
-            case "alma":
-                return "MIT Libraries"
-            case "mit":
-                return "GIS Lab, MIT Libraries"
-            case "ogm":
-                return self.ogm_repo_config["name"]
 
     def _dcat_theme_sm(self) -> list[str]:
         """Shared field method: dcat_theme_sm
@@ -549,8 +463,12 @@ class SourceRecord:
 class XMLSourceRecord(SourceRecord):
     """Shared parent class for XML based FGDC and ISO19139 source record classes."""
 
-    nsmap: dict = field(default={})
+    nsmap: dict = field(factory=dict)
     _root: etree._Element = field(default=None, repr=False)
+
+    @property
+    def output_filename_extension(self) -> str:
+        return "xml"
 
     @property
     def root(self) -> etree._Element:
@@ -615,6 +533,10 @@ class JSONSourceRecord(SourceRecord):
     """Shared parent class for JSON based GBL1 and Aardvark source record classes."""
 
     _parsed_data: dict = field(default=None)
+
+    @property
+    def output_filename_extension(self) -> str:
+        return "json"
 
     @property
     def parsed_data(self) -> dict:

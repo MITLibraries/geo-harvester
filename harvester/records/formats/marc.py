@@ -1,4 +1,4 @@
-"""harvester.harvest.records.marc"""
+"""harvester.records.formats.marc"""
 
 # ruff: noqa: N802
 
