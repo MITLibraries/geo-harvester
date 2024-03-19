@@ -6,6 +6,7 @@ from typing import Literal
 
 from attrs import define, field
 
+from harvester.records.formats.helpers import gbl_resource_class_value_map
 from harvester.records.record import JSONSourceRecord
 
 
@@ -28,9 +29,7 @@ class Aardvark(JSONSourceRecord):
     def _gbl_resourceClass_sm(self) -> list[str]:
         mapped_values = []
         for value in self.parsed_data.get("gbl_resourceClass_sm", []):
-            if mapped_value := self.gbl_resource_class_value_map.get(
-                value.strip().lower()
-            ):
+            if mapped_value := gbl_resource_class_value_map().get(value.strip().lower()):
                 mapped_values.append(mapped_value)  # noqa: PERF401
         return mapped_values if mapped_values else ["Other"]
 

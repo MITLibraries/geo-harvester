@@ -6,6 +6,7 @@ from typing import Literal
 
 from attrs import define, field
 
+from harvester.records.formats.helpers import gbl_resource_class_value_map
 from harvester.records.record import JSONSourceRecord
 
 
@@ -33,9 +34,7 @@ class GBL1(JSONSourceRecord):
 
     def _gbl_resourceClass_sm(self) -> list[str]:
         if value := self.parsed_data.get("dc_type_s"):  # noqa: SIM102s
-            if mapped_value := self.gbl_resource_class_value_map.get(
-                value.strip().lower()
-            ):
+            if mapped_value := gbl_resource_class_value_map().get(value.strip().lower()):
                 return [mapped_value]
         return ["Other"]
 
