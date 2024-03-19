@@ -23,7 +23,7 @@ class AlmaSourceRecord(SourceRecord):
         None at this time
     """
 
-    origin: Literal["alma", "mit", "ogm"] = field(default="alma")
+    origin: Literal["alma"] = field(default="alma")
 
     def _dct_references_s(self) -> str:
         """Shared field method: dct_references_s"""

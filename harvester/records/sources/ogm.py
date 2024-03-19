@@ -23,7 +23,7 @@ class OGMSourceRecord(SourceRecord):
         ogm_repo_config: config dictionary of OGM repository from configuration YAML
     """
 
-    origin: Literal["alma", "mit", "ogm"] = field(default="ogm")
+    origin: Literal["ogm"] = field(default="ogm")
     ogm_repo_config: dict = field(default=None)
 
     def _schema_provider_s(self) -> str:

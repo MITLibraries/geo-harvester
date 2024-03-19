@@ -29,7 +29,7 @@ class MITSourceRecord(SourceRecord):
             after the record has been processed to manage the message in the queue
     """
 
-    origin: Literal["alma", "mit", "ogm"] = field(default="mit")
+    origin: Literal["mit"] = field(default="mit")
     zip_file_location: str = field(default=None)
     sqs_message: ZipFileEventMessage = field(default=None)
 
