@@ -20,7 +20,7 @@ class AlmaSourceRecord(SourceRecord):
     """Class to extend SourceRecord for harvested Alma MARC XML records.
 
     Extended Args:
-        ogm_repo_config: config dictionary of OGM repository from configuration YAML
+        None at this time
     """
 
     origin: Literal["alma", "mit", "ogm"] = field(default="alma")
