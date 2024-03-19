@@ -8,6 +8,7 @@ import logging
 from abc import abstractmethod
 from typing import Any, Literal
 
+import marcalyx  # type: ignore[import-untyped]
 from attrs import asdict, define, field, fields
 from attrs.validators import in_, instance_of
 from lxml import etree  # type: ignore[import-untyped]
@@ -461,7 +462,7 @@ class SourceRecord:
 
 @define
 class XMLSourceRecord(SourceRecord):
-    """Shared parent class for XML based FGDC and ISO19139 source record classes."""
+    """Parsed XML file type source records."""
 
     nsmap: dict = field(factory=dict)
     _root: etree._Element = field(default=None, repr=False)
@@ -530,7 +531,7 @@ class XMLSourceRecord(SourceRecord):
 
 @define
 class JSONSourceRecord(SourceRecord):
-    """Shared parent class for JSON based GBL1 and Aardvark source record classes."""
+    """Parsed JSON file type source records."""
 
     _parsed_data: dict = field(default=None)
 
@@ -553,3 +554,10 @@ class JSONSourceRecord(SourceRecord):
                 data = json.loads(data)
             self._parsed_data = data
         return self._parsed_data
+
+
+@define
+class MarcalyxSourceRecord(XMLSourceRecord):
+    """Parsed MARC XML file type source records."""
+
+    marc: marcalyx.Record = field(default=None)
