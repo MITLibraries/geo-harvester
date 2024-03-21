@@ -68,7 +68,7 @@ class MITSourceRecord(SourceRecord):
 
     def _schema_provider_s(self) -> str:
         """Shared field method: schema_provider_s"""
-        return "GIS Lab, MIT Libraries"
+        return "GIS Lab, MIT Libraries"  # pragma: nocover
 
 
 @define(slots=False)
