@@ -4,7 +4,7 @@ from unittest.mock import patch
 import pytest
 from dateutil.parser import ParserError
 
-from harvester.records import FGDC
+from harvester.records.formats import FGDC
 
 #################################
 # Required Fields
@@ -108,7 +108,7 @@ def test_fgdc_optional_dct_temporal_sm_bad_date_logs_error_and_continues(
 ):
     caplog.set_level("DEBUG")
     with patch(
-        "harvester.records.fgdc.date_parser",
+        "harvester.records.formats.fgdc.date_parser",
         side_effect=ParserError("Bad date here"),
     ):
         assert fgdc_source_record_all_fields._dct_temporal_sm() == []
@@ -124,7 +124,7 @@ def test_fgdc_optional_gbl_dateRange_drsim_bad_date_logs_error_and_continues(
 ):
     caplog.set_level("DEBUG")
     with patch(
-        "harvester.records.fgdc.date_parser",
+        "harvester.records.formats.fgdc.date_parser",
         side_effect=ParserError("Bad date here"),
     ):
         assert fgdc_source_record_all_fields._gbl_dateRange_drsim() == []
@@ -186,7 +186,7 @@ def test_fgdc_optional_dct_issued_s_date_parse_error(
 ):
     caplog.set_level("DEBUG")
     with patch(
-        "harvester.records.fgdc.date_parser",
+        "harvester.records.formats.fgdc.date_parser",
         side_effect=ParserError("Bad date here"),
     ):
         assert fgdc_source_record_all_fields._dct_issued_s() is None
@@ -202,7 +202,7 @@ def test_fgdc_optional_dct_language_sm_parse_error_log_continue(
 ):
     caplog.set_level("DEBUG")
     with patch(
-        "harvester.records.fgdc.convert_lang_code",
+        "harvester.records.formats.fgdc.convert_lang_code",
         side_effect=Exception("Parsing Error"),
     ):
         assert fgdc_source_record_all_fields._dct_language_sm() == []

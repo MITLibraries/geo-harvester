@@ -23,12 +23,14 @@ from harvester.harvest.exceptions import (
     OGMFromDateExceedsEpochDateError,
 )
 from harvester.records import (
-    FGDC,
-    GBL1,
-    ISO19139,
-    Aardvark,
     Record,
     SourceRecord,
+)
+from harvester.records.sources.ogm import (
+    OGMFGDC,
+    OGMGBL1,
+    OGMISO19139,
+    OGMAardvark,
 )
 from harvester.utils import date_parser
 
@@ -145,16 +147,15 @@ class OGMHarvester(Harvester):
     ) -> SourceRecord:
         """Create source record."""
         source_record_class = {
-            "gbl1": GBL1,
-            "aardvark": Aardvark,
-            "fgdc": FGDC,
-            "iso19139": ISO19139,
+            "gbl1": OGMGBL1,
+            "aardvark": OGMAardvark,
+            "fgdc": OGMFGDC,
+            "iso19139": OGMISO19139,
         }[metadata_format]
         return source_record_class(
             identifier=identifier,
             data=data,
             event=change_type,
-            origin="ogm",
             ogm_repo_config=ogm_repo_config,
         )
 

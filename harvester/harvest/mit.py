@@ -18,12 +18,8 @@ from harvester.aws.s3 import S3Client
 from harvester.aws.sqs import SQSClient, ZipFileEventMessage
 from harvester.config import Config
 from harvester.harvest import Harvester
-from harvester.records import (
-    FGDC,
-    ISO19139,
-    Record,
-    SourceRecord,
-)
+from harvester.records import Record
+from harvester.records.sources.mit import MITFGDC, MITISO19139
 
 logger = logging.getLogger(__name__)
 
@@ -232,7 +228,7 @@ class MITHarvester(Harvester):
                 message = f"Record {record.identifier}: deleting SQS message"
                 logger.debug(message)
                 self.sqs_client.delete_message(
-                    record.source_record.sqs_message.receipt_handle
+                    record.source_record.sqs_message.receipt_handle  # type: ignore[attr-defined]
                 )
             yield record
 
@@ -371,18 +367,17 @@ class MITHarvester(Harvester):
         zip_file: str,
         event: Literal["created", "deleted"],
         sqs_message: ZipFileEventMessage | None = None,
-    ) -> SourceRecord:
+    ) -> MITFGDC | MITISO19139:
         """Init a SourceRecord based on event and zip file."""
         metadata_format, data = cls._identify_and_read_metadata_file(identifier, zip_file)
         source_record_classes = {
-            "iso19139": ISO19139,
-            "fgdc": FGDC,
+            "iso19139": MITISO19139,
+            "fgdc": MITFGDC,
         }
         source_record_class = source_record_classes[metadata_format]
         message = f"Metadata file located and identified: {source_record_class.__name__}"
         logger.debug(message)
         return source_record_class(
-            origin="mit",
             identifier=identifier,
             data=data,
             event=event,

@@ -1,4 +1,4 @@
-"""harvester.harvest.records.fgdc"""
+"""harvester.records.formats.fgdc"""
 
 # ruff: noqa: N802, N815; allows camelCase for aardvark fields
 

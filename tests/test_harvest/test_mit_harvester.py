@@ -5,7 +5,7 @@ import pytest
 from freezegun import freeze_time
 
 from harvester.harvest.mit import MITHarvester
-from harvester.records import FGDC
+from harvester.records.formats import FGDC
 
 
 def test_mit_harvester_list_local_files_equals_one():

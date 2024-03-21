@@ -1,4 +1,4 @@
-"""harvester.harvest.records.marc"""
+"""harvester.records.formats.marc"""
 
 # ruff: noqa: N802
 
@@ -6,11 +6,11 @@ from typing import Literal
 
 from attrs import define, field
 
-from harvester.records.record import XMLSourceRecord
+from harvester.records.record import MarcalyxSourceRecord
 
 
 @define
-class MARC(XMLSourceRecord):
+class MARC(MarcalyxSourceRecord):
     """MIT MARC metadata format SourceRecord class."""
 
     metadata_format: Literal["marc"] = field(default="marc")

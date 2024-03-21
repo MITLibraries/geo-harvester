@@ -24,15 +24,16 @@ from harvester.harvest.alma import MITAlmaHarvester
 from harvester.harvest.mit import MITHarvester
 from harvester.harvest.ogm import OGMHarvester, OGMRepository
 from harvester.records import (
-    FGDC,
-    GBL1,
-    ISO19139,
-    Aardvark,
     MITAardvark,
     Record,
     SourceRecord,
     XMLSourceRecord,
 )
+from harvester.records.formats import (
+    FGDC,
+    ISO19139,
+)
+from harvester.records.sources.ogm import OGMGBL1, OGMAardvark
 from harvester.records.validators import ValidateGeoshapeWKT
 
 
@@ -714,7 +715,7 @@ def mocked_ogm_harvester():
 @pytest.fixture
 def gbl1_all_fields():
     with open("tests/fixtures/records/gbl1/gbl1_all_fields.json", "rb") as f:
-        return GBL1(
+        return OGMGBL1(
             origin="ogm",
             identifier="abc123",
             data=f.read(),
@@ -729,7 +730,7 @@ def gbl1_all_fields():
 @pytest.fixture
 def aardvark_all_fields():
     with open("tests/fixtures/records/aardvark/aardvark_all_fields.json", "rb") as f:
-        return Aardvark(
+        return OGMAardvark(
             origin="ogm",
             identifier="abc123",
             data=f.read(),

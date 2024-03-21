@@ -5,7 +5,7 @@ import pytest
 from dateutil.parser import ParserError
 from lxml.etree import Element
 
-from harvester.records import ISO19139
+from harvester.records.formats import ISO19139
 
 #################################
 # Required Fields
@@ -127,7 +127,7 @@ def test_iso19139_optional_dct_temporal_sm_bad_date_logs_error_and_continues(
 ):
     caplog.set_level("DEBUG")
     with patch(
-        "harvester.records.iso19139.date_parser",
+        "harvester.records.formats.iso19139.date_parser",
         side_effect=ParserError("Bad date here"),
     ):
         assert iso19139_source_record_all_fields._dct_temporal_sm() == []
@@ -143,7 +143,7 @@ def test_iso19139_optional_gbl_dateRange_drsim_bad_date_logs_error_and_continues
 ):
     caplog.set_level("DEBUG")
     with patch(
-        "harvester.records.iso19139.date_parser",
+        "harvester.records.formats.iso19139.date_parser",
         side_effect=ParserError("Bad date here"),
     ):
         assert iso19139_source_record_all_fields._gbl_dateRange_drsim() == []
@@ -182,7 +182,7 @@ def test_iso19139_optional_dct_issued_s_date_parse_error(
 ):
     caplog.set_level("DEBUG")
     with patch(
-        "harvester.records.iso19139.date_parser",
+        "harvester.records.formats.iso19139.date_parser",
         side_effect=ParserError("Bad date here"),
     ):
         assert iso19139_source_record_all_fields._dct_issued_s() is None
@@ -198,7 +198,7 @@ def test_iso19139_optional_dct_language_sm_parse_error_log_continue(
 ):
     caplog.set_level("DEBUG")
     with patch(
-        "harvester.records.iso19139.convert_lang_code",
+        "harvester.records.formats.iso19139.convert_lang_code",
         side_effect=Exception("Parsing Error"),
     ):
         assert iso19139_source_record_all_fields._dct_language_sm() == []
