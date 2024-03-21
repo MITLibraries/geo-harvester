@@ -565,7 +565,7 @@ class JSONSourceRecord(SourceRecord):
 
     @property
     def output_filename_extension(self) -> str:
-        return "json"
+        return "json"  # pragma: nocover
 
     @property
     def parsed_data(self) -> dict:
@@ -589,3 +589,18 @@ class MarcalyxSourceRecord(XMLSourceRecord):
     """Parsed MARC XML file type source records."""
 
     marc: marcalyx.Record = field(default=None)
+
+    def __attrs_post_init__(self) -> None:  # noqa: D105
+        if self.marc is None:
+            marc_record_element = etree.fromstring(self.data)
+            self.marc = marcalyx.Record(marc_record_element)
+
+    def get_single_tag(self, tag: str) -> marcalyx.DataField | None:
+        """Return a single tag if only one instance of that tag number exists."""
+        tags = self.marc.field(tag)
+        if len(tags) == 1:
+            return tags[0]
+        if len(tags) > 1:
+            message = f"Multiple tags found in MARC record for tag: {tag}"
+            raise ValueError(message)
+        return None
