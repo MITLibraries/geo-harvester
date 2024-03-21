@@ -33,6 +33,7 @@ from harvester.records.formats import (
     FGDC,
     ISO19139,
 )
+from harvester.records.sources.alma import AlmaMARC
 from harvester.records.sources.ogm import OGMGBL1, OGMAardvark
 from harvester.records.validators import ValidateGeoshapeWKT
 
@@ -792,4 +793,60 @@ def aardvark_empty_strings():
                 "name": "Earth",
                 "metadata_format": "aardvark",
             },
+        )
+
+
+@pytest.fixture
+def almamarc_source_record():
+    with open("tests/fixtures/alma/single_records/geospatial_valid.xml", "rb") as f:
+        return AlmaMARC(
+            identifier="abc123",
+            data=f.read(),
+            event="created",
+        )
+
+
+@pytest.fixture
+def almamarc_source_record_missing_subfield_034():
+    with open(
+        "tests/fixtures/alma/single_records/geospatial_missing_subfield_034.xml", "rb"
+    ) as f:
+        return AlmaMARC(
+            identifier="abc123",
+            data=f.read(),
+            event="created",
+        )
+
+
+@pytest.fixture
+def almamarc_source_record_missing_034():
+    with open("tests/fixtures/alma/single_records/geospatial_missing_034.xml", "rb") as f:
+        return AlmaMARC(
+            identifier="abc123",
+            data=f.read(),
+            event="created",
+        )
+
+
+@pytest.fixture
+def almamarc_source_record_invalid_subfield_034():
+    with open(
+        "tests/fixtures/alma/single_records/geospatial_invalid_subfield_034.xml", "rb"
+    ) as f:
+        return AlmaMARC(
+            identifier="abc123",
+            data=f.read(),
+            event="created",
+        )
+
+
+@pytest.fixture
+def almamarc_source_record_multiple_034():
+    with open(
+        "tests/fixtures/alma/single_records/geospatial_multiple_034.xml", "rb"
+    ) as f:
+        return AlmaMARC(
+            identifier="abc123",
+            data=f.read(),
+            event="created",
         )
