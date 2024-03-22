@@ -4,10 +4,12 @@
 
 import logging
 import re
+from collections import defaultdict
 from decimal import Decimal, getcontext
 from typing import Literal, TypeAlias
 
 from attrs import define, field
+from marcalyx.marcalyx import DataField  # type: ignore[import-untyped]
 
 from harvester.records.record import MarcalyxSourceRecord
 
@@ -28,6 +30,8 @@ COORD_REGEX = re.compile(
          (?P<seconds>\d{2}(\.\d*)?)?""",
     re.IGNORECASE | re.VERBOSE,
 )
+
+TAG_034_SUBFIELD_TO_DIRECTION = {"d": "w", "e": "e", "f": "n", "g": "s"}
 
 
 @define
@@ -63,7 +67,7 @@ class MARC(MarcalyxSourceRecord):
 
     def _dcat_bbox(self) -> str | None:
         """Field method: dcat_bbox"""
-        bbox_data = self._get_largest_bounding_box()
+        bbox_data = self.get_largest_bounding_box()
         if bbox_data is None:
             return None
 
@@ -81,7 +85,7 @@ class MARC(MarcalyxSourceRecord):
         coordinates are the same, effectively defining a WKT POINT.  If this is true
         across even multiple 034 tags, return a WKT POINT for this field.
         """
-        bbox_data = self._get_largest_bounding_box()
+        bbox_data = self.get_largest_bounding_box()
         if bbox_data is None:
             return None
 
@@ -148,48 +152,47 @@ class MARC(MarcalyxSourceRecord):
     # Helpers
     ##########################
 
-    def _get_largest_bounding_box(
+    def get_largest_bounding_box(
         self,
     ) -> dict[Literal["w", "e", "n", "s"], Decimal] | None:
-        """Method to return largest bounding box from 034 tags.
+        """Determine largest bounding box from potentially multiple bounding boxes.
 
-        Subfield mapping:
-            $d - Coordinates - westernmost longitude (NR)
-            $e - Coordinates - easternmost longitude (NR)
-            $f - Coordinates - northernmost latitude (NR)
-            $g - Coordinates - southernmost latitude (NR)
+        The MARC 034 tag is where geographic bounding boxes are found, and it is allowed
+        to repeat.  This method generates the largest bounding box that covers all
+        bounding boxes in the form of a dictionary {direction: decimal}.
         """
-        subfield_to_direction = {"d": "w", "e": "e", "f": "n", "g": "s"}
+        tags = self._bbox_get_valid_034_tags()
+        bbox_data = self._bbox_extract_data_from_tags(tags)
+        return self._bbox_validate_and_parse_max_min_data(bbox_data)
 
-        # parse and filter 034 tags
-        tags = self.marc.field("034")
-        tags = [
+    def _bbox_get_valid_034_tags(self) -> list[DataField]:
+        """Return 034 tags that have bounding box subfields."""
+        return [
             tag
-            for tag in tags
-            if all(tag.subfield(subfield) for subfield in subfield_to_direction)
+            for tag in self.marc.field("034")
+            if all(tag.subfield(subfield) for subfield in TAG_034_SUBFIELD_TO_DIRECTION)
         ]
-        if not tags:
-            message = "Record does not have valid 034 tag(s), cannot determine bbox."
-            logger.debug(message)
-            return None
 
-        # build dictionary of all corner values
-        bbox_data: dict[str, list] = {
-            direction: [] for direction in subfield_to_direction.values()
-        }
+    @classmethod
+    def _bbox_extract_data_from_tags(cls, tags: list) -> defaultdict[str, list[Decimal]]:
+        """Extract decimal values for all corners of all bounding boxes."""
+        bbox_data = defaultdict(list)
         for tag in tags:
-            for subfield, direction in subfield_to_direction.items():
-                value = self.convert_coordinate_string_to_decimal(
-                    tag.subfield(subfield)[0].value
-                )
-                if value is not None:
-                    bbox_data[direction].append(value)
+            for subfield_code, direction in TAG_034_SUBFIELD_TO_DIRECTION.items():
+                if subfield := cls.get_single_subfield(tag, subfield_code):
+                    value = cls._bbox_convert_coordinate_string_to_decimal(subfield.value)
+                    if value is not None:
+                        bbox_data[direction].append(value)
+        return bbox_data
 
-        # return None if any four corners do not have values
-        if not all(bbox_data.values()):
-            return None
-
-        # return largest box
+    @staticmethod
+    def _bbox_validate_and_parse_max_min_data(
+        bbox_data: defaultdict[str, list[Decimal]],
+    ) -> dict[Literal["w", "e", "n", "s"], Decimal] | None:
+        """Validate data and return max/min decimal values for all corners."""
+        for direction in TAG_034_SUBFIELD_TO_DIRECTION.values():
+            if len(bbox_data[direction]) == 0:
+                return None
         return {
             "w": min(bbox_data["w"]),
             "e": max(bbox_data["e"]),
@@ -197,8 +200,8 @@ class MARC(MarcalyxSourceRecord):
             "s": min(bbox_data["s"]),
         }
 
-    @classmethod
-    def pad_coordinate_string(cls, coordinate_string: COORDINATE_STRING) -> str:
+    @staticmethod
+    def _bbox_pad_coordinate_string(coordinate_string: COORDINATE_STRING) -> str:
         """Pad coordinate string with zeros."""
         hemisphere, coordinate = coordinate_string[0], coordinate_string[1:]
         if hemisphere in "NSEW":
@@ -206,32 +209,36 @@ class MARC(MarcalyxSourceRecord):
         return hemisphere + coordinate
 
     @classmethod
-    def convert_coordinate_string_to_decimal(
-        cls,
-        coordinate_string: COORDINATE_STRING,
-        precision: int = 10,
+    def _bbox_convert_coordinate_string_to_decimal(
+        cls, coordinate_string: COORDINATE_STRING, precision: int = 10
     ) -> Decimal | None:
-        """Convert string coordinate to 10 digit precision decimal."""
+        """Convert string coordinate to 10 digit precision decimal.
+
+        This method accepts a coordinate string in the format "hdddmmss"
+        (hemisphere-degrees-minutes-seconds) and converts it into a 10 digit decimal
+        string that is appropriate for a Well-Known-Text (WKT) string.  See the type
+        COORDINATE_STRING at the top for more information about the source format.
+        """
         # get original global decimal precision and set temporarily
         original_precision = getcontext().prec
         getcontext().prec = precision
 
         # extract coordinate parts
-        matches = COORD_REGEX.search(cls.pad_coordinate_string(coordinate_string))
+        matches = COORD_REGEX.search(cls._bbox_pad_coordinate_string(coordinate_string))
         if not matches:
             return None
         parts = matches.groupdict()
 
-        # construct decimal
-        dec = (
+        # construct decimal value
+        decimal_value = (
             Decimal(parts.get("degrees"))  # type: ignore[arg-type]
             + Decimal(parts.get("minutes") or 0) / 60
             + Decimal(parts.get("seconds") or 0) / 3600
         )
         if parts.get("hemisphere") and parts["hemisphere"].lower() in "ws-":
-            dec = dec * -1
+            decimal_value = decimal_value * -1
 
         # reset global decimal precision
         getcontext().prec = original_precision
 
-        return dec
+        return decimal_value

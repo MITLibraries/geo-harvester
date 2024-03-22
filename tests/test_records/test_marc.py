@@ -10,16 +10,22 @@ BAD_COORDINATE_STRING = "X999"
 
 
 def test_marc_helper_pad_coordinate_string():
-    assert MARC.pad_coordinate_string(BAD_COORDINATE_STRING) == BAD_COORDINATE_STRING
-    assert MARC.pad_coordinate_string("E123") == "E0000123"
-    assert MARC.pad_coordinate_string("E1234567") == "E1234567"
+    assert (
+        MARC._bbox_pad_coordinate_string(BAD_COORDINATE_STRING) == BAD_COORDINATE_STRING
+    )
+    assert MARC._bbox_pad_coordinate_string("E123") == "E0000123"
+    assert MARC._bbox_pad_coordinate_string("E1234567") == "E1234567"
 
 
 def test_marc_helper_convert_coordinate_string_to_decimal():
-    assert MARC.convert_coordinate_string_to_decimal("E0503300") == Decimal("50.55")
-    assert MARC.convert_coordinate_string_to_decimal("W0503300") == Decimal("-50.55")
-    assert MARC.convert_coordinate_string_to_decimal("N0260139") == Decimal("26.02750000")
-    assert MARC.convert_coordinate_string_to_decimal(BAD_COORDINATE_STRING) is None
+    assert MARC._bbox_convert_coordinate_string_to_decimal("E0503300") == Decimal("50.55")
+    assert MARC._bbox_convert_coordinate_string_to_decimal("W0503300") == Decimal(
+        "-50.55"
+    )
+    assert MARC._bbox_convert_coordinate_string_to_decimal("N0260139") == Decimal(
+        "26.02750000"
+    )
+    assert MARC._bbox_convert_coordinate_string_to_decimal(BAD_COORDINATE_STRING) is None
 
 
 #################################
@@ -50,18 +56,11 @@ def test_marc_record_required_dcat_bbox(almamarc_source_record):
     )
 
 
-def test_marc_record_required_dcat_bbox_missing_034(
-    caplog, almamarc_source_record_missing_034
-):
-    caplog.set_level("DEBUG")
+def test_marc_record_required_dcat_bbox_missing_034(almamarc_source_record_missing_034):
     assert almamarc_source_record_missing_034._dcat_bbox() is None
-    assert "Record does not have valid 034 tag(s), cannot determine bbox." in caplog.text
 
 
-def test_marc_record_required_dcat_bbox_multiple_034(
-    caplog, almamarc_source_record_multiple_034
-):
-    caplog.set_level("DEBUG")
+def test_marc_record_required_dcat_bbox_multiple_034(almamarc_source_record_multiple_034):
     assert (
         almamarc_source_record_multiple_034._dcat_bbox()
         == "ENVELOPE(40.55, 50.55, 26.02750000, 16.02750000)"
@@ -80,11 +79,9 @@ def test_marc_record_required_locn_geometry_point(almamarc_source_record):
 
 
 def test_marc_record_required_locn_geometry_missing_034(
-    caplog, almamarc_source_record_missing_034
+    almamarc_source_record_missing_034,
 ):
-    caplog.set_level("DEBUG")
     assert almamarc_source_record_missing_034._locn_geometry() is None
-    assert "Record does not have valid 034 tag(s), cannot determine bbox." in caplog.text
 
 
 #################################
@@ -95,16 +92,26 @@ def test_marc_record_required_locn_geometry_missing_034(
 #################################
 # Helpers
 #################################
-def test_marc_record_required_get_bounding_box_missing_subfield_return_none(
-    caplog, almamarc_source_record_missing_subfield_034
+def test_marc_record_get_bounding_box_missing_subfield_return_none(
+    almamarc_source_record_missing_subfield_034,
 ):
-    caplog.set_level("DEBUG")
-    assert almamarc_source_record_missing_subfield_034._get_largest_bounding_box() is None
-    assert "Record does not have valid 034 tag(s), cannot determine bbox." in caplog.text
+    assert almamarc_source_record_missing_subfield_034.get_largest_bounding_box() is None
 
 
-def test_marc_record_required_get_bounding_box_invalid_subfield_return_none(
-    caplog, almamarc_source_record_invalid_subfield_034
+def test_marc_record_get_bounding_box_invalid_subfield_return_none(
+    almamarc_source_record_invalid_subfield_034,
 ):
-    caplog.set_level("DEBUG")
-    assert almamarc_source_record_invalid_subfield_034._get_largest_bounding_box() is None
+    assert almamarc_source_record_invalid_subfield_034.get_largest_bounding_box() is None
+
+
+def test_marc_record_bbox_extract_data_from_tags_missing_subfield_less_data(
+    almamarc_source_record_missing_subfield_034,
+):
+    tags = almamarc_source_record_missing_subfield_034.marc.field("034")
+    data = almamarc_source_record_missing_subfield_034._bbox_extract_data_from_tags(tags)
+    assert data == {
+        "w": [Decimal("50.55")],
+        "e": [Decimal("50.55")],
+        "n": [Decimal("26.02750000")],
+        # note missing "s" direction value from missing subfield
+    }
