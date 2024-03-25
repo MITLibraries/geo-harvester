@@ -112,20 +112,40 @@ class MARC(MarcalyxSourceRecord):
     ##########################
 
     def _dct_description_sm(self) -> list[str]:
-        return []
-
-    def _dcat_keyword_sm(self) -> list[str]:
-        """New field in Aardvark: no mapping from GBL1 to dcat_keyword_sm."""
-        return []
+        return self.get_multiple_tag_subfield_values([("520", "a")])
 
     def _dct_alternative_sm(self) -> list[str]:
-        """New field in Aardvark: no mapping from GBL1 to dct_alternative_sm."""
-        return []
+        return self.get_multiple_tag_subfield_values(
+            [
+                ("130", "adfghklmnoprst"),
+                ("240", "adfghklmnoprs"),
+                ("246", "abfghnp"),
+                ("730", "adfghiklmnoprst"),
+                ("740", "anp"),
+            ],
+            concat=True,
+        )
 
     def _dct_creator_sm(self) -> list[str] | None:
-        return None
+        return self.get_multiple_tag_subfield_values(
+            [
+                ("100", "abc"),
+                ("110", "ab"),
+                ("700", "a"),
+                ("710", "a"),
+            ],
+            concat=True,
+        )
 
     def _dct_format_s(self) -> str | None:
+        """Field method: dct_format_s
+
+        https://opengeometadata.org/ogm-aardvark/#format
+        The Aardvark dct_format_s field is geared towards the file format of a digital
+        resource.  Given that virtually all Alma MARC records -- at least at this time --
+        are physical resources, or links to external resources, we cannot provide a value
+        for this field.
+        """
         return None
 
     def _dct_issued_s(self) -> str | None:
@@ -138,7 +158,19 @@ class MARC(MarcalyxSourceRecord):
         return []
 
     def _dct_publisher_sm(self) -> list[str]:
-        return []
+        """Field method: dct_publisher_sm
+
+        The publisher location (subfield $a) and date (subfield $c) are not included in
+        the publisher name for the Aardvark record.
+        """
+        values = self.get_multiple_tag_subfield_values(
+            [
+                ("260", "b"),
+                ("264", "b"),
+            ],
+            concat=True,
+        )
+        return [value.strip().removesuffix(",") for value in values]
 
     def _dct_rights_sm(self) -> list[str]:
         return []
@@ -156,7 +188,9 @@ class MARC(MarcalyxSourceRecord):
         return []
 
     def _gbl_resourceType_sm(self) -> list[str]:
-        return []
+        values = self.get_multiple_tag_subfield_values([("655", "a")])
+        values = [value.strip().removesuffix(".") for value in values]
+        return self.get_controlled_gbl_resourceType_sm_terms(values)
 
     def _gbl_indexYear_im(self) -> list[int]:
         return []

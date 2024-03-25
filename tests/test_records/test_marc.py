@@ -4,9 +4,31 @@
 
 from decimal import Decimal
 
+import marcalyx
+from lxml import etree
+
 from harvester.records.formats.marc import MARC
 
 BAD_COORDINATE_STRING = "X999"
+
+
+def add_new_datafield(
+    source_record: MARC,
+    tag,
+    ind1=" ",
+    ind2=" ",
+    subfields=None,
+):
+    datafield = etree.SubElement(source_record.marc.node, "datafield")
+    datafield.set("tag", tag)
+    datafield.set("ind1", ind1)
+    datafield.set("ind2", ind2)
+    if subfields is not None:
+        for code, text in subfields:
+            subfield = etree.SubElement(datafield, "subfield")
+            subfield.set("code", code)
+            subfield.text = text
+    source_record.marc = marcalyx.Record(source_record.marc.node)
 
 
 def test_marc_helper_pad_coordinate_string():
@@ -87,6 +109,58 @@ def test_marc_record_required_locn_geometry_missing_034(
 #################################
 # Optional Fields
 #################################
+
+
+def test_marc_record_required_dct_description_sm(almamarc_source_record):
+    add_new_datafield(
+        almamarc_source_record,
+        "520",
+        subfields=[("a", "I am a detailed description")],
+    )
+    assert almamarc_source_record._dct_description_sm() == ["I am a detailed description"]
+
+
+def test_marc_record_required_dct_alternative_sm(almamarc_source_record):
+    add_new_datafield(
+        almamarc_source_record,
+        "246",
+        subfields=[("a", "Alt Title Here")],
+    )
+    add_new_datafield(
+        almamarc_source_record,
+        "730",
+        subfields=[("a", "Alt Title Here 2")],
+    )
+    assert set(almamarc_source_record._dct_alternative_sm()) == {
+        "Alt Title Here",
+        "Alt Title Here 2",
+    }
+
+
+def test_marc_record_required_dct_creator_sm(almamarc_source_record):
+    assert set(almamarc_source_record._dct_creator_sm()) == {
+        "Fairey Surveys Ltd.",
+        "Falcon Publishing.",
+        "Parrish Rogers International Ltd.",
+    }
+
+
+def test_marc_record_required_dct_format_s(almamarc_source_record):
+    # dct_format_s is defined for documentation, but always returns None
+    assert almamarc_source_record._dct_format_s() is None
+
+
+def test_marc_record_required_dct_publisher_sm(almamarc_source_record):
+    assert set(almamarc_source_record._dct_publisher_sm()) == {
+        "Fairey",
+    }
+
+
+def test_marc_record_required_gbl_resourceType_sm(almamarc_source_record):
+    assert set(almamarc_source_record._gbl_resourceType_sm()) == {
+        "Road maps",
+        "Tourist maps",
+    }
 
 
 #################################
