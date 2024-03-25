@@ -54,7 +54,8 @@ class MARC(MarcalyxSourceRecord):
     def _gbl_resourceClass_sm(self) -> list[str]:
         """Field method: gbl_resourceClass_sm
 
-        Controlled vocabulary:
+        Aardvark controlled vocabulary:
+        https://opengeometadata.org/ogm-aardvark/#resource-class
             - 'Datasets'
             - 'Maps'
             - 'Imagery'
@@ -63,7 +64,19 @@ class MARC(MarcalyxSourceRecord):
             - 'Web services'
             - 'Other'
         """
-        return ["Maps"]
+        tag_336_to_aardvark_map = {
+            "cartographic dataset": "Datasets",
+            "cartographic images": "Maps",
+            "text": "Other",
+            "unspecified": "Other",
+            "still image": "Imagery",
+            "computer dataset": "Datasets",
+            "cartographic image": "Imagery",
+            "cartographic three-dimensional form": "Other",
+        }
+
+        tag_336_value = self.get_single_tag_subfield_value("336", "a")
+        return [tag_336_to_aardvark_map[tag_336_value]]
 
     def _dcat_bbox(self) -> str | None:
         """Field method: dcat_bbox"""

@@ -46,7 +46,7 @@ def test_marc_record_required_dct_title_s(almamarc_source_record):
 
 
 def test_marc_record_required_gbl_resourceClass_sm(almamarc_source_record):
-    assert almamarc_source_record._gbl_resourceClass_sm() == ["Maps"]
+    assert almamarc_source_record._gbl_resourceClass_sm() == ["Imagery"]
 
 
 def test_marc_record_required_dcat_bbox(almamarc_source_record):
