@@ -39,6 +39,7 @@ class MARC(MarcalyxSourceRecord):
     """MARC metadata format SourceRecord class."""
 
     metadata_format: Literal["marc"] = field(default="marc")
+    _date_strings: None | list[str] = field(default=None)
 
     ##########################
     # Required Field Methods
@@ -148,11 +149,38 @@ class MARC(MarcalyxSourceRecord):
         """
         return None
 
-    def _dct_issued_s(self) -> str | None:
-        return None
+    def _dct_issued_s(self) -> str:
+        """Field method dct_issued_s
+
+        Because only a single date is allowed, after analysis of publisher dates from tags
+        260 and 265, it was determined that the date embedded in control field 008 is
+        reliable and accurate.
+        """
+        tag_008_value = self.get_single_tag("008").value  # type: ignore[union-attr]
+        return tag_008_value[7:11]
 
     def _dct_identifier_sm(self) -> list[str]:
-        return []
+        identifiers = []
+
+        # get tag 001 value
+        identifiers.append(self.identifier)
+
+        # get other identifiers from tags
+        identifiers.extend(
+            self.get_multiple_tag_subfield_values(
+                [
+                    ("010", "a"),
+                    ("020", "a"),
+                    ("020", "q"),
+                    ("022", "a"),
+                    ("024", "a"),
+                    ("024", "q"),
+                    ("024", "2"),
+                    ("035", "a"),
+                ]
+            )
+        )
+        return identifiers
 
     def _dct_language_sm(self) -> list[str]:
         return []
@@ -182,10 +210,22 @@ class MARC(MarcalyxSourceRecord):
         return None
 
     def _dct_temporal_sm(self) -> list[str] | None:
-        return None
+        """Field method dct_temporal_sm.
+
+        This field pulls date strings from multiple sources, where freetext dates are
+        valid for this field.
+        """
+        return self.get_date_date_strings()
 
     def _gbl_dateRange_drsim(self) -> list[str]:
-        return []
+        date_ranges = []
+        pattern = re.compile(r"(\d{3,4})\s*[-TOto]+\s*(\d{3,4})")
+        for date_string in self.get_date_date_strings():
+            match = pattern.search(date_string)
+            if match:
+                start, end = match.groups()
+                date_ranges.append(f"[{start} TO {end}]")
+        return date_ranges
 
     def _gbl_resourceType_sm(self) -> list[str]:
         values = self.get_multiple_tag_subfield_values([("655", "a")])
@@ -193,7 +233,11 @@ class MARC(MarcalyxSourceRecord):
         return self.get_controlled_gbl_resourceType_sm_terms(values)
 
     def _gbl_indexYear_im(self) -> list[int]:
-        return []
+        year_dates = []
+        pattern = re.compile(r"(\d{3,4})")
+        for date_string in self.get_date_date_strings():
+            year_dates.extend([int(year) for year in pattern.findall(date_string)])
+        return year_dates
 
     ##########################
     # Helpers
@@ -289,3 +333,30 @@ class MARC(MarcalyxSourceRecord):
         getcontext().prec = original_precision
 
         return decimal_value
+
+    def get_date_date_strings(self) -> list[str]:
+        """Extract date strings from multiple fields and cache for reuse."""
+        if self._date_strings:
+            return self._date_strings  # pragma nocover
+
+        date_strings: list[str] = []
+
+        # include issued date
+        date_strings.append(self._dct_issued_s())
+
+        # include tags 650, 651, 655, subfield $y dates
+        date_strings.extend(
+            self.get_multiple_tag_subfield_values(
+                [("650", "y"), ("651", "y"), ("655", "y")]
+            )
+        )
+
+        # include dates from main and alternate titles
+        date_strings.extend(
+            self.get_multiple_tag_subfield_values(
+                [("245", "f"), ("245", "g"), ("246", "c")]
+            )
+        )
+
+        self._date_strings = date_strings
+        return self._date_strings

@@ -172,6 +172,71 @@ def test_marc_record_required_gbl_resourceType_sm(almamarc_source_record):
     }
 
 
+def test_marc_record_required_dct_issued_s(almamarc_source_record):
+    assert almamarc_source_record._dct_issued_s() == "1979"
+
+
+def test_marc_record_required_dct_identifier_sm(almamarc_source_record):
+    # set fixture identifier to real identifier
+    almamarc_source_record.identifier = almamarc_source_record.get_identifier_from_001(
+        almamarc_source_record.marc
+    )
+    assert set(almamarc_source_record._dct_identifier_sm()) == {
+        "990022897960106761",
+        "80692167",
+        "0906358019",
+        "9780906358016",
+        "(MCM)002289796MIT01",
+        "(OCoLC)06533196",
+    }
+
+
+def test_marc_record_required_dct_temporal_sm(almamarc_source_record):
+    add_new_datafield(
+        almamarc_source_record,
+        "245",
+        subfields=[("f", "circa. 1991")],
+    )
+    add_new_datafield(
+        almamarc_source_record,
+        "651",
+        subfields=[("y", "1990-1991")],
+    )
+    assert set(almamarc_source_record._dct_temporal_sm()) == {
+        "1979",
+        "1990-1991",
+        "circa. 1991",
+    }
+
+
+def test_marc_record_required_gbl_dateRange_drsim(almamarc_source_record):
+    add_new_datafield(
+        almamarc_source_record,
+        "245",
+        subfields=[("f", "circa. 1991")],
+    )
+    add_new_datafield(
+        almamarc_source_record,
+        "651",
+        subfields=[("y", "1990-1991")],
+    )
+    assert set(almamarc_source_record._gbl_dateRange_drsim()) == {"[1990 TO 1991]"}
+
+
+def test_marc_record_required_gbl_indexYear_im(almamarc_source_record):
+    add_new_datafield(
+        almamarc_source_record,
+        "245",
+        subfields=[("f", "circa. 1991")],
+    )
+    add_new_datafield(
+        almamarc_source_record,
+        "651",
+        subfields=[("y", "1990-1991")],
+    )
+    assert set(almamarc_source_record._gbl_indexYear_im()) == {1979, 1990, 1991}
+
+
 #################################
 # Helpers
 #################################
