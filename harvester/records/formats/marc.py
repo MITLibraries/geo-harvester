@@ -183,7 +183,27 @@ class MARC(MarcalyxSourceRecord):
         return identifiers
 
     def _dct_language_sm(self) -> list[str]:
-        return []
+        language_codes: list[str] = []
+
+        # get language code from fixed data
+        tag_008_value = self.get_single_tag("008").value  # type: ignore[union-attr]
+        language_codes.append(tag_008_value[35:38])
+
+        # get language codes from tag 041
+        language_codes.extend(
+            self.get_multiple_tag_subfield_values(
+                [("041", subfield) for subfield in "abdefghjkmn"]
+            )
+        )
+
+        # any language codes longer than 3 characters, assumed concatenated and split
+        pattern = re.compile(r".{3}")
+        split_language_codes = []
+        for code in language_codes:
+            for split_code in pattern.findall(code):
+                split_language_codes.append(split_code)  # noqa: PERF402
+
+        return split_language_codes
 
     def _dct_publisher_sm(self) -> list[str]:
         """Field method: dct_publisher_sm
@@ -201,13 +221,33 @@ class MARC(MarcalyxSourceRecord):
         return [value.strip().removesuffix(",") for value in values]
 
     def _dct_rights_sm(self) -> list[str]:
-        return []
+        return self.get_multiple_tag_subfield_values(
+            [
+                ("506", "a"),
+                ("540", "a"),
+                ("542", "a"),
+            ]
+        )
 
     def _dct_spatial_sm(self) -> list[str] | None:
-        return None
+        values = self.get_multiple_tag_subfield_values(
+            [
+                ("650", "z"),
+                ("651", "az"),
+            ],
+            concat=True,
+        )
+        return [value.strip().removesuffix(".") for value in values]
 
     def _dct_subject_sm(self) -> list[str] | None:
-        return None
+        values = self.get_multiple_tag_subfield_values(
+            [
+                ("650", "a"),
+                ("651", "az"),
+            ],
+            concat=True,
+        )
+        return [value.strip().removesuffix(".") for value in values]
 
     def _dct_temporal_sm(self) -> list[str] | None:
         """Field method dct_temporal_sm.

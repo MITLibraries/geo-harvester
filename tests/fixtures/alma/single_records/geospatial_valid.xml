@@ -2,7 +2,7 @@
     <leader>02642cem 2200637 a 4500</leader>
     <controlfield tag="005">20231211171314.0</controlfield>
     <controlfield tag="007">aj canzn</controlfield>
-    <controlfield tag="008">800506s1979 enk a 0 eng</controlfield>
+    <controlfield tag="008">800506s1979    enk       a     0   eng</controlfield>
     <controlfield tag="001">990022897960106761</controlfield>
     <datafield tag="010" ind1=" " ind2=" ">
         <subfield code="a">80692167</subfield>

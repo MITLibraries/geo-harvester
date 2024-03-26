@@ -237,6 +237,67 @@ def test_marc_record_required_gbl_indexYear_im(almamarc_source_record):
     assert set(almamarc_source_record._gbl_indexYear_im()) == {1979, 1990, 1991}
 
 
+def test_marc_record_required_dct_language_sm(almamarc_source_record):
+    assert set(almamarc_source_record._dct_language_sm()) == {"eng"}
+
+
+def test_marc_record_required_dct_language_sm_include_041(
+    almamarc_source_record,
+):
+    add_new_datafield(
+        almamarc_source_record,
+        "041",
+        subfields=[("a", "ger")],
+    )
+    assert set(almamarc_source_record._dct_language_sm()) == {"eng", "ger"}
+
+
+def test_marc_record_required_dct_language_sm_split_combined_041_subfield(
+    almamarc_source_record,
+):
+    add_new_datafield(
+        almamarc_source_record,
+        "041",
+        subfields=[("a", "engfreger")],
+    )
+    assert set(almamarc_source_record._dct_language_sm()) == {"eng", "fre", "ger"}
+
+
+def test_marc_record_required_dct_rights_sm(almamarc_source_record):
+    add_new_datafield(
+        almamarc_source_record,
+        "506",
+        subfields=[("a", "Free and open to the world.")],
+    )
+    assert set(almamarc_source_record._dct_rights_sm()) == {"Free and open to the world."}
+
+
+def test_marc_record_required_dct_spatial_sm(almamarc_source_record):
+    add_new_datafield(
+        almamarc_source_record,
+        "650",
+        subfields=[("z", "Seattle")],
+    )
+    assert set(almamarc_source_record._dct_spatial_sm()) == {
+        "Manama (Bahrain)",
+        "Bahrain",
+        "Seattle",
+    }
+
+
+def test_marc_record_required_dct_subject_sm(almamarc_source_record):
+    add_new_datafield(
+        almamarc_source_record,
+        "650",
+        subfields=[("a", "Fermentation")],
+    )
+    assert set(almamarc_source_record._dct_subject_sm()) == {
+        "Manama (Bahrain)",
+        "Bahrain",
+        "Fermentation",
+    }
+
+
 #################################
 # Helpers
 #################################
