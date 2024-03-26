@@ -75,8 +75,8 @@ class MARC(MarcalyxSourceRecord):
             "cartographic three-dimensional form": "Other",
         }
 
-        tag_336_value = self.get_single_tag_subfield_value("336", "a")
-        return [tag_336_to_aardvark_map[tag_336_value]]
+        tag_336_values = self.get_multiple_tag_subfield_values([("336", "a")])
+        return [tag_336_to_aardvark_map[value] for value in tag_336_values]
 
     def _dcat_bbox(self) -> str | None:
         """Field method: dcat_bbox"""

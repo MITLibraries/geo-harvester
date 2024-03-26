@@ -71,6 +71,15 @@ def test_marc_record_required_gbl_resourceClass_sm(almamarc_source_record):
     assert almamarc_source_record._gbl_resourceClass_sm() == ["Imagery"]
 
 
+def test_marc_record_required_gbl_resourceClass_sm_multiple(almamarc_source_record):
+    add_new_datafield(
+        almamarc_source_record,
+        "336",
+        subfields=[("a", "cartographic images")],
+    )
+    assert almamarc_source_record._gbl_resourceClass_sm() == ["Imagery", "Maps"]
+
+
 def test_marc_record_required_dcat_bbox(almamarc_source_record):
     assert (
         almamarc_source_record._dcat_bbox()
