@@ -109,5 +109,5 @@ def test_marcalyx_record_get_multiple_tag_subfield_values_concat_custom_seperato
     assert almamarc_source_record.get_multiple_tag_subfield_values(
         [("245", "a"), ("994", "ab")],
         concat=True,
-        seperator="/",
+        separator="/",
     ) == ["Bahrain", "02/MYG"]

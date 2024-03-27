@@ -633,7 +633,7 @@ class MarcalyxSourceRecord(XMLSourceRecord):
         self,
         tag_and_subfields: list[tuple[str, str]],
         concat: bool = False,  # noqa: FBT001, FBT002
-        seperator: str = " ",
+        separator: str = " ",
     ) -> list[str]:
         """Return list of strings from combinations of tags and subfields.
 
@@ -645,7 +645,7 @@ class MarcalyxSourceRecord(XMLSourceRecord):
             tag_and_subfields: list of tag and allowed subfields[str], e.g.
                 - [("245", "a"), ("994", "ab")]
             concat: if True, all values for tag will be concatenated with seperator
-            seperator: character used for concatenation
+            separator: character used for concatenation
         """
         values = []
         for tag_code, subfield_codes in tag_and_subfields:
@@ -655,7 +655,7 @@ class MarcalyxSourceRecord(XMLSourceRecord):
                     for subfield in tag.subfield(subfield_code):
                         subfield_values.append(subfield.value)  # noqa: PERF401
                 if concat:
-                    values.append(seperator.join(subfield_values))
+                    values.append(separator.join(subfield_values))
                 else:
                     values.extend(subfield_values)
         return values

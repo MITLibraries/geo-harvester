@@ -171,10 +171,8 @@ class MARC(MarcalyxSourceRecord):
                 [
                     ("010", "a"),
                     ("020", "a"),
-                    ("020", "q"),
                     ("022", "a"),
                     ("024", "a"),
-                    ("024", "q"),
                     ("024", "2"),
                     ("035", "a"),
                 ]
@@ -260,7 +258,10 @@ class MARC(MarcalyxSourceRecord):
 
     def _gbl_dateRange_drsim(self) -> list[str]:
         date_ranges = []
+
+        # regex to find two, 3-4 digit numbers, seperated by a range marker like - or TO
         pattern = re.compile(r"(\d{3,4})\s*[-TOto]+\s*(\d{3,4})")
+
         for date_string in self.get_date_date_strings():
             match = pattern.search(date_string)
             if match:
@@ -275,7 +276,10 @@ class MARC(MarcalyxSourceRecord):
 
     def _gbl_indexYear_im(self) -> list[int]:
         year_dates = []
+
+        # regex to find 3-4 digit numbers assumed to be years
         pattern = re.compile(r"(\d{3,4})")
+
         for date_string in self.get_date_date_strings():
             year_dates.extend([int(year) for year in pattern.findall(date_string)])
         return year_dates
