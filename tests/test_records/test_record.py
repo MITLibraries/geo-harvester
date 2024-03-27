@@ -408,3 +408,12 @@ def test_controlled_resource_type_variant_matches(
         generic_source_record.get_controlled_gbl_resourceType_sm_terms(raw_values)
         == controlled_values
     )
+
+
+def test_empty_strings_filtered_from_output_aardvark(aardvark_empty_strings):
+    assert aardvark_empty_strings.parsed_data["dcat_keyword_sm"] == [
+        "",  # note this empty string in original record
+        "2022-creator-sprint",
+    ]
+    normalized_record = aardvark_empty_strings.normalize()
+    assert normalized_record.dcat_keyword_sm == ["2022-creator-sprint"]

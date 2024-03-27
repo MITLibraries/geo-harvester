@@ -777,3 +777,19 @@ def alma_harvester(mocked_timdex_alma_s3_export):
         from_date="2024-01-01",
         until_date="2024-01-02",
     )
+
+
+@pytest.fixture
+def aardvark_empty_strings():
+    with open(
+        "tests/fixtures/records/generic/ogm_aardvark_empty_strings.json", "rb"
+    ) as f:
+        return OGMAardvark(
+            identifier="abc123",
+            data=f.read(),
+            event="created",
+            ogm_repo_config={
+                "name": "Earth",
+                "metadata_format": "aardvark",
+            },
+        )

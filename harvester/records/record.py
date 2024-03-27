@@ -6,7 +6,7 @@ import datetime
 import json
 import logging
 from abc import abstractmethod
-from typing import Any, Literal
+from typing import Any, Literal, TypeAlias
 
 import marcalyx  # type: ignore[import-untyped]
 from attrs import asdict, define, field, fields
@@ -25,6 +25,8 @@ from harvester.utils import dedupe_list_of_values
 logger = logging.getLogger(__name__)
 
 CONFIG = Config()
+
+MITAardvarkFieldValue: TypeAlias = str | list | bool | None
 
 
 @define
@@ -326,12 +328,15 @@ class SourceRecord:
         Exceptions encountered during normalization will bubble up to the Harvester
         calling context, where it will be handled and recorded as a Record.exception,
         thereby allowing the harvest to continue with other records.
+
+        Lastly, values parsed for fields run through a series of post normalization
+        quality improvements like removing empty strings, None values from lists, etc.
         """
         # get MITAardvark fields
         aardvark_fields = fields(MITAardvark)
 
         # loop through fields and attempt field-level child class methods if defined
-        all_field_values = {}
+        all_field_values: dict[str, MITAardvarkFieldValue] = {}
         for aardvark_field in aardvark_fields:
             if field_method := getattr(self, f"_{aardvark_field.name}", None):
                 try:
@@ -343,16 +348,39 @@ class SourceRecord:
                     logger.exception(message)
                     raise FieldMethodError(exc, message) from exc
 
-        # dedupe all list fields
-        for field_name, field_values in all_field_values.items():
-            if isinstance(field_values, list):
-                deduped_field_values = [
-                    value for value in field_values if value is not None
-                ]
-                all_field_values[field_name] = dedupe_list_of_values(deduped_field_values)
+        # post normalization quality improvements
+        for field_name, original_value in all_field_values.items():
+            clean_value = self._remove_none_and_blank_strings(original_value)
+            clean_value = self._dedupe_list_fields(clean_value)
+            all_field_values[field_name] = clean_value
 
         # initialize a new MITAardvark instance and return
-        return MITAardvark(**all_field_values)
+        return MITAardvark(**all_field_values)  # type: ignore[arg-type]
+
+    @staticmethod
+    def _remove_none_and_blank_strings(
+        original_value: MITAardvarkFieldValue,
+    ) -> MITAardvarkFieldValue:
+        """Remove None values and empty strings from MITAardvark field value."""
+        if isinstance(original_value, str):
+            return None if original_value.strip() == "" else original_value
+        if isinstance(original_value, list):
+            return [
+                value
+                for value in original_value
+                if value is not None
+                and not (isinstance(value, str) and value.strip() == "")
+            ]
+        return original_value
+
+    @staticmethod
+    def _dedupe_list_fields(
+        original_value: MITAardvarkFieldValue,
+    ) -> MITAardvarkFieldValue:
+        """Remove duplicate values from MITAardvark field value list."""
+        if isinstance(original_value, list):
+            return dedupe_list_of_values(original_value)
+        return original_value
 
     ####################################
     # Abstract Required Field Methods
