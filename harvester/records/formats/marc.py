@@ -65,9 +65,10 @@ class MARC(MarcalyxSourceRecord):
             - 'Web services'
             - 'Other'
         """
+        # distinguish between Datasets, Imagery, or Other
         tag_336_to_aardvark_map = {
             "cartographic dataset": "Datasets",
-            "cartographic images": "Maps",
+            "cartographic images": "Imagery",
             "text": "Other",
             "unspecified": "Other",
             "still image": "Imagery",
@@ -75,9 +76,21 @@ class MARC(MarcalyxSourceRecord):
             "cartographic image": "Imagery",
             "cartographic three-dimensional form": "Other",
         }
-
         tag_336_values = self.get_multiple_tag_subfield_values([("336", "a")])
-        return [tag_336_to_aardvark_map[value] for value in tag_336_values]
+        controlled_values = [tag_336_to_aardvark_map[value] for value in tag_336_values]
+
+        # use tag 007/00 (category of material) to further clarify "Imagery" vs "Maps"
+        # 007 is repeatable, but one 007/00 "a" or "d" value is enough to suggest "Maps"
+        # https://www.loc.gov/marc/bibliographic/bd007.html
+        for tag_007 in self.marc.field("007"):
+            code = tag_007.value[0]
+            if code in ["a", "d"]:
+                controlled_values = [
+                    "Maps" if value == "Imagery" else value for value in controlled_values
+                ]
+                break
+
+        return controlled_values
 
     def _dcat_bbox(self) -> str | None:
         """Field method: dcat_bbox"""
