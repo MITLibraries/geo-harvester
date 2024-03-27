@@ -292,6 +292,9 @@ def test_marc_record_required_dct_subject_sm(almamarc_source_record):
         subfields=[("a", "Fermentation")],
     )
     assert set(almamarc_source_record._dct_subject_sm()) == {
+        "Maps",
+        "Road maps",
+        "Tourist maps",
         "Manama (Bahrain)",
         "Bahrain",
         "Fermentation",

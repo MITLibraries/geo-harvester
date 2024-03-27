@@ -244,6 +244,7 @@ class MARC(MarcalyxSourceRecord):
             [
                 ("650", "a"),
                 ("651", "az"),
+                ("655", "a"),
             ],
             concat=True,
         )
