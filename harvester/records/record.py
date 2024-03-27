@@ -12,6 +12,7 @@ import marcalyx  # type: ignore[import-untyped]
 from attrs import asdict, define, field, fields
 from attrs.validators import in_, instance_of
 from lxml import etree  # type: ignore[import-untyped]
+from marcalyx.marcalyx import DataField, SubField  # type: ignore[import-untyped]
 
 from harvester.config import Config
 from harvester.records.controlled_terms import (
@@ -565,7 +566,7 @@ class JSONSourceRecord(SourceRecord):
 
     @property
     def output_filename_extension(self) -> str:
-        return "json"
+        return "json"  # pragma: nocover
 
     @property
     def parsed_data(self) -> dict:
@@ -589,3 +590,29 @@ class MarcalyxSourceRecord(XMLSourceRecord):
     """Parsed MARC XML file type source records."""
 
     marc: marcalyx.Record = field(default=None)
+
+    def __attrs_post_init__(self) -> None:  # noqa: D105
+        if self.marc is None:
+            marc_record_element = etree.fromstring(self.data)
+            self.marc = marcalyx.Record(marc_record_element)
+
+    def get_single_tag(self, tag: str) -> DataField | None:
+        """Return a single tag if only one instance of that tag number exists."""
+        tags = self.marc.field(tag)
+        if len(tags) == 1:
+            return tags[0]
+        if len(tags) > 1:
+            message = f"Multiple tags found in MARC record for tag: {tag}"
+            raise ValueError(message)
+        return None
+
+    @staticmethod
+    def get_single_subfield(tag: DataField, subfield: str) -> SubField | None:
+        """Return a single subfield if only one instance of that subfield exists."""
+        subfields = tag.subfield(subfield)
+        if len(subfields) == 1:
+            return subfields[0]
+        if len(subfields) > 1:
+            message = f"Multiple subfields found in tag for subfield: {subfield}"
+            raise ValueError(message)
+        return None

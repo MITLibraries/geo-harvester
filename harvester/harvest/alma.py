@@ -4,7 +4,6 @@ import glob
 import logging
 import re
 from collections.abc import Iterator
-from typing import Literal, cast
 
 import smart_open  # type: ignore[import-untyped]
 from attrs import define, field
@@ -184,27 +183,9 @@ class MITAlmaHarvester(Harvester):
     def create_source_record_from_marc_record(
         self, marc_record: MARCRecord
     ) -> tuple[str, AlmaMARC]:
-        """Create MARC SourceRecord from parsed MARC record."""
-        # derive identifier from ControlField 001
-        try:
-            identifier = next(
-                item for item in marc_record.controlFields() if item.tag == "001"
-            ).value
-        except IndexError as exc:  # pragma: nocover
-            message = "Could not extract identifier from ControlField 001"
-            raise ValueError(message) from exc
-
-        # derive event from Leader 5th character
-        event: Literal["created", "deleted"] = cast(
-            Literal["created", "deleted"],
-            {
-                "a": "created",
-                "c": "created",
-                "d": "deleted",
-                "n": "created",
-                "p": "created",
-            }[marc_record.leader[5]],
-        )
+        """Create AlmaMARC source record from parsed MARC record."""
+        identifier = AlmaMARC.get_identifier_from_001(marc_record)
+        event = AlmaMARC.get_event_from_leader(marc_record)
 
         return identifier, AlmaMARC(
             identifier=identifier,
