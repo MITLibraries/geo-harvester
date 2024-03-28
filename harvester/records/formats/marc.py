@@ -267,7 +267,7 @@ class MARC(MarcalyxSourceRecord):
         This field pulls date strings from multiple sources, where freetext dates are
         valid for this field.
         """
-        return self.get_date_date_strings()
+        return self.get_date_strings()
 
     def _gbl_dateRange_drsim(self) -> list[str]:
         date_ranges = []
@@ -275,7 +275,7 @@ class MARC(MarcalyxSourceRecord):
         # regex to find two, 3-4 digit numbers, seperated by a range marker like - or TO
         pattern = re.compile(r"(\d{3,4})\s*[-TOto]+\s*(\d{3,4})")
 
-        for date_string in self.get_date_date_strings():
+        for date_string in self.get_date_strings():
             match = pattern.search(date_string)
             if match:
                 start, end = match.groups()
@@ -293,7 +293,7 @@ class MARC(MarcalyxSourceRecord):
         # regex to find 3-4 digit numbers assumed to be years
         pattern = re.compile(r"(\d{3,4})")
 
-        for date_string in self.get_date_date_strings():
+        for date_string in self.get_date_strings():
             year_dates.extend([int(year) for year in pattern.findall(date_string)])
         return year_dates
 
@@ -392,7 +392,7 @@ class MARC(MarcalyxSourceRecord):
 
         return decimal_value
 
-    def get_date_date_strings(self) -> list[str]:
+    def get_date_strings(self) -> list[str]:
         """Extract date strings from multiple fields and cache for reuse."""
         if self._date_strings:
             return self._date_strings  # pragma nocover

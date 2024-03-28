@@ -621,7 +621,7 @@ class MarcalyxSourceRecord(XMLSourceRecord):
         """Return single subfield value from a single tag."""
         tag = self.get_single_tag(tag_code)
         if not tag:
-            message = f"Record does not have single instance of tag '{tag_code}'"
+            message = f"Record has no instances of tag '{tag_code}'"
             raise ValueError(message)
         subfield = self.get_single_subfield(tag, subfield_code)
         if not subfield:

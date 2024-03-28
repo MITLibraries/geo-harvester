@@ -58,9 +58,7 @@ def test_marcalyx_record_get_single_tag_and_subfield_value_success(
 def test_marcalyx_record_get_single_tag_and_subfield_value_no_tag_error(
     almamarc_source_record,
 ):
-    with pytest.raises(
-        ValueError, match="Record does not have single instance of tag '999'"
-    ):
+    with pytest.raises(ValueError, match="Record has no instances of tag '999'"):
         assert almamarc_source_record.get_single_tag_subfield_value("999", "x") == "apple"
 
 
