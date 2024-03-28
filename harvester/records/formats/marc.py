@@ -39,6 +39,7 @@ class MARC(MarcalyxSourceRecord):
     """MARC metadata format SourceRecord class."""
 
     metadata_format: Literal["marc"] = field(default="marc")
+    _date_strings: None | list[str] = field(default=None)
 
     ##########################
     # Required Field Methods
@@ -54,7 +55,8 @@ class MARC(MarcalyxSourceRecord):
     def _gbl_resourceClass_sm(self) -> list[str]:
         """Field method: gbl_resourceClass_sm
 
-        Controlled vocabulary:
+        Aardvark controlled vocabulary:
+        https://opengeometadata.org/ogm-aardvark/#resource-class
             - 'Datasets'
             - 'Maps'
             - 'Imagery'
@@ -63,7 +65,32 @@ class MARC(MarcalyxSourceRecord):
             - 'Web services'
             - 'Other'
         """
-        return ["Maps"]
+        # distinguish between Datasets, Imagery, or Other
+        tag_336_to_aardvark_map = {
+            "cartographic dataset": "Datasets",
+            "cartographic images": "Imagery",
+            "text": "Other",
+            "unspecified": "Other",
+            "still image": "Imagery",
+            "computer dataset": "Datasets",
+            "cartographic image": "Imagery",
+            "cartographic three-dimensional form": "Other",
+        }
+        tag_336_values = self.get_multiple_tag_subfield_values([("336", "a")])
+        controlled_values = [tag_336_to_aardvark_map[value] for value in tag_336_values]
+
+        # use tag 007/00 (category of material) to further clarify "Imagery" vs "Maps"
+        # 007 is repeatable, but one 007/00 "a" or "d" value is enough to suggest "Maps"
+        # https://www.loc.gov/marc/bibliographic/bd007.html
+        for tag_007 in self.marc.field("007"):
+            code = tag_007.value[0]
+            if code in ["a", "d"]:
+                controlled_values = [
+                    "Maps" if value == "Imagery" else value for value in controlled_values
+                ]
+                break
+
+        return controlled_values
 
     def _dcat_bbox(self) -> str | None:
         """Field method: dcat_bbox"""
@@ -99,54 +126,176 @@ class MARC(MarcalyxSourceRecord):
     ##########################
 
     def _dct_description_sm(self) -> list[str]:
-        return []
-
-    def _dcat_keyword_sm(self) -> list[str]:
-        """New field in Aardvark: no mapping from GBL1 to dcat_keyword_sm."""
-        return []
+        return self.get_multiple_tag_subfield_values([("520", "a")])
 
     def _dct_alternative_sm(self) -> list[str]:
-        """New field in Aardvark: no mapping from GBL1 to dct_alternative_sm."""
-        return []
+        return self.get_multiple_tag_subfield_values(
+            [
+                ("130", "adfghklmnoprst"),
+                ("240", "adfghklmnoprs"),
+                ("246", "abfghnp"),
+                ("730", "adfghiklmnoprst"),
+                ("740", "anp"),
+            ],
+            concat=True,
+        )
 
     def _dct_creator_sm(self) -> list[str] | None:
-        return None
+        return self.get_multiple_tag_subfield_values(
+            [
+                ("100", "abc"),
+                ("110", "ab"),
+                ("700", "a"),
+                ("710", "a"),
+            ],
+            concat=True,
+        )
 
     def _dct_format_s(self) -> str | None:
+        """Field method: dct_format_s
+
+        https://opengeometadata.org/ogm-aardvark/#format
+        The Aardvark dct_format_s field is geared towards the file format of a digital
+        resource.  Given that virtually all Alma MARC records -- at least at this time --
+        are physical resources, or links to external resources, we cannot provide a value
+        for this field.
+        """
         return None
 
-    def _dct_issued_s(self) -> str | None:
-        return None
+    def _dct_issued_s(self) -> str:
+        """Field method dct_issued_s
+
+        Because only a single date is allowed, after analysis of publisher dates from tags
+        260 and 265, it was determined that the date embedded in control field 008 is
+        reliable and accurate.
+        """
+        tag_008_value = self.get_single_tag("008").value  # type: ignore[union-attr]
+        return tag_008_value[7:11]
 
     def _dct_identifier_sm(self) -> list[str]:
-        return []
+        identifiers = []
+
+        # get tag 001 value
+        identifiers.append(self.identifier)
+
+        # get other identifiers from tags
+        identifiers.extend(
+            self.get_multiple_tag_subfield_values(
+                [
+                    ("010", "a"),
+                    ("020", "a"),
+                    ("022", "a"),
+                    ("024", "a"),
+                    ("024", "2"),
+                    ("035", "a"),
+                ]
+            )
+        )
+        return identifiers
 
     def _dct_language_sm(self) -> list[str]:
-        return []
+        language_codes: list[str] = []
+
+        # get language code from fixed data
+        tag_008_value = self.get_single_tag("008").value  # type: ignore[union-attr]
+        language_codes.append(tag_008_value[35:38])
+
+        # get language codes from tag 041
+        language_codes.extend(
+            self.get_multiple_tag_subfield_values(
+                [("041", subfield) for subfield in "abdefghjkmn"]
+            )
+        )
+
+        # any language codes longer than 3 characters, assumed concatenated and split
+        pattern = re.compile(r".{3}")
+        split_language_codes = []
+        for code in language_codes:
+            for split_code in pattern.findall(code):
+                split_language_codes.append(split_code)  # noqa: PERF402
+
+        return split_language_codes
 
     def _dct_publisher_sm(self) -> list[str]:
-        return []
+        """Field method: dct_publisher_sm
+
+        The publisher location (subfield $a) and date (subfield $c) are not included in
+        the publisher name for the Aardvark record.
+        """
+        values = self.get_multiple_tag_subfield_values(
+            [
+                ("260", "b"),
+                ("264", "b"),
+            ],
+            concat=True,
+        )
+        return [value.strip().removesuffix(",") for value in values]
 
     def _dct_rights_sm(self) -> list[str]:
-        return []
+        return self.get_multiple_tag_subfield_values(
+            [
+                ("506", "a"),
+                ("540", "a"),
+                ("542", "a"),
+            ]
+        )
 
     def _dct_spatial_sm(self) -> list[str] | None:
-        return None
+        values = self.get_multiple_tag_subfield_values(
+            [
+                ("650", "z"),
+                ("651", "az"),
+            ],
+            concat=True,
+        )
+        return [value.strip().removesuffix(".") for value in values]
 
     def _dct_subject_sm(self) -> list[str] | None:
-        return None
+        values = self.get_multiple_tag_subfield_values(
+            [
+                ("650", "a"),
+                ("651", "az"),
+                ("655", "a"),
+            ],
+            concat=True,
+        )
+        return [value.strip().removesuffix(".") for value in values]
 
     def _dct_temporal_sm(self) -> list[str] | None:
-        return None
+        """Field method dct_temporal_sm.
+
+        This field pulls date strings from multiple sources, where freetext dates are
+        valid for this field.
+        """
+        return self.get_date_strings()
 
     def _gbl_dateRange_drsim(self) -> list[str]:
-        return []
+        date_ranges = []
+
+        # regex to find two, 3-4 digit numbers, seperated by a range marker like - or TO
+        pattern = re.compile(r"(\d{3,4})\s*[-TOto]+\s*(\d{3,4})")
+
+        for date_string in self.get_date_strings():
+            match = pattern.search(date_string)
+            if match:
+                start, end = match.groups()
+                date_ranges.append(f"[{start} TO {end}]")
+        return date_ranges
 
     def _gbl_resourceType_sm(self) -> list[str]:
-        return []
+        values = self.get_multiple_tag_subfield_values([("655", "a")])
+        values = [value.strip().removesuffix(".") for value in values]
+        return self.get_controlled_gbl_resourceType_sm_terms(values)
 
     def _gbl_indexYear_im(self) -> list[int]:
-        return []
+        year_dates = []
+
+        # regex to find 3-4 digit numbers assumed to be years
+        pattern = re.compile(r"(\d{3,4})")
+
+        for date_string in self.get_date_strings():
+            year_dates.extend([int(year) for year in pattern.findall(date_string)])
+        return year_dates
 
     ##########################
     # Helpers
@@ -242,3 +391,30 @@ class MARC(MarcalyxSourceRecord):
         getcontext().prec = original_precision
 
         return decimal_value
+
+    def get_date_strings(self) -> list[str]:
+        """Extract date strings from multiple fields and cache for reuse."""
+        if self._date_strings:
+            return self._date_strings  # pragma nocover
+
+        date_strings: list[str] = []
+
+        # include issued date
+        date_strings.append(self._dct_issued_s())
+
+        # include tags 650, 651, 655, subfield $y dates
+        date_strings.extend(
+            self.get_multiple_tag_subfield_values(
+                [("650", "y"), ("651", "y"), ("655", "y")]
+            )
+        )
+
+        # include dates from main and alternate titles
+        date_strings.extend(
+            self.get_multiple_tag_subfield_values(
+                [("245", "f"), ("245", "g"), ("246", "c")]
+            )
+        )
+
+        self._date_strings = date_strings
+        return self._date_strings

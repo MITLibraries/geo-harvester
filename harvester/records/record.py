@@ -616,3 +616,46 @@ class MarcalyxSourceRecord(XMLSourceRecord):
             message = f"Multiple subfields found in tag for subfield: {subfield}"
             raise ValueError(message)
         return None
+
+    def get_single_tag_subfield_value(self, tag_code: str, subfield_code: str) -> str:
+        """Return single subfield value from a single tag."""
+        tag = self.get_single_tag(tag_code)
+        if not tag:
+            message = f"Record has no instances of tag '{tag_code}'"
+            raise ValueError(message)
+        subfield = self.get_single_subfield(tag, subfield_code)
+        if not subfield:
+            message = f"Tag does not have single instance of subfield '{subfield_code}'"
+            raise ValueError(message)
+        return subfield.value.strip()
+
+    def get_multiple_tag_subfield_values(
+        self,
+        tag_and_subfields: list[tuple[str, str]],
+        concat: bool = False,  # noqa: FBT001, FBT002
+        separator: str = " ",
+    ) -> list[str]:
+        """Return list of strings from combinations of tags and subfields.
+
+        This method allows for tags and/or subfields to repeat, returning all values.
+        Additionally, this method will not alert if tags or subfield combinations do not
+        exist.
+
+        Args:
+            tag_and_subfields: list of tag and allowed subfields[str], e.g.
+                - [("245", "a"), ("994", "ab")]
+            concat: if True, all values for tag will be concatenated with seperator
+            separator: character used for concatenation
+        """
+        values = []
+        for tag_code, subfield_codes in tag_and_subfields:
+            for tag in self.marc.field(tag_code):
+                subfield_values = []
+                for subfield_code in subfield_codes:
+                    for subfield in tag.subfield(subfield_code):
+                        subfield_values.append(subfield.value)  # noqa: PERF401
+                if concat:
+                    values.append(separator.join(subfield_values))
+                else:
+                    values.extend(subfield_values)
+        return values
