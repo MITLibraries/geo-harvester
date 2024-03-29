@@ -8,6 +8,7 @@ from attrs import define, field
 
 from harvester.config import Config
 from harvester.records import SourceRecord
+from harvester.records.exceptions import NoExternalUrlError
 from harvester.records.formats import FGDC, GBL1, ISO19139, Aardvark
 
 logger = logging.getLogger(__name__)
@@ -68,8 +69,7 @@ class OGMGBL1(OGMSourceRecord, GBL1):
             refs_dict = json.loads(self.parsed_data["dct_references_s"])
             url = refs_dict.get("http://schema.org/url")
         if not url:
-            error_message = "Could not determine external URL from source metadata"
-            raise ValueError(error_message)
+            raise NoExternalUrlError
         urls_dict = {"http://schema.org/url": url}
 
         # extract optional download url
@@ -133,8 +133,7 @@ class OGMAardvark(OGMSourceRecord, Aardvark):
         # extract required external URL
         url = refs_dict.get("http://schema.org/url")
         if not url:
-            error_message = "Could not determine external URL from source metadata"
-            raise ValueError(error_message)
+            raise NoExternalUrlError
         urls_dict = {"http://schema.org/url": url}
 
         # extract optional download url

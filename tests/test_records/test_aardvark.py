@@ -4,6 +4,8 @@ import json
 
 import pytest
 
+from harvester.records.exceptions import NoExternalUrlError
+
 
 def test_aardvark_required_dct_accessRights_s(aardvark_all_fields):
     assert aardvark_all_fields._dct_accessRights_s() == "Restricted"
@@ -52,7 +54,7 @@ def test_aardvark_required_dct_references_s(aardvark_all_fields):
 def test_aardvark_required_dct_references_s_no_url_raise_error(aardvark_all_fields):
     aardvark_all_fields._parsed_data = {"dct_references_s": "{}"}
     with pytest.raises(
-        ValueError, match="Could not determine external URL from source metadata"
+        NoExternalUrlError, match="Could not determine external URL from source metadata"
     ):
         aardvark_all_fields._dct_references_s()
 

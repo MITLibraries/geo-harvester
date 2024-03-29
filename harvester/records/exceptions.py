@@ -60,3 +60,12 @@ class JSONSchemaValidationError(ValidationError):
         return "\n".join(
             ["The normalized MITAardvark record is invalid:", *error_messages]
         )
+
+
+class NoExternalUrlError(Exception):
+    """Exception to raise when external URL cannot be determined from OGM record."""
+
+    def __init__(
+        self, message: str = "Could not determine external URL from source metadata"
+    ) -> None:
+        super().__init__(message)

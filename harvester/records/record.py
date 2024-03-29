@@ -342,11 +342,11 @@ class SourceRecord:
             if field_method := getattr(self, f"_{aardvark_field.name}", None):
                 try:
                     all_field_values[aardvark_field.name] = field_method()
-                except Exception as exc:
+                except Exception as exc:  # noqa: BLE001
                     message = (
                         f"Error getting value for field '{aardvark_field.name}': {exc}"
                     )
-                    logger.exception(message)
+                    logger.debug(message)
                     raise FieldMethodError(exc, message) from exc
 
         # post normalization quality improvements

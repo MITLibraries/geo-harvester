@@ -4,6 +4,8 @@ import json
 
 import pytest
 
+from harvester.records.exceptions import NoExternalUrlError
+
 
 def test_gbl1_convert_scalar_to_array_no_value_get_list(gbl1_all_fields):
     assert gbl1_all_fields._convert_scalar_to_array("watermelon") == []
@@ -184,7 +186,7 @@ def test_gbl1_alternate_url_strategy_field_value_non_url_return_none(gbl1_all_fi
         "gbl1_field": "layer_slug_s",
     }
     with pytest.raises(
-        ValueError, match="Could not determine external URL from source metadata"
+        NoExternalUrlError, match="Could not determine external URL from source metadata"
     ):
         json.loads(gbl1_all_fields._dct_references_s())
 
