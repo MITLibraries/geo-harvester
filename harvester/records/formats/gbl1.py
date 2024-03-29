@@ -27,7 +27,12 @@ class GBL1(JSONSourceRecord):
     ##########################
 
     def _dct_accessRights_s(self) -> str:
-        return self.parsed_data["dc_rights_s"]
+        """Field method: dct_accessRights_s.
+
+        While dc_rights_s is a required GBL1 field, some OGM records do not have values.
+        In these scenarios, default to value "Public" for this required Aardvark field.
+        """
+        return self.parsed_data.get("dc_rights_s", "Public")
 
     def _dct_title_s(self) -> str | None:
         return self.parsed_data["dc_title_s"]
