@@ -162,7 +162,7 @@ class Harvester(ABC):
                 }
                 self.failed_records.append(failure_dict)
                 message = f"Record error: {failure_dict}"
-                logger.error(message)
+                logger.debug(message)
             else:
                 yield record
 
