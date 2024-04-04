@@ -5,6 +5,7 @@ import logging
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from collections.abc import Iterator
+from itertools import chain
 from typing import Literal
 
 import jsonlines
@@ -44,14 +45,30 @@ class Harvester(ABC):
         via the loop that saves successfully processed Record identifiers.  Any failures,
         for any steps, are caught via the self.filter_failed_records() method, and the
         full failed Record instance is saved to self.failed_records.
+
+        The exception to this flow is where get_source_records() returns an empty iterator
+        (no records to harvest).  In this situation, the harvester gracefully exits the
+        harvest early, skipping any downstream actions.
         """
         records = self.filter_failed_records(self.get_source_records())
+
+        try:
+            first_record = next(records)
+        except StopIteration:
+            return self.harvest_stats
+        records = chain([first_record], records)
+
         records = self.filter_failed_records(self.normalize_source_records(records))
         records = self.filter_failed_records(self.write_combined_normalized(records))
         records = self.filter_failed_records(self.harvester_specific_steps(records))
 
         self.successful_records = [record.identifier for record in records]
 
+        return self.harvest_stats
+
+    @property
+    def harvest_stats(self) -> dict:
+        """Dictionary of harvest statistics."""
         return {
             "processed_records_count": self.processed_records_count,
             "successful_records": len(self.successful_records),

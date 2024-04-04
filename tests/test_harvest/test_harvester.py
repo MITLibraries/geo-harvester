@@ -200,3 +200,28 @@ def test_harvester_step_write_combined_normalized_write_error_log_and_continue(
     mocked_open.assert_called_with(output_file, "w")
     assert output_record.exception_stage == "write_combined_normalized"
     assert str(output_record.exception) == exception_message
+
+
+def test_harvester_get_source_records_two_records_pipeline_completes(
+    caplog, generic_harvester_class, records_for_writing
+):
+    output_file = "output/combined_normalized.jsonl"
+    harvester = generic_harvester_class(harvest_type="full", output_file=output_file)
+    with patch.object(harvester, "get_source_records") as mocked_get_source_records:
+        mocked_get_source_records.return_value = iter(records_for_writing)
+        result = harvester.harvest()
+        assert result["successful_records"] == 1
+
+
+def test_harvester_get_source_records_empty_iterator_graceful_exit_early(
+    caplog, generic_harvester_class
+):
+    output_file = "output/combined_normalized.jsonl"
+    harvester = generic_harvester_class(harvest_type="full", output_file=output_file)
+    with patch.object(harvester, "get_source_records") as mocked_get_source_records:
+        mocked_get_source_records.return_value = iter(())
+        with patch.object(
+            harvester, "normalize_source_records"
+        ) as mocked_normalize_records:
+            _result = harvester.harvest()
+            mocked_normalize_records.assert_not_called()
