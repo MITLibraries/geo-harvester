@@ -55,6 +55,8 @@ class Harvester(ABC):
         try:
             first_record = next(records)
         except StopIteration:
+            message = "No source records found for harvest parameters, exiting."
+            logger.info(message)
             return self.harvest_stats
         records = chain([first_record], records)
 

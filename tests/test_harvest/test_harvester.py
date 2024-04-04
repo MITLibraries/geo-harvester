@@ -203,7 +203,7 @@ def test_harvester_step_write_combined_normalized_write_error_log_and_continue(
 
 
 def test_harvester_get_source_records_two_records_pipeline_completes(
-    caplog, generic_harvester_class, records_for_writing
+    generic_harvester_class, records_for_writing
 ):
     output_file = "output/combined_normalized.jsonl"
     harvester = generic_harvester_class(harvest_type="full", output_file=output_file)
@@ -216,6 +216,7 @@ def test_harvester_get_source_records_two_records_pipeline_completes(
 def test_harvester_get_source_records_empty_iterator_graceful_exit_early(
     caplog, generic_harvester_class
 ):
+    caplog.set_level("INFO")
     output_file = "output/combined_normalized.jsonl"
     harvester = generic_harvester_class(harvest_type="full", output_file=output_file)
     with patch.object(harvester, "get_source_records") as mocked_get_source_records:
@@ -225,3 +226,4 @@ def test_harvester_get_source_records_empty_iterator_graceful_exit_early(
         ) as mocked_normalize_records:
             _result = harvester.harvest()
             mocked_normalize_records.assert_not_called()
+    assert "No source records found for harvest parameters, exiting." in caplog.text
