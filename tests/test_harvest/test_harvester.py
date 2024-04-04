@@ -200,3 +200,38 @@ def test_harvester_step_write_combined_normalized_write_error_log_and_continue(
     mocked_open.assert_called_with(output_file, "w")
     assert output_record.exception_stage == "write_combined_normalized"
     assert str(output_record.exception) == exception_message
+
+
+def test_harvester_get_source_records_two_records_pipeline_completes(
+    generic_harvester_class, records_for_writing
+):
+    output_file = "output/combined_normalized.jsonl"
+    harvester = generic_harvester_class(harvest_type="full", output_file=output_file)
+
+    harvester.get_source_records = MagicMock(return_value=iter(records_for_writing))
+    harvester.filter_failed_records = MagicMock()
+    harvester.normalize_source_records = MagicMock()
+    harvester.write_combined_normalized = MagicMock()
+    harvester.harvester_specific_steps = MagicMock()
+
+    _result = harvester.harvest()
+
+    harvester.normalize_source_records.assert_called()
+    harvester.write_combined_normalized.assert_called()
+    harvester.harvester_specific_steps.assert_called()
+
+
+def test_harvester_get_source_records_empty_iterator_graceful_exit_early(
+    caplog, generic_harvester_class
+):
+    caplog.set_level("INFO")
+    output_file = "output/combined_normalized.jsonl"
+    harvester = generic_harvester_class(harvest_type="full", output_file=output_file)
+
+    harvester.get_source_records = MagicMock(return_value=iter(()))
+    harvester.normalize_source_records = MagicMock()
+
+    _result = harvester.harvest()
+    harvester.get_source_records.assert_called()
+    assert "No source records found for harvest parameters, exiting." in caplog.text
+    harvester.normalize_source_records.assert_not_called()
