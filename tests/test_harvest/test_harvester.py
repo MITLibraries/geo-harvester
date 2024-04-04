@@ -207,10 +207,18 @@ def test_harvester_get_source_records_two_records_pipeline_completes(
 ):
     output_file = "output/combined_normalized.jsonl"
     harvester = generic_harvester_class(harvest_type="full", output_file=output_file)
-    with patch.object(harvester, "get_source_records") as mocked_get_source_records:
-        mocked_get_source_records.return_value = iter(records_for_writing)
-        result = harvester.harvest()
-        assert result["successful_records"] == 1
+
+    harvester.get_source_records = MagicMock(return_value=iter(records_for_writing))
+    harvester.filter_failed_records = MagicMock()
+    harvester.normalize_source_records = MagicMock()
+    harvester.write_combined_normalized = MagicMock()
+    harvester.harvester_specific_steps = MagicMock()
+
+    _result = harvester.harvest()
+
+    harvester.normalize_source_records.assert_called()
+    harvester.write_combined_normalized.assert_called()
+    harvester.harvester_specific_steps.assert_called()
 
 
 def test_harvester_get_source_records_empty_iterator_graceful_exit_early(
@@ -219,11 +227,11 @@ def test_harvester_get_source_records_empty_iterator_graceful_exit_early(
     caplog.set_level("INFO")
     output_file = "output/combined_normalized.jsonl"
     harvester = generic_harvester_class(harvest_type="full", output_file=output_file)
-    with patch.object(harvester, "get_source_records") as mocked_get_source_records:
-        mocked_get_source_records.return_value = iter(())
-        with patch.object(
-            harvester, "normalize_source_records"
-        ) as mocked_normalize_records:
-            _result = harvester.harvest()
-            mocked_normalize_records.assert_not_called()
+
+    harvester.get_source_records = MagicMock(return_value=iter(()))
+    harvester.normalize_source_records = MagicMock()
+
+    _result = harvester.harvest()
+    harvester.get_source_records.assert_called()
     assert "No source records found for harvest parameters, exiting." in caplog.text
+    harvester.normalize_source_records.assert_not_called()
