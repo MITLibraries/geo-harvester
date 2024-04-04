@@ -19,7 +19,6 @@ class Config:
         "OGM_CONFIG_FILEPATH",
         "OGM_CLONE_ROOT_URL",
         "OGM_CLONE_ROOT_DIR",
-        "GITHUB_API_TOKEN",
     )
 
     def check_required_env_vars(self) -> None:
@@ -58,14 +57,6 @@ class Config:
     @property
     def ogm_clone_root_dir(self) -> str:
         return os.getenv("OGM_CLONE_ROOT_DIR", "output/ogm")
-
-    @property
-    def github_api_base_url(self) -> str:
-        return "https://api.github.com/repos/OpenGeoMetadata"  # pragma: no cover
-
-    @property
-    def github_api_token(self) -> str:
-        return self.GITHUB_API_TOKEN
 
 
 def configure_logger(

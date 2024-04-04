@@ -17,7 +17,7 @@ ignore_missing_imports = true
 [tool.pytest.ini_options]
 log_level = "INFO"
 markers = [
-    "use_github_api: marker to bypass autoused fixture that bypasses Github api calls"
+    "use_github_rss: marker to bypass autoused fixture that make Github RSS calls"
 ]
 
 [tool.ruff]

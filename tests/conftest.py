@@ -48,8 +48,6 @@ def _test_env(monkeypatch):
     monkeypatch.setenv("OGM_CONFIG_FILEPATH", "tests/fixtures/ogm/ogm_test_config.yaml")
     monkeypatch.setenv("OGM_CLONE_ROOT_URL", "tests/fixtures/ogm/repositories")
     monkeypatch.setenv("OGM_CLONE_ROOT_DIR", "output/ogm")
-    if "GITHUB_API_TOKEN" in os.environ:
-        monkeypatch.delenv("GITHUB_API_TOKEN")
 
 
 @pytest.fixture
@@ -476,7 +474,7 @@ def ogm_config():
 
 @pytest.fixture(autouse=True)
 def mock_remote_repository_has_commits(request):
-    if "use_github_api" not in request.keywords:
+    if "use_github_rss" not in request.keywords:
         with patch(
             "harvester.harvest.ogm.OGMRepository._remote_repository_has_new_commits"
         ) as mocked_method:
@@ -487,34 +485,29 @@ def mock_remote_repository_has_commits(request):
 
 
 @pytest.fixture
-def mocked_github_api_url():
-    return "https://api.github.com/repos/OpenGeoMetadata/edu.earth/commits"
+def mocked_github_commits_rss():
+    return "https://github.com/OpenGeoMetadata/edu.earth/commits.atom"
 
 
 @pytest.fixture
-def _mock_github_api_response_one_2010_commit(mocked_github_api_url):
-    response = [
-        {
-            "sha": "94d2c8d2d34b41381fa3c80712f235788f5a1cd8",
-            "commit": {"committer": {"date": "2010-01-01T00:00:00Z"}},
-            "message": "I am a commit.",
-        }
-    ]
-    responses.add(responses.GET, mocked_github_api_url, json=response, status=200)
+def _mock_github_rss_response_one_2010_commit(mocked_github_commits_rss):
+    with open("tests/fixtures/github_commits_rss/single_commit.xml", "rb") as f:
+        responses.add(responses.GET, mocked_github_commits_rss, body=f.read(), status=200)
 
 
 @pytest.fixture
-def _mock_github_api_response_zero_commits(mocked_github_api_url):
-    responses.add(responses.GET, mocked_github_api_url, json=[], status=200)
+def _mock_github_rss_response_zero_commits(mocked_github_commits_rss):
+    with open("tests/fixtures/github_commits_rss/no_commits.xml", "rb") as f:
+        responses.add(responses.GET, mocked_github_commits_rss, body=f.read(), status=200)
 
 
 @pytest.fixture
-def _mock_github_api_response_404_not_found(mocked_github_api_url):
-    responses.add(responses.GET, mocked_github_api_url, status=404)
+def _mock_github_rss_response_404_not_found(mocked_github_commits_rss):
+    responses.add(responses.GET, mocked_github_commits_rss, status=404)
 
 
 @pytest.fixture
-def _mock_github_api_response_403_rate_limit(mocked_github_api_url):
+def _mock_github_api_response_403_rate_limit(mocked_github_commits_rss):
     """Generic mocked response to set custom .reason attribute on response"""
 
     class MockResponse:

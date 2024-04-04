@@ -8,17 +8,18 @@ import re
 import shutil
 import time
 from collections.abc import Callable, Iterator
+from http import HTTPStatus
 
 import pygit2  # type: ignore[import-untyped]
 import requests
 import smart_open  # type: ignore[import-untyped]
+import xmltodict  # type: ignore[import-untyped]
 import yaml
 from attrs import define, field
 
 from harvester.config import Config
 from harvester.harvest import Harvester
 from harvester.harvest.exceptions import (
-    GithubApiRateLimitExceededError,
     OGMFilenameFilterMethodError,
     OGMFromDateExceedsEpochDateError,
 )
@@ -37,9 +38,6 @@ from harvester.utils import date_parser
 logger = logging.getLogger(__name__)
 
 CONFIG = Config()
-
-HTTP_NOT_FOUND = 404
-HTTP_FORBIDDEN = 403
 
 
 @define
@@ -242,10 +240,10 @@ class OGMRepository:
     def get_modified_records(self, from_date: str) -> Iterator["OGMRecord"]:
         """Get all modified files since a "from" date.
 
-        To avoid cloning a full repository only to discover no commits after the target
-        date, this method first makes an HTTP call to the Github API to retrieve a list of
-        recent commits.  If no commits are found after the target date, it returns an
-        empty list immediately.
+        To avoid cloning a full repository only to discover no commits on or after the
+        target date, this method first retrieves a list of recent commits via a Github
+        Atom RSS endpoint for the repository.  If no commits are found on or after the
+        target date an empty list is returned.
 
         If commits are found, the repository is cloned so that the git history can be
         interrogated locally for modified files that are within the harvesting scope of
@@ -286,39 +284,29 @@ class OGMRepository:
             )
 
     def _remote_repository_has_new_commits(self, target_date: str) -> bool:
-        """Return boolean if remote repository has commits on or after "from" date.
-
-        If env var GITHUB_API_TOKEN is not set, perform unauthenticated requests which may
-        result in rate limiting.
-        """
-        headers = {}
-        if CONFIG.github_api_token:
-            headers["Authorization"] = f"token {CONFIG.github_api_token}"
-        else:
-            message = "Github API token not set, may encounter rate limiting."
-            logger.warning(message)
-        response = requests.get(
-            f"{CONFIG.github_api_base_url}/{self.name}/commits",
-            headers=headers,
-            timeout=20,
+        """Return boolean if remote repository has commits on or after "from" date."""
+        atom_rss_response = requests.get(
+            f"https://github.com/OpenGeoMetadata/{self.name}/commits.atom", timeout=10
         )
-
-        # handle unknown repository
-        if response.status_code == HTTP_NOT_FOUND and response.reason == "Not Found":
+        if atom_rss_response.status_code == HTTPStatus.NOT_FOUND:
             message = f"Repository not found: OpenGeoMetadata/{self.name}"
             raise requests.HTTPError(message)
+        if atom_rss_response.status_code != HTTPStatus.OK:
+            message = (
+                f"HTTP Error retrieving commits RSS: OpenGeoMetadata/{self.name}, "
+                f"{atom_rss_response.status_code}"
+            )
+            raise requests.HTTPError(message)
 
-        # handle rate limit
-        if (
-            response.status_code == HTTP_FORBIDDEN
-            and response.reason == "rate limit exceeded"
-        ):
-            message = "Retry later or set env var GITHUB_API_TOKEN."
-            raise GithubApiRateLimitExceededError(message)
+        rss = xmltodict.parse(atom_rss_response.content)
+        if "entry" not in rss["feed"]:
+            return False
+        commits = rss["feed"]["entry"]
+        if isinstance(commits, dict):
+            commits = [commits]
 
-        commits = response.json()
         return any(
-            date_parser(commit["commit"]["committer"]["date"]) >= date_parser(target_date)
+            date_parser(commit["updated"]) >= date_parser(target_date)
             for commit in commits
         )
 
