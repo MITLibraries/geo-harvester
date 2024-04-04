@@ -42,11 +42,14 @@ sequenceDiagram
     ogm_config_yaml-->>geo_harv: Detailed list of repositories, paths, <br> and formats
     
     loop GitHub Repository
-        geo_harv->>ogm_repo: Clone repo
-        geo_harv->>ogm_repo: Get list of commits after X date
-        ogm_repo-->>geo_harv: Git commits
-        geo_harv->>geo_harv: Parse commits and determine metadata <br> files that were modified or deleted
-        geo_harv->>geo_harv: Filter to list of files based on <br> supported metadata formats from config
-        geo_harv->>s3_timdex: Write MIT aardvark
+        geo_harv->>ogm_repo: Get recent commits via RSS XML
+        alt Has commit on or after X date
+					geo_harv->>ogm_repo: Clone repo
+					ogm_repo-->>geo_harv: Repo files
+					geo_harv->>geo_harv: Get list of commits on or after X date
+					geo_harv->>geo_harv: Parse commits and determine metadata <br> files that were modified or deleted
+					geo_harv->>geo_harv: Filter to list of files based on <br> supported metadata formats from config
+					geo_harv->>s3_timdex: Write MIT aardvark
+				end
     end
 ```

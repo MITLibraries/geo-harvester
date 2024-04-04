@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/"
+      xml:lang="en-US">
+    <id>tag:github.com,2008:/OpenGeoMetadata/edu.earth/commits/main</id>
+    <title>Recent Commits to edu.harvard:main</title>
+    <updated>2024-01-08T20:01:10Z</updated>
+    <entry>
+        <id>tag:github.com,2008:Grit::Commit/f6e09517b333a4e7a3224b91945e7f2400ef9c92</id>
+        <title>Commit title</title>
+        <updated>2024-01-08T20:01:10Z</updated>
+        <content type="html">Commit notes here.</content>
+    </entry>
+</feed>

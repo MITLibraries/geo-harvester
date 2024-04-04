@@ -19,6 +19,7 @@ shapely = "*"
 requests = "*"
 pyaml = "*"
 marcalyx = "*"
+xmltodict = "*"
 
 [dev-packages]
 black = "*"
