@@ -7,6 +7,7 @@ from time import perf_counter
 import click
 
 from harvester.config import Config, configure_logger, configure_sentry
+from harvester.harvest.alma import MITAlmaHarvester
 from harvester.harvest.mit import MITHarvester
 from harvester.harvest.ogm import OGMHarvester
 
@@ -221,6 +222,39 @@ def harvest_ogm(
         from_date=ctx.obj["FROM_DATE"],
         include_repositories=include_list,
         exclude_repositories=exclude_list,
+        output_file=ctx.obj["OUTPUT_FILE"],
+    )
+
+    results = harvester.harvest()
+    logger.info(results)
+
+    logger.info(  # pragma: no cover
+        "Total elapsed: %s",
+        str(
+            timedelta(seconds=perf_counter() - ctx.obj["START_TIME"]),
+        ),
+    )
+
+
+@harvest.command(name="alma")
+@click.option(
+    "-i",
+    "--input-files",
+    required=True,
+    envvar="S3_TIMDEX_ALMA",
+    type=str,
+    help=(
+        "Directory location of source Alma MARC records, where XML files expected in form"
+        " alma-<YYYY-MM-DD>-<HARVEST_TYPE>-extracted-records-to-index_##.xml."
+    ),
+)
+@click.pass_context
+def harvest_alma(ctx: click.Context, input_files: str) -> None:
+    harvester = MITAlmaHarvester(
+        harvest_type=ctx.obj["HARVEST_TYPE"],
+        input_files=input_files,
+        from_date=ctx.obj["FROM_DATE"],
+        until_date=ctx.obj["UNTIL_DATE"],
         output_file=ctx.obj["OUTPUT_FILE"],
     )
 

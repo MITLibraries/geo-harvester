@@ -1,9 +1,11 @@
 """tests.test_harvest.test_alma_harvester"""
 
 # ruff: noqa: SLF001, PLR2004
-
 import marcalyx
+import pytest
 from lxml import etree
+
+from harvester.harvest.exceptions import AlmaCannotIdentifyLatestFullRunDateError
 
 
 def marc_record_generator(file_path):
@@ -30,48 +32,68 @@ def test_alma_harvester_list_s3_xml_files(alma_harvester):
     }
 
 
-def test_alma_harvester_list_xml_files_filter_run_type(alma_harvester):
+def test_alma_harvester_filter_filepaths_by_harvest_type(alma_harvester):
     # full harvest = "full" in filename
     alma_harvester.harvest_type = "full"
-    assert set(alma_harvester._list_xml_files()) == {
+    filepaths = alma_harvester._list_xml_files()
+    assert {*alma_harvester._filter_filepaths_by_harvest_type(filepaths)} == {
+        "s3://mocked-timdex-bucket/alma/alma-2023-12-31-full-extracted-records-to-index_01.xml",
         "s3://mocked-timdex-bucket/alma/alma-2024-01-01-full-extracted-records-to-index_01.xml",
     }
+
     # incremental harvest = "daily" in filename
     alma_harvester.harvest_type = "incremental"
-    assert set(alma_harvester._list_xml_files()) == {
+    filepaths = alma_harvester._list_xml_files()
+    assert {*alma_harvester._filter_filepaths_by_harvest_type(filepaths)} == {
+        "s3://mocked-timdex-bucket/alma/alma-2023-12-31-daily-extracted-records-to-index_01.xml",
         "s3://mocked-timdex-bucket/alma/alma-2024-01-01-daily-extracted-records-to-index_01.xml",
     }
 
 
 def test_alma_harvester_list_xml_files_filter_from_date(alma_harvester):
     alma_harvester.from_date, alma_harvester.until_date = "2024-01-01", None
-    assert set(alma_harvester._list_xml_files()) == {
+    filepaths = alma_harvester._list_xml_files()
+    assert {*alma_harvester._filter_filepaths_by_dates(filepaths)} == {
+        "s3://mocked-timdex-bucket/alma/alma-2024-01-01-daily-extracted-records-to-index_01.xml",
         "s3://mocked-timdex-bucket/alma/alma-2024-01-01-full-extracted-records-to-index_01.xml",
     }
 
 
 def test_alma_harvester_list_xml_files_filter_until_date(alma_harvester):
     alma_harvester.from_date, alma_harvester.until_date = None, "2024-01-01"
-    assert set(alma_harvester._list_xml_files()) == {
+    filepaths = alma_harvester._list_xml_files()
+    assert {*alma_harvester._filter_filepaths_by_dates(filepaths)} == {
+        "s3://mocked-timdex-bucket/alma/alma-2023-12-31-daily-extracted-records-to-index_01.xml",
         "s3://mocked-timdex-bucket/alma/alma-2023-12-31-full-extracted-records-to-index_01.xml",
     }
 
 
 def test_alma_harvester_list_xml_files_filter_from_to_until_dates(alma_harvester):
     alma_harvester.from_date, alma_harvester.until_date = "2023-12-01", "2024-02-01"
-    assert set(alma_harvester._list_xml_files()) == {
+    filepaths = alma_harvester._list_xml_files()
+    assert {*alma_harvester._filter_filepaths_by_dates(filepaths)} == {
+        "s3://mocked-timdex-bucket/alma/alma-2023-12-31-daily-extracted-records-to-index_01.xml",
         "s3://mocked-timdex-bucket/alma/alma-2023-12-31-full-extracted-records-to-index_01.xml",
+        "s3://mocked-timdex-bucket/alma/alma-2024-01-01-daily-extracted-records-to-index_01.xml",
         "s3://mocked-timdex-bucket/alma/alma-2024-01-01-full-extracted-records-to-index_01.xml",
     }
 
 
 def test_alma_harvester_parse_marcalyx_marc_record_objects_from_xml_file(alma_harvester):
-    record = next(alma_harvester.parse_marc_records_from_files())
-    assert isinstance(record, marcalyx.Record)
+    all_marc_records = alma_harvester.parse_marc_records_from_files(
+        filepaths=[
+            "s3://mocked-timdex-bucket/alma/alma-2024-01-01-full-extracted-records-to-index_01.xml"
+        ]
+    )
+    assert isinstance(next(all_marc_records), marcalyx.Record)
 
 
 def test_alma_harvester_filter_geospatial_records_count(alma_harvester):
-    all_marc_records = alma_harvester.parse_marc_records_from_files()
+    all_marc_records = alma_harvester.parse_marc_records_from_files(
+        filepaths=[
+            "s3://mocked-timdex-bucket/alma/alma-2024-01-01-full-extracted-records-to-index_01.xml"
+        ]
+    )
     records = list(alma_harvester.filter_geospatial_marc_records(all_marc_records))
     assert len(records) == 2
 
@@ -104,13 +126,25 @@ def test_alma_harvester_filter_geospatial_fail_985_tag(alma_harvester):
     assert len(list(alma_harvester.filter_geospatial_marc_records(records_iter))) == 0
 
 
-def test_alma_harvester_get_source_records_full(alma_harvester):
+def test_alma_harvester_full_harvest_four_records_returned(
+    alma_harvester,
+):
     alma_harvester.harvest_type = "full"
-    records = list(alma_harvester.get_source_records())
-    assert len(records) == 2
+    alma_harvester.from_date, alma_harvester.until_date = None, None
+    assert len(list(alma_harvester.full_harvest_get_source_records())) == 4
 
 
-def test_alma_harvester_get_source_records_incremental(alma_harvester):
+def test_alma_harvester_full_harvest_unknown_latest_run_date_raise_error(alma_harvester):
+    alma_harvester.harvest_type = "full"
+    alma_harvester.input_files = "s3://mocked-timdex-bucket/alma/undated"
+    alma_harvester.from_date, alma_harvester.until_date = None, None
+    with pytest.raises(AlmaCannotIdentifyLatestFullRunDateError):
+        list(alma_harvester.full_harvest_get_source_records())
+
+
+def test_alma_harvester_incremental_harvest_two_records_returned(
+    alma_harvester,
+):
     alma_harvester.harvest_type = "incremental"
-    records = list(alma_harvester.get_source_records())
+    records = list(alma_harvester.incremental_harvest_get_source_records())
     assert len(records) == 2

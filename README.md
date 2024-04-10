@@ -27,6 +27,7 @@ WORKSPACE=### Set to `dev` for local development, this will be set to `stage` an
 ```shell
 S3_RESTRICTED_CDN_ROOT=### S3 bucket + prefix for CDN restricted, e.g. 's3://<bucket>/path/to/restricted'
 S3_PUBLIC_CDN_ROOT=### S3 bucket + prefix for CDN public, e.g. 's3://<bucket>/path/to/public'
+S3_TIMDEX_ALMA=### S3 bucket + prefix for previously extracted Alma source records, e.g. 's3://<timdex-extract-bucket>/alma'
 GEOHARVESTER_SQS_TOPIC_NAME=### default value for CLI argument --sqs-topic-name
 OGM_CONFIG_FILEPATH=### optional location for OGM configuration YAML
 OGM_CLONE_ROOT_URL=### optional base URL or filepath for where to clone OGM repositories from
