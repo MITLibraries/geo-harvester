@@ -764,6 +764,18 @@ def mocked_timdex_alma_s3_export(mocked_timdex_bucket):
 
 
 @pytest.fixture
+def mocked_timdex_alma_undated_exports(mocked_timdex_bucket):
+    with mock_aws():
+        s3 = boto3.client("s3")
+        s3.put_object(
+            Bucket=mocked_timdex_bucket,
+            Key="alma/undated/alma-NO-DATE-full-extracted-records-to-index_01.xml",
+            Body="",
+        )
+    return mocked_timdex_bucket
+
+
+@pytest.fixture
 def alma_harvester(mocked_timdex_alma_s3_export):
     return MITAlmaHarvester(
         input_files="s3://mocked-timdex-bucket/alma",

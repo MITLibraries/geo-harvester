@@ -103,3 +103,17 @@ def test_cli_harvest_ogm_exclude_repositories_success(runner, mocked_ogm_harvest
     )
     args, kwargs = mocked_ogm_harvester.call_args
     assert kwargs["exclude_repositories"] == ["repo1", "repo2", "repo3"]
+
+
+def test_cli_harvest_alma(runner):
+    result = runner.invoke(
+        main,
+        [
+            "--verbose",
+            "harvest",
+            "alma",
+            "--input-files",
+            "tests/fixtures/alma/s3_folder",
+        ],
+    )
+    assert result.exit_code == 0
