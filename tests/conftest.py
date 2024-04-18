@@ -42,12 +42,15 @@ from harvester.records.validators import ValidateGeoshapeWKT
 def _test_env(monkeypatch):
     monkeypatch.setenv("SENTRY_DSN", "None")
     monkeypatch.setenv("WORKSPACE", "test")
-    monkeypatch.setenv("S3_RESTRICTED_CDN_ROOT", "s3://aws-account/cdn/geo/restricted/")
+    monkeypatch.setenv(
+        "S3_RESTRICTED_CDN_ROOT", "s3://mocked_cdn_restricted/cdn/geo/restricted/"
+    )
     monkeypatch.setenv("S3_PUBLIC_CDN_ROOT", "s3://aws-account/cdn/geo/public/")
     monkeypatch.setenv("GEOHARVESTER_SQS_TOPIC_NAME", "mocked-geo-harvester-input")
     monkeypatch.setenv("OGM_CONFIG_FILEPATH", "tests/fixtures/ogm/ogm_test_config.yaml")
     monkeypatch.setenv("OGM_CLONE_ROOT_URL", "tests/fixtures/ogm/repositories")
     monkeypatch.setenv("OGM_CLONE_ROOT_DIR", "output/ogm")
+    monkeypatch.setenv("AWS_DEFAULT_REGION", "us-east-1")
 
 
 @pytest.fixture
@@ -108,7 +111,7 @@ def mocked_restricted_bucket_one_legacy_fgdc_zip(mocked_restricted_bucket):
         s3 = boto3.client("s3")
         s3.put_object(
             Bucket=mocked_restricted_bucket,
-            Key="cdn/geo/restricted/abc123.zip",
+            Key="cdn/geo/restricted/SDE_DATA_AE_A8GNS_2003.zip",
             Body=f.read(),
         )
 
@@ -146,6 +149,23 @@ def mock_sqs_client(mocked_sqs_topic_name, mock_boto3_sqs_client):
 
 
 @pytest.fixture
+def mock_sqs_queue(
+    mocked_sqs_topic_name, missing_file_sqs_message_dict, valid_sqs_message_created_dict
+):
+    with mock_aws():
+        sqs = boto3.client("sqs", region_name="us-east-1")
+        sqs.create_queue(QueueName=mocked_sqs_topic_name)
+        queue_url = sqs.get_queue_url(QueueName=mocked_sqs_topic_name)["QueueUrl"]
+        sqs.send_message(
+            QueueUrl=queue_url, MessageBody=missing_file_sqs_message_dict["Body"]
+        )
+        sqs.send_message(
+            QueueUrl=queue_url, MessageBody=valid_sqs_message_created_dict["Body"]
+        )
+        yield sqs
+
+
+@pytest.fixture
 def _mocked_harvester_harvest():
     with patch.object(Harvester, "harvest") as mocked_harvest:
         mocked_harvest.return_value = None
@@ -155,6 +175,12 @@ def _mocked_harvester_harvest():
 @pytest.fixture
 def invalid_sqs_message_dict():
     with open("tests/fixtures/sqs/invalid_message.json") as f:
+        return json.loads(f.read())
+
+
+@pytest.fixture
+def missing_file_sqs_message_dict():
+    with open("tests/fixtures/sqs/missing_file_message.json") as f:
         return json.loads(f.read())
 
 

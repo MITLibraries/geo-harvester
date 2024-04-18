@@ -133,6 +133,25 @@ def test_mit_harvester_incremental_harvest_two_zip_files_returned(
         assert len(list(records)) == 2  # noqa: PLR2004
 
 
+def test_mit_harvester_incremental_continues_after_missing_zip_file(
+    caplog,
+    mock_sqs_queue,
+    mocked_sqs_topic_name,
+    mocked_restricted_bucket_one_legacy_fgdc_zip,
+):
+    harvester = MITHarvester(
+        harvest_type="incremental",
+        input_files=mocked_restricted_bucket_one_legacy_fgdc_zip,
+        sqs_topic_name=mocked_sqs_topic_name,
+    )
+    records = harvester.incremental_harvest_get_source_records()
+    assert len(list(records)) == 1
+    assert (
+        "OSError: unable to access bucket: 'mocked_cdn_restricted' "
+        "key: 'cdn/geo/restricted/DEF456.zip'" in caplog.text
+    )
+
+
 def test_mit_harvester_source_record_has_expected_values(caplog):
     harvester = MITHarvester(
         harvest_type="full",
