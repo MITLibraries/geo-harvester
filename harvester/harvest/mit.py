@@ -148,10 +148,11 @@ class MITHarvester(Harvester):
             normalized_file.write(record.normalized_record.to_json(pretty=False))
 
     def send_eventbridge_event(self, records: Iterator[Record]) -> Iterator[Record]:
-        """Method to send EventBridge event indicating access restrictions.
+        """Method to queue EventBridge events indicating access restrictions for a Record.
 
-        These events are handled by the StepFunction "geo-upload-<ENV>-shapefile-handler".
-        That StepFunction will take one of three paths based on the event payload:
+        These EventBridge events are ultimately handled by the StepFunction
+        "geo-upload-<ENV>-shapefile-handler".  That StepFunction will take one of three
+        paths based on the event payload:
 
             1. Copy zip file data from Restricted to Public CDN bucket
                 - detail.restricted=false
@@ -160,24 +161,35 @@ class MITHarvester(Harvester):
             3. Delete zip file data AND metadata from Public AND Restricted CDN bucket
                 - detail.deleted=true
 
-        The goal is to decouple KNOWING whether a record is deleted or restricted (this
-        harvester) and actually MANAGING files in S3.  By sending EventBridge events about
-        the record's deleted and restricted status, that work is handled elsewhere.
+        The goal is to decouple knowing whether a record is deleted or restricted and
+        actually managing files in S3.  By sending EventBridge events about the record's
+        deleted and/or restricted status, the file management work is performed by another
+        component that is not this GeoHarvester.
+
+        This method pools all EventBridge events that would be sent for a given Record
+        identifier, filtering to only include the last, then publishes all events after
+        the Records iterator is fully processed for the harvest.  This is more efficient
+        than publishing events as Records are processed, and allows for only publishing an
+        event that reflects the current, most recent state of a single Record in S3.
         """
         bucket, path = CONFIG.S3_PUBLIC_CDN_ROOT.removeprefix("s3://").split("/", 1)
         path = path.removesuffix("/")
 
+        # queue EventBridge events
+        event_records: dict[str, Record] = {}
         for record in records:
             if not self.skip_eventbridge_events:
-                message = f"Record {record.identifier}: sending EventBridge event"
-                logger.debug(message)
-                try:
-                    self._prepare_payload_and_send_event(bucket, path, record)
-                except Exception as exc:  # noqa: BLE001
-                    record.exception_stage = "send_eventbridge_event"
-                    record.exception = exc
-
+                event_records[record.identifier] = record
             yield record
+
+        # after Records yielded, publish EventBridge events
+        for record in event_records.values():
+            message = f"Record {record.identifier}: sending EventBridge event"
+            logger.debug(message)
+            try:
+                self._prepare_payload_and_send_event(bucket, path, record)
+            except Exception:
+                logger.exception("Error sending EventBridge event")
 
     def _prepare_payload_and_send_event(
         self, bucket: str, path: str, record: Record
@@ -196,7 +208,8 @@ class MITHarvester(Harvester):
                     {'Key': 'cdn/geo/public/ABC123.zip'}
                 ]
             }
-                - both 'restricted' and 'deleted' are boolean strings, not true booleans
+        NOTE: consuming components are expecting bool STRINGS vs actual bools for fields
+        'restricted' and 'deleted'
         """
         detail = {
             "bucket": bucket,

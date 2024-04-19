@@ -1,10 +1,12 @@
 # ruff: noqa: SLF001, D212, D200, ARG002, TRY002, TRY003, EM101
+from typing import Literal
 from unittest import mock
 
 import pytest
 from freezegun import freeze_time
 
 from harvester.harvest.mit import MITHarvester
+from harvester.records import Record
 from harvester.records.formats import FGDC
 
 
@@ -197,36 +199,107 @@ def test_mit_harvester_harvester_specific_steps_success(records_for_mit_steps):
 def test_mit_harvester_send_eventbridge_event_success(caplog, records_for_mit_steps):
     caplog.set_level("DEBUG")
 
-    class MockMITHarvester(MITHarvester):
-        def _prepare_payload_and_send_event(self, bucket, path, record):
-            return "uuid-abc123-def456"
+    with mock.patch.object(
+        MITHarvester,
+        "_prepare_payload_and_send_event",
+        return_value="uuid-abc123-def456",
+    ) as mock_method:
+        harvester = MITHarvester(
+            harvest_type="full",
+            input_files="tests/fixtures/s3_cdn_restricted_legacy_single",
+        )
+        _output_records = list(harvester.send_eventbridge_event(records_for_mit_steps))
+        mock_method.assert_called_once()
 
-    harvester = MockMITHarvester(
-        harvest_type="full",
-        input_files="tests/fixtures/s3_cdn_restricted_legacy_single",
-    )
-    output_record = next(harvester.send_eventbridge_event(records_for_mit_steps))
     assert "sending EventBridge event" in caplog.text
-    assert output_record.exception is None
 
 
-def test_mit_harvester_send_eventbridge_event_error_log_and_yield(
+def test_mit_harvester_send_eventbridge_event_log_exception(
     caplog, records_for_mit_steps
 ):
     caplog.set_level("DEBUG")
-
-    class MockMITHarvester(MITHarvester):
-        def _prepare_payload_and_send_event(self, bucket, path, record):
-            raise Exception("Error sending event")
-
-    harvester = MockMITHarvester(
-        harvest_type="full",
-        input_files="tests/fixtures/s3_cdn_restricted_legacy_single",
-    )
-    output_record = next(harvester.send_eventbridge_event(records_for_mit_steps))
+    with mock.patch.object(
+        MITHarvester,
+        "_prepare_payload_and_send_event",
+        side_effect=Exception("Error sending event"),
+    ) as _mocked_prepare_and_send:
+        harvester = MITHarvester(
+            harvest_type="full",
+            input_files="tests/fixtures/s3_cdn_restricted_legacy_single",
+        )
+        _output_records = list(harvester.send_eventbridge_event(records_for_mit_steps))
     assert "sending EventBridge event" in caplog.text
-    assert str(output_record.exception) == "Error sending event"
-    assert output_record.exception_stage == "send_eventbridge_event"
+    assert "Error sending EventBridge event" in caplog.text
+
+
+def test_mit_harvester_send_eventbridge_duplicate_record_sends_one_last_event(
+    caplog,
+    records_for_mit_steps,
+):
+    caplog.set_level("DEBUG")
+    records = []
+    events: list[Literal["created", "deleted"]] = ["deleted", "deleted", "created"]
+    for event in events:
+        records.append(  # noqa: PERF401
+            Record(
+                identifier="SDE_DATA_AE_A8GNS_2003",
+                source_record=MITHarvester.create_source_record_from_zip_file(
+                    identifier="SDE_DATA_AE_A8GNS_2003",
+                    event=event,
+                    zip_file="tests/fixtures/zip_files/SDE_DATA_AE_A8GNS_2003.zip",
+                ),
+            )
+        )
+    with mock.patch.object(
+        MITHarvester,
+        "_prepare_payload_and_send_event",
+        return_value="uuid-abc123-def456",
+    ) as mock_method:
+        harvester = MITHarvester(
+            harvest_type="full",
+            input_files="tests/fixtures/s3_cdn_restricted_legacy_single",
+        )
+        _output_records = list(harvester.send_eventbridge_event(iter(records)))
+
+    mock_method.assert_called_once()
+    assert mock_method.mock_calls[0].args[2].source_record.event == "created"
+
+
+def test_mit_harvester_send_eventbridge_multiples_records_send_multiple_events(
+    caplog,
+    records_for_mit_steps,
+):
+    caplog.set_level("DEBUG")
+    records = [
+        Record(
+            identifier="ABC123",
+            source_record=MITHarvester.create_source_record_from_zip_file(
+                identifier="SDE_DATA_AE_A8GNS_2003",
+                event="created",
+                zip_file="tests/fixtures/zip_files/SDE_DATA_AE_A8GNS_2003.zip",
+            ),
+        ),
+        Record(
+            identifier="DEF456",
+            source_record=MITHarvester.create_source_record_from_zip_file(
+                identifier="SDE_DATA_AE_A8GNS_2003",
+                event="created",
+                zip_file="tests/fixtures/zip_files/SDE_DATA_AE_A8GNS_2003.zip",
+            ),
+        ),
+    ]
+    with mock.patch.object(
+        MITHarvester,
+        "_prepare_payload_and_send_event",
+        return_value="uuid-abc123-def456",
+    ) as mock_method:
+        harvester = MITHarvester(
+            harvest_type="full",
+            input_files="tests/fixtures/s3_cdn_restricted_legacy_single",
+        )
+        _output_records = list(harvester.send_eventbridge_event(iter(records)))
+
+    assert len(mock_method.mock_calls) == len(records)
 
 
 def test_mit_harvester_prepare_payload_and_send_event_success(records_for_mit_steps):
