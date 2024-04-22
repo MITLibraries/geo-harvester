@@ -75,13 +75,16 @@ class MITHarvester(Harvester):
                     event=zip_file_event_message.event,
                     sqs_message=zip_file_event_message,
                 )
-            except OSError:
-                logger.exception("File not found")
-                continue
-            yield Record(
-                identifier=identifier,
-                source_record=source_record,
-            )
+                yield Record(
+                    identifier=identifier,
+                    source_record=source_record,
+                )
+            except OSError as exc:
+                yield Record(
+                    identifier=identifier,
+                    exception_stage="incremental_harvest_get_source_records",
+                    exception=exc,
+                )
 
     def harvester_specific_steps(self, records: Iterator[Record]) -> Iterator[Record]:
         """Harvest steps specific to MITHarvester

@@ -145,11 +145,19 @@ def test_mit_harvester_incremental_continues_after_missing_zip_file(
         sqs_topic_name=mocked_sqs_topic_name,
     )
     records = harvester.incremental_harvest_get_source_records()
-    assert len(list(records)) == 1
+    failed_record, success_record = records
+    assert failed_record.identifier == "DEF456"
+    assert failed_record.exception_stage == "incremental_harvest_get_source_records"
+    assert isinstance(failed_record.exception, OSError)
     assert (
-        "OSError: unable to access bucket: 'mocked_cdn_restricted' "
-        "key: 'cdn/geo/restricted/DEF456.zip'" in caplog.text
+        str(failed_record.exception)
+        == "unable to access bucket: 'mocked_cdn_restricted' key: "
+        "'cdn/geo/restricted/DEF456.zip' version: None error: An error occurred ("
+        "NoSuchKey) when calling the GetObject operation: The specified key does not "
+        "exist."
     )
+    assert success_record.identifier == "SDE_DATA_AE_A8GNS_2003"
+    assert not success_record.exception
 
 
 def test_mit_harvester_source_record_has_expected_values(caplog):
