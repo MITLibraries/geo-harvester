@@ -133,6 +133,33 @@ def test_mit_harvester_incremental_harvest_two_zip_files_returned(
         assert len(list(records)) == 2  # noqa: PLR2004
 
 
+def test_mit_harvester_incremental_continues_after_missing_zip_file(
+    caplog,
+    mock_sqs_queue,
+    mocked_sqs_topic_name,
+    mocked_restricted_bucket_one_legacy_fgdc_zip,
+):
+    harvester = MITHarvester(
+        harvest_type="incremental",
+        input_files=mocked_restricted_bucket_one_legacy_fgdc_zip,
+        sqs_topic_name=mocked_sqs_topic_name,
+    )
+    records = harvester.incremental_harvest_get_source_records()
+    failed_record, success_record = records
+    assert failed_record.identifier == "DEF456"
+    assert failed_record.exception_stage == "incremental_harvest_get_source_records"
+    assert isinstance(failed_record.exception, OSError)
+    assert (
+        str(failed_record.exception)
+        == "unable to access bucket: 'mocked_cdn_restricted' key: "
+        "'cdn/geo/restricted/DEF456.zip' version: None error: An error occurred ("
+        "NoSuchKey) when calling the GetObject operation: The specified key does not "
+        "exist."
+    )
+    assert success_record.identifier == "SDE_DATA_AE_A8GNS_2003"
+    assert not success_record.exception
+
+
 def test_mit_harvester_source_record_has_expected_values(caplog):
     harvester = MITHarvester(
         harvest_type="full",

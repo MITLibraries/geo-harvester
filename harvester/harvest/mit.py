@@ -68,15 +68,23 @@ class MITHarvester(Harvester):
         CONFIG.check_required_env_vars()
         for zip_file_event_message in self.sqs_client.get_valid_messages_iter():
             identifier = zip_file_event_message.zip_file_identifier
-            yield Record(
-                identifier=identifier,
-                source_record=self.create_source_record_from_zip_file(
+            try:
+                source_record = self.create_source_record_from_zip_file(
                     identifier=identifier,
                     zip_file=zip_file_event_message.zip_file,
                     event=zip_file_event_message.event,
                     sqs_message=zip_file_event_message,
-                ),
-            )
+                )
+                yield Record(
+                    identifier=identifier,
+                    source_record=source_record,
+                )
+            except OSError as exc:
+                yield Record(
+                    identifier=identifier,
+                    exception_stage="incremental_harvest_get_source_records",
+                    exception=exc,
+                )
 
     def harvester_specific_steps(self, records: Iterator[Record]) -> Iterator[Record]:
         """Harvest steps specific to MITHarvester
