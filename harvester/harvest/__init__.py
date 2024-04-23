@@ -104,9 +104,12 @@ class Harvester(ABC):
             message = f"harvest type: '{self.harvest_type}' not recognized"
             raise ValueError(message)
         for record in records:
+            event = (
+                record.source_record.event if record.source_record is not None else None
+            )
             message = (
                 f"Record {record.identifier}: retrieved source record, event '"
-                f"{record.source_record.event}'"
+                f"{event}'"
             )
             logger.debug(message)
             self.processed_records_count += 1
