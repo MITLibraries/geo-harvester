@@ -184,23 +184,32 @@ class MITHarvester(Harvester):
         path = path.removesuffix("/")
 
         # queue EventBridge events
-        event_records: dict[str, Record] = {}
+        event_records: dict[str, dict] = {}
         for record in records:
             if not self.skip_eventbridge_events:
-                event_records[record.identifier] = record
+                record_dict = {
+                    "record_identifier": record.identifier,
+                    "source_record_is_restricted": record.source_record.is_restricted,
+                    "source_record_is_deleted": record.source_record.is_deleted,
+                    "source_metadata_filename": record.source_record.source_metadata_filename,  # noqa: E501
+                    "normalized_metadata_filename": record.source_record.normalized_metadata_filename,  # noqa: E501
+                }
+                event_records[record.identifier] = record_dict
             yield record
 
         # after Records yielded, publish EventBridge events
-        for record in event_records.values():
-            message = f"Record {record.identifier}: sending EventBridge event"
+        for event_record in event_records.values():
+            message = (
+                f"Record {event_record['record_identifier']}: sending EventBridge event"
+            )
             logger.debug(message)
             try:
-                self._prepare_payload_and_send_event(bucket, path, record)
+                self._prepare_payload_and_send_event(bucket, path, event_record)
             except Exception:
                 logger.exception("Error sending EventBridge event")
 
     def _prepare_payload_and_send_event(
-        self, bucket: str, path: str, record: Record
+        self, bucket: str, path: str, record: dict
     ) -> str:
         """Prepare event detail and send event.
 
@@ -221,13 +230,13 @@ class MITHarvester(Harvester):
         """
         detail = {
             "bucket": bucket,
-            "identifier": record.identifier,
-            "restricted": json.dumps(record.source_record.is_restricted),
-            "deleted": json.dumps(record.source_record.is_deleted),
+            "identifier": record["record_identifier"],
+            "restricted": json.dumps(record["source_record_is_restricted"]),
+            "deleted": json.dumps(record["source_record_is_deleted"]),
             "objects": [
-                {"Key": f"{path}/{record.source_record.source_metadata_filename}"},
-                {"Key": f"{path}/{record.source_record.normalized_metadata_filename}"},
-                {"Key": f"{path}/{record.identifier}.zip"},
+                {"Key": f"{path}/{record['source_metadata_filename']}"},
+                {"Key": f"{path}/{record['normalized_metadata_filename']}"},
+                {"Key": f"{path}/{record['record_identifier']}.zip"},
             ],
         }
         return EventBridgeClient.send_event(detail=detail)

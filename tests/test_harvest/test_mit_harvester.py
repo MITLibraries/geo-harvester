@@ -277,6 +277,7 @@ def test_mit_harvester_send_eventbridge_duplicate_record_sends_one_last_event(
                 ),
             )
         )
+
     with mock.patch.object(
         MITHarvester,
         "_prepare_payload_and_send_event",
@@ -289,7 +290,7 @@ def test_mit_harvester_send_eventbridge_duplicate_record_sends_one_last_event(
         _output_records = list(harvester.send_eventbridge_event(iter(records)))
 
     mock_method.assert_called_once()
-    assert mock_method.mock_calls[0].args[2].source_record.event == "created"
+    assert not mock_method.mock_calls[0].args[2]["source_record_is_deleted"]
 
 
 def test_mit_harvester_send_eventbridge_multiples_records_send_multiple_events(
@@ -341,7 +342,13 @@ def test_mit_harvester_prepare_payload_and_send_event_success(records_for_mit_st
         harvester._prepare_payload_and_send_event(
             "the-bucket",
             "/path/here",
-            record,
+            record={
+                "record_identifier": record.identifier,
+                "source_record_is_restricted": record.source_record.is_restricted,
+                "source_record_is_deleted": record.source_record.is_deleted,
+                "source_metadata_filename": record.source_record.source_metadata_filename,
+                "normalized_metadata_filename": record.source_record.normalized_metadata_filename,  # noqa: E501
+            },
         )
         mocked_send_event.assert_called_with(
             detail={
