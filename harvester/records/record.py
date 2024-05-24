@@ -219,6 +219,11 @@ class SourceRecord:
             return True
         return False
 
+    @property
+    def is_suppressed(self) -> bool | None:
+        """Property to indicate if source record self-identified as suppressed."""
+        return False
+
     def get_controlled_dct_format_s_term(self, value: str | None) -> str | None:
         """Get a single controlled term for dct_format_s from original value.
 

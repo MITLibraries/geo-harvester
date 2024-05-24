@@ -586,10 +586,9 @@ def ogm_incremental_harvester():
 
 @pytest.fixture
 def ogm_full_record_set():
+    """Full set of identifiers after suppressed and invalid records skipped."""
     return {
-        "edu.earth:5f5ac295b365",
         "edu.earth:3072f18cdeb5",
-        "edu.venus:996864ca615e",
         "edu.venus:7fe1e637995f",
         "edu.pluto:83509b6d7e03",
         "edu.pluto:83fd37f6a879",

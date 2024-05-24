@@ -16,6 +16,10 @@ class Aardvark(JSONSourceRecord):
 
     metadata_format: Literal["aardvark"] = field(default="aardvark")
 
+    @property
+    def is_suppressed(self) -> bool | None:
+        return self.parsed_data.get("gbl_suppressed_b")
+
     ##########################
     # Required Field Methods
     ##########################

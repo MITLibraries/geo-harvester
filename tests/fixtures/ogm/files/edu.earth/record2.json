@@ -28,5 +28,6 @@
     "layer_modified_dt": "2012-11-28T23:35:27.343Z", 
     "layer_slug_s": "ark28722-s70026", 
     "solr_geom": "ENVELOPE(-122.653308, -122.18269, 38.674384, 38.148358)", 
-    "solr_year_i": 2010
+    "solr_year_i": 2010,
+    "suppressed_b": true
 }

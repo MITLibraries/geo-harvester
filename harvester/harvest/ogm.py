@@ -90,6 +90,8 @@ class OGMHarvester(Harvester):
         used to return the files in scope.  The appropriate args are passed to this
         method once identified.
 
+        If the OGM source record self-identifies as suppressed, it will be skipped here.
+
         Args:
             retrieve_records_func: one of two possible methods from OGMRepository
                 - get_current_records()
@@ -105,15 +107,20 @@ class OGMHarvester(Harvester):
             ogm_records_iterator = repo.filter_records(retrieve_records_func(repo, *args))
 
             for ogm_record in ogm_records_iterator:
+                source_record = self.create_source_record(
+                    repo.metadata_format,
+                    ogm_record.identifier,
+                    ogm_record.harvest_event,
+                    ogm_record.read(),
+                    repo_config,
+                )
+
+                if source_record.is_suppressed:
+                    continue
+
                 yield Record(
                     identifier=ogm_record.identifier,
-                    source_record=self.create_source_record(
-                        repo.metadata_format,
-                        ogm_record.identifier,
-                        ogm_record.harvest_event,
-                        ogm_record.read(),
-                        repo_config,
-                    ),
+                    source_record=source_record,
                 )
 
             if self.remove_local_repos:

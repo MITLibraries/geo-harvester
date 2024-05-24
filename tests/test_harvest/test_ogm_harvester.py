@@ -209,7 +209,7 @@ def test_ogm_record_read_from_git_history(ogm_record_from_git_history):
 
 def test_ogm_harvester_get_full_source_records(ogm_full_harvester, ogm_full_record_set):
     records = list(ogm_full_harvester.get_source_records())
-    assert len(records) == 6
+    assert len(records) == 4
     assert {record.identifier for record in records} == ogm_full_record_set
 
 
@@ -218,7 +218,7 @@ def test_ogm_harvester_get_incremental_source_records_early_date(
 ):
     ogm_incremental_harvester.from_date = "1995-01-01"
     records = list(ogm_incremental_harvester.get_source_records())
-    assert len(records) == 6
+    assert len(records) == 4
     assert {record.identifier for record in records} == ogm_full_record_set
 
 
