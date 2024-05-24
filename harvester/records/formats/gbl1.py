@@ -16,6 +16,10 @@ class GBL1(JSONSourceRecord):
 
     metadata_format: Literal["gbl1"] = field(default="gbl1")
 
+    @property
+    def is_suppressed(self) -> bool | None:
+        return self.parsed_data.get("suppressed_b")
+
     def _convert_scalar_to_array(self, field_name: str) -> list[str]:
         """Convert a single, scalar GBL1 value to Aardvark array."""
         if value := self.parsed_data.get(field_name):
