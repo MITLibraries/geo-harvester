@@ -30,6 +30,7 @@ pytest = "*"
 ruff = "*"
 ipython = "*"
 moto = "*"
+types-pygit2 = "*"
 types-python-dateutil = "*"
 boto3-stubs = {version = "*", extras = ["events", "s3", "sqs"]}
 lxml-stubs = "*"
@@ -39,7 +40,7 @@ types-pyyaml = "*"
 types-requests = "*"
 
 [requires]
-python_version = "3.11"
+python_version = "3.12"
 
 [scripts]
 harvester = "python -c \"from harvester.cli import main; main()\""

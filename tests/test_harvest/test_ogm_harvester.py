@@ -163,8 +163,8 @@ def test_ogm_repository_date_after_first_record_gets_second_record(ogm_repositor
 def test_ogm_repository_deleted_file_sets_deleted_harvest_event(ogm_repository_pluto):
     records = list(ogm_repository_pluto.get_modified_records("2015-01-01"))
     assert len(records) == 2
-    assert ["D", "A"] == [record.git_change_type for record in records]
-    assert ["deleted", "created"] == [record.harvest_event for record in records]
+    assert [record.git_change_type for record in records] == ["D", "A"]
+    assert [record.harvest_event for record in records] == ["deleted", "created"]
 
 
 def test_ogm_repository_unhandled_git_file_action_logged_and_skipped(

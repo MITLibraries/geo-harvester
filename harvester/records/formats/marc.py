@@ -6,7 +6,7 @@ import logging
 import re
 from collections import defaultdict
 from decimal import Decimal, getcontext
-from typing import Literal, TypeAlias
+from typing import Literal
 
 from attrs import define, field
 from marcalyx.marcalyx import DataField  # type: ignore[import-untyped]
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 # Coordinate string expected in format "hdddmmss" (hemisphere-degrees-minutes-seconds)
 #   - e.g. W1800000, E1800000, N0840000, N0840000
 #   - https://www.loc.gov/marc/bibliographic/bd034.html
-COORDINATE_STRING: TypeAlias = str
+type COORDINATE_STRING = str
 
 # regular expression to extract hemisphere, degree, minutes, and seconds from a
 # coordinate string

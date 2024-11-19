@@ -16,6 +16,7 @@ import smart_open  # type: ignore[import-untyped]
 import xmltodict  # type: ignore[import-untyped]
 import yaml
 from attrs import define, field
+from pygit2.enums import SortMode
 
 from harvester.config import Config
 from harvester.harvest import Harvester
@@ -260,12 +261,12 @@ class OGMRepository:
         if not self._remote_repository_has_new_commits(from_date):
             message = f"No commits found on or after date '{from_date}', skipping."
             logger.info(message)
-            return []
+            return
 
         # get last commit BEFORE date
         target_commit = self._get_commit_before_date(from_date)
         if not target_commit:
-            return []
+            return
 
         # get all modified files SINCE this commit
         changes = self._get_modified_files_since_commit(target_commit)
@@ -328,7 +329,7 @@ class OGMRepository:
         from_timestamp = date_parser(target_date).timestamp()
         commits = [
             commit
-            for commit in local_repo.walk(local_repo.head.target, pygit2.GIT_SORT_TIME)
+            for commit in local_repo.walk(local_repo.head.target, SortMode.TIME)
             if commit.commit_time >= from_timestamp
         ]
         if not commits:
@@ -346,7 +347,7 @@ class OGMRepository:
         ).isoformat()
         message = (
             f"Last commit before date '{target_date}': "
-            f"{target_commit_date}, {target_commit.hex}"
+            f"{target_commit_date}, {target_commit.id}"
         )
         logger.debug(message)
         return target_commit
@@ -360,7 +361,7 @@ class OGMRepository:
         filepath, e.g.: [("A", "files/file1.xml"), ("D", "files/file2.xml")], informing
         that file1.xml was added, and file2.xml was deleted.
         """
-        deltas = self.git_repository.diff(target_commit.hex, "HEAD").deltas
+        deltas = self.git_repository.diff(target_commit.id, "HEAD").deltas
         return [
             (delta.status_char(), delta.new_file.raw_path.decode()) for delta in deltas
         ]

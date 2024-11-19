@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 import boto3
 
 if TYPE_CHECKING:
-    from mypy_boto3_events.client import (  # noqa: I001
+    from mypy_boto3_events.client import (
         EventBridgeClient as EventBridgeClientType,
     )  # pragma: nocover
 
