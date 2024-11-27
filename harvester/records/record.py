@@ -6,7 +6,7 @@ import datetime
 import json
 import logging
 from abc import abstractmethod
-from typing import Any, Literal, TypeAlias
+from typing import Any, Literal
 
 import marcalyx  # type: ignore[import-untyped]
 from attrs import asdict, define, field, fields
@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 CONFIG = Config()
 
-MITAardvarkFieldValue: TypeAlias = str | list | bool | None
+type MITAardvarkFieldValue = str | list | bool | None
 
 
 @define
@@ -215,9 +215,7 @@ class SourceRecord:
 
         This valuation is based on the event that brought the record into harvest.
         """
-        if self.event == "deleted":
-            return True
-        return False
+        return self.event == "deleted"
 
     @property
     def is_suppressed(self) -> bool | None:
@@ -241,8 +239,7 @@ class SourceRecord:
             # note: order is important; more specific should be first
             if (
                 "shapefile" in value
-                or value == "shp"
-                or value == "avshp"
+                or value in ("shp", "avshp")
                 or "shp," in value
                 or "esri" in value
                 or "geodatabase" in value
@@ -347,7 +344,7 @@ class SourceRecord:
             if field_method := getattr(self, f"_{aardvark_field.name}", None):
                 try:
                     all_field_values[aardvark_field.name] = field_method()
-                except Exception as exc:  # noqa: BLE001
+                except Exception as exc:
                     message = (
                         f"Error getting value for field '{aardvark_field.name}': {exc}"
                     )
@@ -489,9 +486,7 @@ class SourceRecord:
             - "created" = False (record is not suppressed)
             - "deleted" = True (record is suppressed)
         """
-        if self.event == "deleted":
-            return True
-        return False
+        return self.event == "deleted"
 
 
 @define

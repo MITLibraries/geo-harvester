@@ -13,6 +13,10 @@ def test_language_code_converter_returns_none():
     assert convert_lang_code("bad_lang_code") is None
 
 
+def test_dedupe_list_of_strings_single_value_list():
+    assert dedupe_list_of_values([["cat"]]) == ["cat"]
+
+
 def test_dedupe_list_of_strings_titlecase():
     # TitleCase
     assert dedupe_list_of_values(["HORSE", "Horse", "horse"]) == ["Horse"]
