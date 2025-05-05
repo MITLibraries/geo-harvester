@@ -38,6 +38,7 @@ freezegun = "*"
 types-jsonschema = "*"
 types-pyyaml = "*"
 types-requests = "*"
+pip-audit = "*"
 
 [requires]
 python_version = "3.12"
