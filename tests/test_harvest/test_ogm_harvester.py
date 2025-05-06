@@ -142,7 +142,7 @@ def test_ogm_repository_get_deleted_and_added_file(ogm_repository_pluto):
     commit 21d554558c69711a8f671ed5400a48a54ab2b9cf
     Date:   Fri Jan 1 00:00:00 2010 -0500
         Second file commit
-    """
+    """  # noqa:D403
     root_commit = ogm_repository_pluto._get_commit_before_date("2015-01-01")
     file_list = ogm_repository_pluto._get_modified_files_since_commit(root_commit)
     assert file_list == [("D", "fgdc/record2.xml"), ("A", "fgdc/record3.xml")]
