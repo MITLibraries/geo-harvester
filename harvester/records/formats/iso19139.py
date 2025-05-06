@@ -140,7 +140,7 @@ class ISO19139(XMLSourceRecord):
         output = []
         for value in values:
             if mapped_value := value_map.get(value.strip().lower()):
-                output.append(mapped_value)
+                output.append(mapped_value)  # noqa: PERF401
         return output
 
     ##########################

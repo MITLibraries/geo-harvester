@@ -51,7 +51,7 @@ class AlmaMARC(AlmaSourceRecord, MARC):
     def get_event_from_leader(marc_record: MARCRecord) -> Literal["created", "deleted"]:
         """Static method to determine a harvest event from leader."""
         return cast(
-            Literal["created", "deleted"],
+            'Literal["created", "deleted"]',
             {
                 "a": "created",
                 "c": "created",
