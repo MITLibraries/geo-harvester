@@ -322,9 +322,10 @@ class MITHarvester(Harvester):
         zipped files are listed and the metadata read.  This is important as some MIT GIS
         zip files can be hundreds of megabytes if not gigabytes.
         """
-        with smart_open.open(zip_file, "rb") as file_object, zipfile.ZipFile(
-            file_object
-        ) as zip_file_object:
+        with (
+            smart_open.open(zip_file, "rb") as file_object,
+            zipfile.ZipFile(file_object) as zip_file_object,
+        ):
             metadata_format, metadata_filename = cls._find_metadata_file(
                 zip_file_object, identifier
             )

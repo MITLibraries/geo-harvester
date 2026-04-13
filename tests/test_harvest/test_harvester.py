@@ -1,4 +1,4 @@
-# ruff: noqa: SLF001, N818
+# ruff: noqa: N818
 
 import datetime
 from unittest.mock import MagicMock, mock_open, patch
@@ -193,8 +193,9 @@ def test_harvester_step_write_combined_normalized_write_error_log_and_continue(
     mocked_writer = MagicMock()
     exception_message = "Error during write!"
     mocked_writer.write.side_effect = Exception(exception_message)
-    with patch("harvester.harvest.smart_open.open", mocked_open), patch(
-        "jsonlines.Writer", return_value=mocked_writer
+    with (
+        patch("harvester.harvest.smart_open.open", mocked_open),
+        patch("jsonlines.Writer", return_value=mocked_writer),
     ):
         output_record = next(harvester.write_combined_normalized(records_for_writing))
     mocked_open.assert_called_with(output_file, "w")

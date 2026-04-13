@@ -86,7 +86,7 @@ def test_cli_harvest_ogm_include_repositories_success(runner, mocked_ogm_harvest
             "repo1,repo2,  repo3",  # testing whitespace stripping
         ],
     )
-    args, kwargs = mocked_ogm_harvester.call_args
+    _args, kwargs = mocked_ogm_harvester.call_args
     assert kwargs["include_repositories"] == ["repo1", "repo2", "repo3"]
 
 
@@ -101,7 +101,7 @@ def test_cli_harvest_ogm_exclude_repositories_success(runner, mocked_ogm_harvest
             "  repo1,repo2   ,repo3",  # testing whitespace stripping
         ],
     )
-    args, kwargs = mocked_ogm_harvester.call_args
+    _args, kwargs = mocked_ogm_harvester.call_args
     assert kwargs["exclude_repositories"] == ["repo1", "repo2", "repo3"]
 
 

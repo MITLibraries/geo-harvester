@@ -1,7 +1,5 @@
 """harvester.records.formats.fgdc"""
 
-# ruff: noqa: N802, N815; allows camelCase for aardvark fields
-
 import logging
 from collections import defaultdict
 from typing import Literal

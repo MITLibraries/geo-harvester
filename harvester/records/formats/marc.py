@@ -1,7 +1,5 @@
 """harvester.records.formats.marc"""
 
-# ruff: noqa: N802
-
 import logging
 import re
 from collections import defaultdict

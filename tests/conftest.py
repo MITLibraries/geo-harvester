@@ -1,4 +1,4 @@
-# ruff: noqa: N802, S301, SLF001, D202
+# ruff: noqa: SLF001, D202
 
 import datetime
 import glob
@@ -430,7 +430,6 @@ def iso19139_source_record_all_fields():
 @pytest.fixture
 def generic_source_record():
     class GenericSourceRecord(SourceRecord):
-
         def _gbl_resourceType_sm(self):
             return []
 

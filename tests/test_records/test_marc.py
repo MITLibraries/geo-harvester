@@ -1,6 +1,6 @@
 """tests.test_records.test_marc"""
 
-# ruff: noqa: N802, SLF001
+# ruff: noqa: SLF001
 
 from decimal import Decimal
 

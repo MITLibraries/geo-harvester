@@ -1,7 +1,5 @@
 """harvester.records.formats.gbl1"""
 
-# ruff: noqa: N802
-
 from typing import Literal
 
 from attrs import define, field

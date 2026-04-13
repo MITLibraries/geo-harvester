@@ -1,6 +1,6 @@
 """harvester.harvest.records.record"""
 
-# ruff: noqa: N802, N815
+# ruff: noqa: N815
 
 import datetime
 import json
@@ -271,9 +271,7 @@ class SourceRecord:
                 "Line data": "Shapefile",
                 "Vector data": "Shapefile",
             }
-            for (
-                resource_type
-            ) in self._gbl_resourceType_sm():  # type: ignore[attr-defined]
+            for resource_type in self._gbl_resourceType_sm():  # type: ignore[attr-defined]
                 if mapped_value := resource_type_to_format_map.get(resource_type):
                     controlled_value = mapped_value
 
@@ -525,7 +523,7 @@ class XMLSourceRecord(SourceRecord):
         if string is None:
             return None
         cleaned = " ".join(string.split())
-        return cleaned if cleaned else None
+        return cleaned or None
 
     def string_list_from_xpath(self, xpath_expr: str) -> list:
         """Return unique list of strings from XPath matches.

@@ -152,6 +152,10 @@ cython_debug/
 # Local directories
 output/
 
+# Container build metadata
+.arch_tag
+.tool-versions
+
 # MacOS files
 .DS_Store
 
