@@ -1,7 +1,5 @@
 """harvester.records.formats.aardvark"""
 
-# ruff: noqa: N802
-
 from typing import Literal
 
 from attrs import define, field
@@ -35,7 +33,7 @@ class Aardvark(JSONSourceRecord):
         for value in self.parsed_data.get("gbl_resourceClass_sm", []):
             if mapped_value := gbl_resource_class_value_map().get(value.strip().lower()):
                 mapped_values.append(mapped_value)  # noqa: PERF401
-        return mapped_values if mapped_values else ["Other"]
+        return mapped_values or ["Other"]
 
     def _dcat_bbox(self) -> str | None:
         return self.parsed_data.get("dcat_bbox", None)

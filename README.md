@@ -13,7 +13,9 @@ At a high level, this is accomplished by:
 - To update dependencies: `make update`
 - To run unit tests: `make test`
 - To lint the repo: `make lint`
-- To run the app: `pipenv run harvester --help`
+- To auto-fix lint issues: `make lint-fix`
+- To run vulnerability checks: `make security`
+- To run the app: `uv run harvester --help`
 
 ## Environment Variables
 
@@ -36,7 +38,7 @@ OGM_CLONE_ROOT_DIR=### optional location for where cloned repositories are saved
 
 ## CLI Commands
 
-All CLI commands can be run with `pipenv run <COMMAND>`.
+All CLI commands can be run with `uv run <COMMAND>`.
 
 ### `harvester`
 

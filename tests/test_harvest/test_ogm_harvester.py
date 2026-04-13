@@ -1,4 +1,4 @@
-# ruff: noqa: PLR2004, SLF001, D205, D212, PT023
+# ruff: noqa: PLR2004, SLF001, D205, D212
 
 import os
 from unittest import mock
@@ -85,8 +85,8 @@ def test_ogm_repository_multiple_filter_methods_error(ogm_repository_earth):
     with pytest.raises(
         OGMFilenameFilterMethodError,
         match=(
-            "Both 'filename_regex' and 'file_directory' defined, only one "
-            "file filter strategy allowed."
+            r"Both 'filename_regex' and 'file_directory' defined, only one "
+            r"file filter strategy allowed."
         ),
     ):
         list(ogm_repository_earth.filter_records(records_iterator))
@@ -98,7 +98,7 @@ def test_ogm_repository_filter_records_bad_method_error(ogm_repository_earth):
     records_iterator = ogm_repository_earth.get_all_records()
     with pytest.raises(
         OGMFilenameFilterMethodError,
-        match="File filtering method not found in repository config.",
+        match=r"File filtering method not found in repository config.",
     ):
         list(ogm_repository_earth.filter_records(records_iterator))
 
@@ -274,7 +274,7 @@ def test_ogm_repository_check_remote_repo_unknown_repository_raise_error(
 ):
     with pytest.raises(
         requests.HTTPError,
-        match="Repository not found: OpenGeoMetadata/edu.earth",
+        match=r"Repository not found: OpenGeoMetadata/edu.earth",
     ):
         ogm_repository_earth._remote_repository_has_new_commits("2005-01-01")
 
@@ -287,6 +287,6 @@ def test_ogm_repository_check_remote_repo_rate_limit_error(
 ):
     with pytest.raises(
         requests.HTTPError,
-        match="HTTP Error retrieving commits RSS: OpenGeoMetadata/edu.earth, 403",
+        match=r"HTTP Error retrieving commits RSS: OpenGeoMetadata/edu.earth, 403",
     ):
         ogm_repository_earth._remote_repository_has_new_commits("2005-01-01")

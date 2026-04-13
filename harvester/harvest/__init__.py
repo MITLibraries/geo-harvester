@@ -108,8 +108,7 @@ class Harvester(ABC):
                 record.source_record.event if record.source_record is not None else None
             )
             message = (
-                f"Record {record.identifier}: retrieved source record, event '"
-                f"{event}'"
+                f"Record {record.identifier}: retrieved source record, event '{event}'"
             )
             logger.debug(message)
             self.processed_records_count += 1

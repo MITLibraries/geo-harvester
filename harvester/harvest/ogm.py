@@ -276,7 +276,7 @@ class OGMRepository:
             filename = os.path.join(self.local_repository_directory, relative_filename)
             if change_type in ["A", "M", "C"]:
                 event = "created"
-            elif change_type in ["D"]:
+            elif change_type == "D":
                 event = "deleted"
             else:
                 message = f"Git file change type not handled: '{change_type}'"

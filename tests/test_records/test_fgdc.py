@@ -1,4 +1,4 @@
-# ruff: noqa: N802, SLF001
+# ruff: noqa: SLF001
 from unittest.mock import patch
 
 import pytest

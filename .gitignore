@@ -153,5 +153,7 @@ cython_debug/
 .idea/
 
 .DS_Store
+.arch_tag
+.tool-versions
 output/
 .vscode/

@@ -86,7 +86,7 @@ class OGMGBL1(OGMSourceRecord, GBL1):
 
         return json.dumps(urls_dict)
 
-    def _use_external_url_strategy(self, alternate_strategy: dict) -> str:
+    def _use_external_url_strategy(self, alternate_strategy: dict) -> str | None:
         """Apply alternative strategy for extracting external URL from source record.
 
         OGM repositories may include an optional "external_url_strategy" property where

@@ -1,4 +1,4 @@
-# ruff: noqa: SLF001, D212, D200, ARG002, TRY002, TRY003, EM101
+# ruff: noqa: SLF001, D212, D200
 from typing import Literal
 from unittest import mock
 
@@ -381,9 +381,9 @@ def test_mit_harvester_delete_sqs_messages_success(
     caplog, records_for_mit_steps, valid_sqs_message_created_instance, mock_sqs_client
 ):
     caplog.set_level("DEBUG")
-    records_for_mit_steps[0].source_record.sqs_message = (
-        valid_sqs_message_created_instance
-    )
+    records_for_mit_steps[
+        0
+    ].source_record.sqs_message = valid_sqs_message_created_instance
     harvester = MITHarvester(
         harvest_type="incremental",
         input_files="tests/fixtures/s3_cdn_restricted_legacy_single",

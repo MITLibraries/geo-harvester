@@ -1,4 +1,4 @@
-# ruff: noqa: SLF001, PLR2004, N802, FLY002, D212, D205
+# ruff: noqa: SLF001, PLR2004, FLY002, D212, D205
 
 import json
 from unittest.mock import patch

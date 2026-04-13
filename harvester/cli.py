@@ -31,7 +31,6 @@ def main(ctx: click.Context, verbose: bool) -> None:
     root_logger = logging.getLogger()
     logger.info(configure_logger(root_logger, verbose))
     logger.info(configure_sentry())
-    CONFIG.check_required_env_vars()
     logger.info("Running process")
 
 
@@ -168,6 +167,7 @@ def harvest_mit(
     skip_eventbridge_events: bool,
 ) -> None:
     """Harvest and normalize MIT geospatial metadata records."""
+    CONFIG.check_required_env_vars()
     harvester = MITHarvester(
         harvest_type=ctx.obj["HARVEST_TYPE"],
         from_date=ctx.obj["FROM_DATE"],
@@ -211,6 +211,7 @@ def harvest_ogm(
     exclude_repositories: str,
 ) -> None:  # pragma: no cover
     """Harvest and normalize OpenGeoMetadata (OGM) geospatial metadata records."""
+    CONFIG.check_required_env_vars()
     include_list = exclude_list = None
     if include_repositories:
         include_list = [repo.strip() for repo in include_repositories.split(",")]
@@ -250,6 +251,7 @@ def harvest_ogm(
 )
 @click.pass_context
 def harvest_alma(ctx: click.Context, input_files: str) -> None:
+    CONFIG.check_required_env_vars()
     harvester = MITAlmaHarvester(
         harvest_type=ctx.obj["HARVEST_TYPE"],
         input_files=input_files,

@@ -1,7 +1,6 @@
 """harvester.records.formats.iso19139"""
 
-# ruff: noqa: N802, N815; allows camelCase for aardvark fields
-# ruff: noqa: PERF401; preferring more explicit, non list comprehensions
+# ruff: noqa: PERF401
 
 import logging
 from collections import defaultdict
@@ -140,7 +139,7 @@ class ISO19139(XMLSourceRecord):
         output = []
         for value in values:
             if mapped_value := value_map.get(value.strip().lower()):
-                output.append(mapped_value)  # noqa: PERF401
+                output.append(mapped_value)
         return output
 
     ##########################

@@ -82,8 +82,7 @@ def test_validator_polygon_returns_original_value_success(
 ):
     caplog.set_level("DEBUG")
     polygon_wkt = (
-        "POLYGON ((74.0060 40.7128, 71.0589 42.3601, "
-        "73.7562 42.6526, 74.0060 40.7128))"
+        "POLYGON ((74.0060 40.7128, 71.0589 42.3601, 73.7562 42.6526, 74.0060 40.7128))"
     )
     mocked_validated_fields_source_record.mocked_value = polygon_wkt
     value = mocked_validated_fields_source_record()._locn_geometry()  # noqa: SLF001
@@ -97,8 +96,7 @@ def test_validator_polygon_missing_vertices_logs_warning_sets_value_to_none(
     mocked_validated_fields_source_record.mocked_value = "POLYGON (())"
     value = mocked_validated_fields_source_record()._locn_geometry()  # noqa: SLF001
     invalid_wkt_warning_message = (
-        "field: dcat_bbox, unable to parse WKT from value: POLYGON (()); "
-        "returning None"
+        "field: dcat_bbox, unable to parse WKT from value: POLYGON (()); returning None"
     )
     assert value is None
     assert invalid_wkt_warning_message in caplog.text

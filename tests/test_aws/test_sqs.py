@@ -81,8 +81,8 @@ def test_invalid_zip_file_event_message_bad_filetype_raise_error(
 ):
     with pytest.raises(
         MessageValidationError,
-        match="Invalid SQS Message, reason: 'File does not have a '.zip' extension: "
-        "testfile.txt'",
+        match=r"Invalid SQS Message, reason: 'File does not have a '.zip' extension: "
+        r"testfile.txt'",
     ):
         _ = ZipFileEventMessage(invalid_sqs_message_dict)
 
