@@ -54,6 +54,9 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 include = ["harvester*"]
 
+[tool.setuptools.package-data]
+"harvester.records" = ["schemas/*.json"]
+
 [tool.mypy]
 disallow_untyped_calls = true
 disallow_untyped_defs = true
